@@ -166,21 +166,26 @@ export class LessonChecker {
       }
     }
 
-    const run = runAsUser(this.wrapCd(task.cmd, user), user, this.timeoutMs);
-    if (run.timedOut && run.exit === -1) {
-      problems.push("la tarea agotó su tiempo (¿bucle infinito? ¿falta input?)");
-    }
-    if (run.exit >= 0) {
-      const wantExit = task.expectExit ?? 0;
-      if (run.exit !== wantExit) {
-        problems.push(`exit code: esperado ${wantExit}, obtenido ${run.exit}`);
+    // Las tareas solo-lectura de ficheros (expectFile*/expect*) no ejecutan nada.
+    let run = { exit: 0 as number, stdout: "", stderr: "", timedOut: false };
+    if (task.cmd && task.cmd.trim()) {
+      run = runAsUser(this.wrapCd(task.cmd, user), user, this.timeoutMs);
+      if (run.timedOut && run.exit === -1) {
+        problems.push("la tarea agotó su tiempo (¿bucle infinito? ¿falta input?)");
       }
-    }
-    if (task.expectOutput && !new RegExp(task.expectOutput).test(run.stdout)) {
-      problems.push(`la salida no contiene /${task.expectOutput}/`);
-    }
-    if (task.expectOutputAbsent && new RegExp(task.expectOutputAbsent).test(run.stdout + run.stderr)) {
-      problems.push(`la salida no debería contener /${task.expectOutputAbsent}/`);
+      if (run.exit >= 0) {
+        const wantExit = task.expectExit ?? 0;
+        if (run.exit !== wantExit) {
+          problems.push(`exit code: esperado ${wantExit}, obtenido ${run.exit}`);
+        }
+      }
+      // patrón 'm': ^/$ anclan por línea y con salida multilínea funcionan igual
+      if (task.expectOutput && !new RegExp(task.expectOutput, "m").test(run.stdout)) {
+        problems.push(`la salida no contiene /${task.expectOutput}/`);
+      }
+      if (task.expectOutputAbsent && new RegExp(task.expectOutputAbsent, "m").test(run.stdout + run.stderr)) {
+        problems.push(`la salida no debería contener /${task.expectOutputAbsent}/`);
+      }
     }
 
     const pass = problems.length === 0;
