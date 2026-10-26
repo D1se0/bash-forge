@@ -1,0 +1,20 @@
+{
+  "name": "bash-forge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Learn Bash scripting, for real: web terminal + Ubuntu sandbox + validated lessons.",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "docs-site"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  }
+}
