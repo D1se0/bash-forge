@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# bashforge — CLI del proyecto: levanta el stack, genera lecciones y comprueba el entorno.
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+WEB_PORT="${WEB_PORT:-8080}"
+SANDBOX_PORT="${SANDBOX_PORT:-8010}"
+
+usage() {
+  cat <<'EOF'
+Uso: bashforge <comando>
+
+  dev            Arranca el stack completo con docker compose Up (web :8080).
+  down           Para y limpia el stack de docker.
+  lessons        (Re)genera el currículum en packages/lessons/lessons/.
+  check          Ejecuta typecheck + build de todos los workspaces.
+  list           Lista lecciones disponibles (requiere sandbox arriba).
+  verify <id>    Verifica una lección: GET /api/lessons/:id y muestra la validación.
+  help           Esta ayuda.
+EOF
+}
+
+ensure_secrets() {
+  if [[ ! -f "$DIR/docker/.env" ]]; then
+    cp "$DIR/docker/.env.example" "$DIR/docker/.env"
+    echo "· docker/.env creado desde plantilla"
+  fi
+}
+
+cmd_dev() {
+  ensure_secrets
+  echo "· levantando sandbox + web 🐳"
+  docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env" up --build -d
+  echo "· listo: http://localhost:$WEB_PORT (terminal + lecciones)"
+}
+
+cmd_down() {
+  docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env" down --volumes
+  echo "· stack parado y volúmenes limpiados"
+}
+
+cmd_lessons() {
+  (cd "$DIR/packages/lessons" && node generator.mjs)
+}
+
+cmd_check() {
+  for ws in packages/shared apps/sandbox-server apps/web; do
+    echo "· typecheck $ws"
+    (cd "$DIR/$ws" && npx tsc --noEmit -p tsconfig.json)
+  done
+  echo "· build sandbox"
+  (cd "$DIR/apps/sandbox-server" && npm run build)
+  echo "· build web"
+  (cd "$DIR/apps/web" && npm run build)
+  echo "✔ todo en verde"
+}
+
+cmd_list() {
+  curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" | tr -d '[],"' | tr ',' '\n' | sed '/^$/d'
+}
+
+cmd_verify() {
+  local id="${1:-}"
+  [[ -z "$id" ]] && { echo "falta id de lección"; exit 1; }
+  curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons/$id" | head -c 2000; echo
+}
+
+case "${1:-help}" in
+  dev) cmd_dev ;;
+  down) cmd_down ;;
+  lessons) cmd_lessons ;;
+  check) cmd_check ;;
+  list) cmd_list ;;
+  verify) shift; cmd_verify "$@" ;;
+  help|--help|-h) usage ;;
+  *) echo "comando desconocido: $1"; usage; exit 1;;
+esac
