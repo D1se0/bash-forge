@@ -1,0 +1,31 @@
+{
+  "name": "@bashforge/sandbox-server",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "description": "Sandbox server: WS terminals (node-pty), session pool and lesson checker",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.21.2",
+    "yaml": "^2.6.1",
+    "ws": "^8.18.3"
+  },
+  "optionalDependencies": {
+    "node-pty": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.15.29",
+    "@types/ws": "^8.18.1",
+    "esbuild": "^0.25.5",
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
+  },
+  "scripts": {
+    "build": "esbuild src/index.ts --platform=node --format=cjs --bundle --external:node-pty --outfile=dist/server.cjs --log-level=warning",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/server.cjs",
+    "dev": "esbuild src/index.ts --platform=node --format=cjs --bundle --external:node-pty --outfile=dist/server.cjs --log-level=warning && node dist/server.cjs",
+    "test": "vitest run"
+  }
+}
