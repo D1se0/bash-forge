@@ -1,0 +1,29 @@
+id: lvl3-reto-flujo
+title: "Reto · Control libre: tus propias reglas"
+level: 3
+kind: challenge
+xp: 35
+estimated_minutes: 12
+prerequisites:
+  - lvl3-for-cstyle
+tags:
+  - reto
+objective: "Armar tu mini programa de flujo: while, for y condición del flag."
+files_to_create:
+  - regulador.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: plain
+      message: bash regulador.sh 2 imprime 'pulso 2','pulso 1','grácolo fin'
+      cmd: bash regulador.sh 2
+      expectOutput: pulso 2\npulso 1\ngrácolo fin
+    - name: con-voz
+      message: con --voz imprime '¡COMANDO RECIBIDO!🏪' tras cada pulso
+      cmd: bash regulador.sh 2 --voz
+      expectOutput: ¡COMANDO RECIBIDO!
+    - name: fin-unico
+      message: la línea 'grácolo fin' se imprime UNA vez (bash regulador.sh 3)
+      cmd: bash regulador.sh 3
+      expectOutputAbsent: grácolo fin\ngrácolo fin

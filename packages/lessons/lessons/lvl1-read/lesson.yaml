@@ -1,0 +1,26 @@
+id: lvl1-read
+title: "read: preguntar al usuario (y secretos)"
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites:
+  - lvl1-at-vs-ast
+tags:
+  - entrada
+objective: Leer teclado con -p, ocultar con -s, limitar con -n, -t.
+files_to_create:
+  - pregunta.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: nombre-leido
+      message: leyendo 'Iris' responde 'Ahora te llamas Iris'
+      cmd: printf 'Iris\n' | bash pregunta.sh
+      expectOutput: ^Ahora te llamas Iris$
+    - name: usa-read-p
+      message: pregunta.sh usa read -p/-rp
+      expectFileContains:
+        path: pregunta.sh
+        regex: read\s+.*-r?p

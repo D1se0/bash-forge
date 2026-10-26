@@ -1,0 +1,22 @@
+id: lvl8-sha
+title: "Integridad: sha256sum básico"
+level: 8
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl8-buscar-archivos
+tags:
+  - seguridad
+objective: Fichar un fichero y comparar el hash para saber si cambió.
+files_to_create:
+  - ficha.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: hash
+      message: ficha.sh imprime solo el hash (64 chars hex)
+      cmd: bash ficha.sh level0.mjs
+      expectExit: 0
+      expectOutput: "[0-9a-f]{4,}"

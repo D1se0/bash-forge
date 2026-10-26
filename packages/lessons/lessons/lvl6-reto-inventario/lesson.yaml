@@ -1,0 +1,29 @@
+id: lvl6-reto-inventario
+title: Reto · Mini inventario con grep y cut
+level: 6
+kind: lesson
+xp: 35
+estimated_minutes: 15
+prerequisites:
+  - lvl6-exit-codes
+tags:
+  - reto
+  - filtrado
+objective: Componer múltiples comandos con pipes.
+files_to_create:
+  - stock.csv
+  - inventario.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: cantidad
+      message: inventario.sh de un articulo devuelve su número
+      cmd: bash inventario.sh destornillador
+      expectExit: 0
+      expectOutput: "[0-9]"
+    - name: cero-si-no
+      message: artículo que no existe imprime 0
+      cmd: bash inventario.sh unicornio
+      expectExit: 0
+      expectOutput: ^0$

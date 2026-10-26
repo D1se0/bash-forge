@@ -1,0 +1,29 @@
+id: lvl1-boss-herrero
+title: Boss Fight · El Ayudante de Herrero
+level: 1
+kind: boss
+xp: 70
+estimated_minutes: 12
+prerequisites:
+  - lvl1-reto-gastro
+tags:
+  - boss
+objective: "Examen de nivel 1: variables, args, defaults y comillas todo junto."
+files_to_create:
+  - sello.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: con-arg
+      message: "bash sello.sh venta imprime 'Sello: venta'"
+      cmd: env -u ROTULO bash sello.sh venta
+      expectOutput: "^Sello: venta$"
+    - name: con-entorno
+      message: "con ROTULO=pani imprime 'Sello: pani'"
+      cmd: ROTULO=pani bash sello.sh
+      expectOutput: "^Sello: pani$"
+    - name: sin-nada
+      message: "sin arg ni entorno imprime 'Sello: sin marca'"
+      cmd: env -u ROTULO bash sello.sh
+      expectOutput: "^Sello: sin marca$"

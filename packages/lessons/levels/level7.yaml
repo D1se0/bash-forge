@@ -1,0 +1,187 @@
+level: 7
+lessons:
+  - id: lvl7-comillas
+    title: "Comillas dobles, simples y escapes"
+    level: 7
+    xp: 25
+    minutes: 10
+    tags: ["strings"]
+    objective: "Controlar exactamente qué expande Bash y qué no."
+    files: ["archivo.sh"]
+    theory: |
+      `'literal'` no expande NADA, `$var` dentro sí expande. `\"` saca una comilla dentro de dobles. Reglas no negociables si vas a citar defesa.
+    exercise: |
+      Ejecuta `archivo.sh` que con $1 imprima lo que lo que le llegó QUOTEADO manualmente (sin eval): siempre `'valor: X'`.
+    errors:
+      - Usar backticks en vez de escalar cmd: buena opción pero igual expone problemas de anidación.
+    tasks:
+      - name: literal
+        message: "valor: hola"
+        cmd: bash archivo.sh hola
+        expectOutput: "valor: hola"
+        expectExit: 0
+
+  - id: lvl7-subshell
+    title: "Subshells y ámbito"
+    level: 7
+    xp: 30
+    minutes: 10
+    tags: ["variables"]
+    objective: "Gestionado por encerrado en () vs {}."
+    files: ["ambito.sh"]
+    theory: |
+      `( cmd )` crea un subshell y las var de dentro NO salen fuera. `{ cmd; }` es un grupo, ejecuta en el shell actual.
+    exercise: |
+      Crea `ambito.sh` que ponga `x=interior` dentro de un `( )` y despues muestre `$x` desde fuera, quedando vacío: imprime `fuera: `.
+    errors:
+      - Usar ( ) pensando que es como {}: cambia vreta al shell exterior.
+    tasks:
+      - name: subshell
+        message: "fuera: (y vacío después)"
+        cmd: bash ambito.sh
+        expectOutput: "^fuera: ?$"
+        expectExit: 0
+
+  - id: lvl7-eval
+    title: "eval y sus peligros"
+    level: 7
+    xp: 30
+    minutes: 10
+    tags: ["control"]
+    objective: "Entender cuándo vale la pena y cuando es una trampa."
+    files: ["señal.sh"]
+    theory: |
+      `eval "comando"` vuelve a pasar la línea por el parser. Sirve para ejecutar comandos compuestos cuando guardas el texto.
+    exercise: |
+      Crea `señal.sh` que construya el texto `echo ejecutado por eval` y luego lo ejecute con eval.
+    errors:
+      - eval con input del usuario: el código puede inyectar lo que sea. Solo usa eval sobre texto de confianza.
+    tasks:
+      - name: eval
+        message: "señal.sh imprime ejecutado por eval"
+        cmd: bash señal.sh
+        expectOutput: "^ejecutado por eval$"
+        expectExit: 0
+
+  - id: lvl7-traps
+    title: "traps: reaccionar a señales"
+    level: 7
+    xp: 35
+    minutes: 12
+    tags: ["control"]
+    objective: "Ejecutar código al salir, al recivr INT o al recevoir TERM."
+    files: ["atrapa.sh"]
+    theory: |
+      `trap 'cmd' EXIT` lo ejecuta al finalizar el script; `trap 'cmd' INT` cuando llegue Ctrl+C.
+    exercise: |
+      Crea `atrapa.sh` que registre un trap EXIT que imprima `limpieza al final`.
+    errors:
+      - Pon todas las Señales con el mismo trap y ver como el Ctrl+C se queda colado: usa si es necesario SEÑAL por SEÑAL.
+    tasks:
+      - name: exit-trap
+        message: "atrapa.sh imprime limpieza al final al acabarse"
+        cmd: bash atrapa.sh
+        expectOutput: "limpieza al final"
+        expectExit: 0
+
+  - id: lvl7-recursividad
+    title: "Recursividad con funciones"
+    level: 7
+    xp: 35
+    minutes: 15
+    tags: ["funciones"]
+    objective: "Llamadas a la misma función siempres paradas por un caso base."
+    files: ["factorial.sh"]
+    theory: |
+      La recursión en bash SÍ existe. Clave: caso base claro. Si te olvidas, el stack explota.
+    exercise: |
+      Crea `factorial.sh <n>` que imprima el factorial de n con recursión.
+    errors:
+      - No parar el caso base: se cae con too many open files (se come el stack).
+    tasks:
+      - name: fact-5
+        message: "factorial.sh 5 imprime 120"
+        cmd: bash factorial.sh 5
+        expectOutput: "^120$"
+        expectExit: 0
+      - name: fact-0
+        message: "factorial de 0 es 1"
+        cmd: bash factorial.sh 0
+        expectOutput: "^1$"
+        expectExit: 0
+
+  - id: lvl7-arrays
+    title: "Arrays indexados"
+    level: 7
+    xp: 35
+    minutes: 12
+    tags: ["variables"]
+    objective: "Declarar, leer, recorrer y medir un array."
+    files: ["lista.sh"]
+    theory: |
+      `arr=(a b c)`; `${arr[0]}` el primero; `${arr[@]}` todos; `${#arr[@]}` el tamaño; `for x in "${arr[@]}"`.
+    exercise: |
+      Crea `lista.sh` que declare un array con 3 frutas y recorra imprimiendo `fruta: X`.
+    errors:
+      - Olvidar comillas en "${arr[@]}": las palabras múltiples se rompen por espacio.
+      - "Usar corchetes vac\u00edos creyendo que es como el \u00faltimo \u00edndice: en bash moderno es ${arr[@]: -1}."
+    tasks:
+      - name: frutas
+        message: "lista.sh imprime fruta: X por cada una"
+        cmd: bash lista.sh
+        expectOutput: "fruta: "
+        expectExit: 0
+
+  - id: lvl7-reto-palabras
+    title: "Reto · Contador de palabras únicas"
+    level: 7
+    xp: 40
+    minutes: 18
+    tags: ["reto", "filtrado"]
+    objective: "Contar palabras únicas y las más repetidas."
+    files: ["texto.txt", "unicas.sh"]
+    theory: |
+      for por palabras de un fichero con $(cat texto.txt) + arrays asociativos declare -A.
+    exercise: |
+      Se creó `texto.txt`. Crea `unicas.sh` que imprima el NÚMERO de palabras únicas en mayúsculo todas.
+    errors:
+      - Olvidar -A en declare: sin asociar los índices son siempre los mismos.
+    tasks:
+      - name: unicas
+        message: "unicas.sh imprime el número de palabras únicas"
+        cmd: bash unicas.sh
+        expectOutput: "[0-9]+"
+        expectExit: 0
+
+  - id: lvl7-boss
+    title: "Boss Fight · La Máquina de Procesamiento"
+    level: 7
+    xp: 70
+    minutes: 18
+    tags: ["boss"]
+    objective: "Examen total de pipes, arrays, traps y recursividad."
+    files: ["entrada.csv", "procesa.sh"]
+    theory: |
+      Combina todo lo del nivel: subshells, arrays, traps, recursión, filtrado con grep/cut/sort.
+    exercise: |
+      Se creó `entrada.csv` de formato nombre,puntos. Crea `procesa.sh <cmd>` con:
+      - "`sumar: suma las columnas de puntos e imprime total: N.`"
+      - "`mayor: imprime la línea con más puntos.`"
+      - "Uso si el comando es desconocido, exit 1."
+    errors:
+      - Cargar todo el fichero a un array con $(cat ...) pierde las líneas: usa mapfile o while read.
+    tasks:
+      - name: sumar
+        message: "procesa.sh sumar imprime total: N"
+        cmd: bash procesa.sh sumar
+        expectOutput: "total: [0-9]+"
+        expectExit: 0
+      - name: mayor
+        message: "procesa.sh mayor imprime la línea ganadora"
+        cmd: bash procesa.sh mayor
+        expectExit: 0
+      - name: desconocido
+        message: "comando desconocido: Uso y exit 1"
+        cmd: bash procesa.sh ninguno
+        expectOutput: "Uso"
+        expectExit: 1

@@ -1,0 +1,22 @@
+id: lvl8-temporales
+title: mktemp y ficheros temporales
+level: 8
+kind: lesson
+xp: 25
+estimated_minutes: 10
+prerequisites:
+  - lvl8-sha
+tags:
+  - paths
+objective: Crear ficheros temporales únicos con trap EXIT y limpieza.
+files_to_create:
+  - temporal.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: temporal
+      message: temporal.sh imprime hola temporales
+      cmd: bash temporal.sh
+      expectExit: 0
+      expectOutput: ^hola temporales$

@@ -1,0 +1,308 @@
+level: 5
+lessons:
+  - id: lvl5-cadena-comparar
+    title: "Comparar cadenas con test"
+    level: 5
+    xp: 20
+    minutes: 8
+    tags: ["strings"]
+    objective: "Comparar igualdad, orden y vacío sin sed ni grep."
+    files: ["cadena.sh"]
+    theory: |
+      `test` compara como texto. `[ "$a" = "$b" ]` NO es "vale igual" sino exactamente el mismo contenido byte a byte.
+    exercise: |
+      Crea `cadena.sh` que pida dos argumentos:
+      - "`cadena.sh hola hola` imprime iguales."
+      - "`cadena.sh hola chau` imprime distintas."
+      - "sin args imprime faltan e imprime también el uso."
+    errors:
+      - Olvidar las comillas alrededor de las variables: si $a vale varios tokens, test explota.
+      - Usar == dentro de [ : funciona SOLO en bash, no en sh genérico ni POSIX puro.
+      - "Escribir [ \"$a\" = \"$b\" ] pegado: `[` necesita espacios a ambos lados."
+    tasks:
+      - name: iguales
+        message: "cadena.sh hola hola imprime iguales"
+        cmd: bash cadena.sh hola hola
+        expectOutput: "^iguales$"
+        expectExit: 0
+      - name: distintas
+        message: "cadena.sh hola chau imprime distintas"
+        cmd: bash cadena.sh hola chau
+        expectOutput: "^distintas$"
+        expectExit: 0
+    tasksExtra: []
+    checklist:
+      - name: uso-sin-args
+        message: "sin args imprime faltan"
+        cmd: bash cadena.sh
+        expectOutput: "^faltan$"
+        expectExit: 1
+
+  - id: lvl5-cadena-vacia
+    title: "Detectar si una cadena está vacía"
+    level: 5
+    xp: 20
+    minutes: 7
+    tags: ["strings"]
+    objective: "Controlar que lleguemos a hacer algo con lo que NO llegó."
+    files: ["vacio.sh"]
+    theory: |
+      `[ -z "$v" ]` es TRUE si $v está vacío o sin setear; `[ -n "$v" ]` es TRUE si tiene al menos un carácter.
+    exercise: |
+      Crea `vacio.sh` que reciba $1 y:
+      - "`vacío: imprime vacío y exit 1.`"
+      - "`no vacío: imprime ok y exit 0.`"
+    errors:
+      - Comprobar [ $v ] pensado que vale 0 como vacío: NO, que es length>0. Usa -z/-n.
+    tasks:
+      - name: vacio
+        message: "sin args imprime vacío"
+        cmd: bash vacio.sh
+        expectOutput: "^vacío$"
+        expectExit: 1
+      - name: ok
+        message: "con hola imprime ok"
+        cmd: bash vacio.sh hola
+        expectOutput: "^ok$"
+        expectExit: 0
+
+  - id: lvl5-elif
+    title: "elif, else y orden de evaluación"
+    level: 5
+    xp: 25
+    minutes: 9
+    tags: ["condicionales"]
+    objective: "Encadenar varias condiciones y pensar el orden."
+    files: ["escalera.sh"]
+    theory: |
+      Solo se dedica a la primera condición que sale TRUE; nunca hacia abajo si ya entró por arriba. El orden importa.
+    exercise: |
+      Crea `escalera.sh <edad>`:
+      - "menos de 13: niño."
+      - "13 a 17: adolescente."
+      - "18 a 64: adulto."
+      - "65+: senior."
+      - "no legible o sin args: error y exit 1."
+    errors:
+      - Poner la condición más general arriba: el resto se convierte en código muerto.
+      - "Usar `and` en vez de `&&` o `-a`: Bash NO entiende `and`/`or`."
+    tasks:
+      - name: nino
+        message: "edad 7 imprime niño"
+        cmd: bash escalera.sh 7
+        expectOutput: "^niño$"
+        expectExit: 0
+      - name: senior
+        message: "edad 70 imprime senior"
+        cmd: bash escalera.sh 70
+        expectOutput: "^senior$"
+        expectExit: 0
+      - name: error
+        message: "sin args imprime error y exit 1"
+        cmd: bash escalera.sh
+        expectOutput: "^error$"
+        expectExit: 1
+
+  - id: lvl5-case-numbers
+    title: "case para rangos numéricos"
+    level: 5
+    xp: 25
+    minutes: 9
+    tags: ["case"]
+    objective: "Elegir ramas por comparaciones numéricas con case/glob."
+    files: ["rango.sh"]
+    theory: |
+      case compara con glob, no con aritmética. Para rangos numéricos: usar expansión [n-m] como alfabético hace trampas. Alternativa honesta: usar if/elif con -lt -ge.
+    exercise: |
+      Crea `rango.sh` que pida dos argumentos: min y max, y luego imprima si $1 (tercero) está dentro:
+      - "dentro si min <= x <= max: imprime dentro."
+      - "fuera si no: fuera."
+    errors:
+      - Comparar como texto: 10 viene antes que 9. Si importa el ORDEN, usa -lt/-ge.
+    tasks:
+      - name: dentro
+        message: "1 10 5 imprime dentro"
+        cmd: bash rango.sh 1 10 5
+        expectOutput: "^dentro$"
+        expectExit: 0
+      - name: fuera
+        message: "1 10 20 imprime fuera"
+        cmd: bash rango.sh 1 10 20
+        expectOutput: "^fuera$"
+        expectExit: 0
+
+  - id: lvl5-aritmetica
+    title: "Aritmética: (( )) y $[ ]"
+    level: 5
+    xp: 25
+    minutes: 10
+    tags: ["aritmetica"]
+    objective: "Sumar, restar, multiplicar y comparar números enteros."
+    files: ["mate.sh"]
+    theory: |
+      `(( 5+3 ))` imprime el resultado; `(( $a > $b ))` es un test numérico. `$(( ))` se usa dentro de texto: "total: $(( $x + 1 ))".
+    exercise: |
+      Crea `mate.sh` que con $1 y $2 imprima tres líneas: suma, producto y el mayor.
+    errors:
+      - Usar [ para comparar (cadenas) en vez de (( )) para números.
+      - Olvidar $(()) alrededor si imprimes como texto.
+    tasks:
+      - name: suma
+        message: "7 3 imprime 10"
+        cmd: bash mate.sh 7 3
+        expectOutput: "10"
+        expectExit: 0
+      - name: mayor
+        message: "7 3 imprime 7 como mayor"
+        cmd: bash mate.sh 7 3
+        expectOutput: "7"
+        expectExit: 0
+
+  - id: lvl5-loops-for
+    title: "for sobre listas y secuencias"
+    level: 5
+    xp: 30
+    minutes: 10
+    tags: ["loops"]
+    objective: "Recorrer elementos fijos y generados por seq."
+    files: ["recorrido.sh"]
+    theory: |
+      `for x in a b c; do echo $x; done` te deja iterar sobre espacio-separado. Con seq generas listas de números.
+    exercise: |
+      Crea `recorrido.sh` que reciba un número N y encadene N líneas `paso i` para i=1 .. N.
+    errors:
+      - Usar for i in $(seq 1 N) si N NO llega, o está vacío: explota. Comprueba antes.
+      - "Olvidar el ; despu\u00e9s de la lista: `for i in $(seq 1 10) do` NO compila."
+    tasks:
+      - name: pasos
+        message: "4 imprime paso 1..4"
+        cmd: bash recorrido.sh 4
+        expectOutput: "paso 4"
+        expectExit: 0
+      - name: nada-si-cero
+        message: "0 no imprime nada"
+        cmd: bash recorrido.sh 0
+        expectExit: 0
+
+  - id: lvl5-case
+    title: "case con comodines * y ?"
+    level: 5
+    xp: 25
+    minutes: 8
+    tags: ["case"]
+    objective: "Repasar la primera vez case de nivel 1 y hacer matching con glob completo."
+    files: ["figura.sh"]
+    theory: |
+      Uso de `?` para un solo carácter (exactamente uno), `*` para any amount of chars (0 o más). case detiene en la primera rama que matchea.
+    exercise: |
+      Crea `figura.sh` que reciba $1 y diga el tipo:
+      - "`3 lados: triángulo.`"
+      - "`4 lados: cuadrilátero.`"
+      - "cualquier otro número: otra."
+    errors:
+      - Usar * sin ;;
+      - Olvidar la condición default *) para TODO lo que no matcheó antes.
+    tasks:
+      - name: triangulo
+        message: "3 imprime triángulo"
+        cmd: bash figura.sh 3
+        expectOutput: "^triángulo$"
+        expectExit: 0
+      - name: cuadrilatero
+        message: "4 imprime cuadrilátero"
+        cmd: bash figura.sh 4
+        expectOutput: "^cuadrilátero$"
+        expectExit: 0
+      - name: otra
+        message: "9 imprime otra"
+        cmd: bash figura.sh 9
+        expectOutput: "^otra$"
+        expectExit: 0
+
+  - id: lvl5-bucles-anidados
+    title: "Bucles anidados y tablitas"
+    level: 5
+    xp: 30
+    minutes: 12
+    tags: ["loops"]
+    objective: "Construir tablas multiplicativas con dos for juntos."
+    files: ["tabla.sh"]
+    theory: |
+      Un for dentro de otro. Recuerda que el `; done` cierra el interno antes de que el externo continúe.
+    exercise: |
+      Crea `tabla.sh <n>` que imprima `n x j = resultado` para j=1..10.
+    errors:
+      - Olvidar Tab semánticamente dentro del for: no importa sintaxis, pero el ; sí.
+    tasks:
+      - name: tabla-5
+        message: "5 imprime 5 x 10 = 50"
+        cmd: bash tabla.sh 5
+        expectOutput: "5 x 10 = 50"
+        expectExit: 0
+
+  - id: lvl5-reto-contador
+    title: "Reto · Contador de números pares"
+    level: 5
+    xp: 35
+    minutes: 15
+    tags: ["reto", "loops"]
+    objective: "Cuenta últimos y aplican modulo y condicionales combinados."
+    files: ["pares.sh"]
+    theory: |
+      Combina for, $(( )) y if para comparar con modulo.
+    exercise: |
+      Crea `pares.sh <n>` que imprima:
+      - "`cuantos pares hay en 1..n (exclusivo de n, es decir 1..n-1).`"
+    errors:
+      - Olvidar el exclusivo: para el rango 1..n-1 NO incluís n.
+    tasks:
+      - name: pares-10
+        message: "10 dice que hay 4 pares (2,4,6,8)"
+        cmd: bash pares.sh 10
+        expectOutput: "4"
+        expectExit: 0
+      - name: pares-11
+        message: "11 dice que hay 5"
+        cmd: bash pares.sh 11
+        expectOutput: "5"
+        expectExit: 0
+
+  - id: lvl5-boss
+    title: "Boss Fight · El Maestro del Taller"
+    level: 5
+    xp: 60
+    minutes: 15
+    tags: ["boss"]
+    objective: "Examen de strings, condicionales, case y aritmética."
+    files: ["boss5.sh"]
+    theory: |
+      Órden: test de cadenas, comparaciones numéricas, case, for, cond dusk. Sin awk, sin python.
+    exercise: |
+      Crea `boss5.sh <cmd> <args…>` que implemente tres comandos:
+      - "`len: imprime la longitud de $2.`"
+      - "`mayor <a> <b>: imprime el mayor de a y b.`"
+      - "`tabla <n>: imprime n x j = r para j=1..5.`"
+      - "uyea unknown: usage y exit 1."
+    errors:
+      - "Olvidar `$#` check: nos pueden llamar sin nada."
+    tasks:
+      - name: len
+        message: "len hola dice 4"
+        cmd: bash boss5.sh len hola
+        expectOutput: "4"
+        expectExit: 0
+      - name: mayor
+        message: "mayor 7 3 dice 7"
+        cmd: bash boss5.sh mayor 7 3
+        expectOutput: "7"
+        expectExit: 0
+      - name: tabla
+        message: "tabla 4 incluye 4 x 3 = 12"
+        cmd: bash boss5.sh tabla 4
+        expectOutput: "4 x 3 = 12"
+        expectExit: 0
+      - name: desconocido
+        message: "cmd desconocido imprime Uso y sale 1"
+        cmd: bash boss5.sh popo
+        expectOutput: "Uso"
+        expectExit: 1

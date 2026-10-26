@@ -1,0 +1,26 @@
+id: lvl5-loops-for
+title: for sobre listas y secuencias
+level: 5
+kind: lesson
+xp: 30
+estimated_minutes: 10
+prerequisites:
+  - lvl5-aritmetica
+tags:
+  - loops
+objective: Recorrer elementos fijos y generados por seq.
+files_to_create:
+  - recorrido.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: pasos
+      message: 4 imprime paso 1..4
+      cmd: bash recorrido.sh 4
+      expectExit: 0
+      expectOutput: paso 4
+    - name: nada-si-cero
+      message: 0 no imprime nada
+      cmd: bash recorrido.sh 0
+      expectExit: 0

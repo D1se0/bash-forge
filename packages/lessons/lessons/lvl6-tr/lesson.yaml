@@ -1,0 +1,22 @@
+id: lvl6-tr
+title: "tr: clonar, cortar y cambiar carácteres"
+level: 6
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl6-tee
+tags:
+  - filtrado
+objective: Convertir a mayúsculas/minúsculas, borrar, condensar.
+files_to_create:
+  - transformar.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: upper
+      message: transformar.sh hola imprime HOLA
+      cmd: bash transformar.sh hola
+      expectExit: 0
+      expectOutput: ^HOLA$

@@ -1,0 +1,22 @@
+id: lvl3-for-cstyle
+title: "for estilo C: la interfaz de los algoritmófilos"
+level: 3
+kind: lesson
+xp: 20
+estimated_minutes: 6
+prerequisites:
+  - lvl3-select
+tags:
+  - bucles
+  - aritmetica
+objective: Usar for (( i=0; i<n; i++ )) como en la escuela de C.
+files_to_create:
+  - cuenta3.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: veces-cinco
+      message: imprime time 0..time 4
+      cmd: bash cuenta3.sh
+      expectOutput: ^time 0$\n^time 1$\n^time 4$

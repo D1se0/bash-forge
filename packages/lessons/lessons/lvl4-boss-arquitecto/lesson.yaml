@@ -1,0 +1,31 @@
+id: lvl4-boss-arquitecto
+title: Boss Fight · El Arquitecto de la Fragua
+level: 4
+kind: boss
+xp: 85
+estimated_minutes: 15
+prerequisites:
+  - lvl4-reto-paquete
+tags:
+  - boss
+objective: "Examen de estructuras: funciones + getopts + usage + exit codes."
+files_to_create:
+  - fragua.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: uso-sin-args
+      message: sin args imprime Uso y sale 1
+      cmd: bash fragua.sh
+      expectExit: 1
+      expectOutput: "^Uso: fragua\\.sh"
+    - name: ayuda-h
+      message: con -h imprime Uso y sale 0
+      cmd: bash fragua.sh -h
+      expectExit: 0
+      expectOutput: "^Uso: fragua\\.sh"
+    - name: forjando
+      message: con -n acero imprime 'forjando para acero'
+      cmd: bash fragua.sh -n acero
+      expectOutput: ^forjando para acero$

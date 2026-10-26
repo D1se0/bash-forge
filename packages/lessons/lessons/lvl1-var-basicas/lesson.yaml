@@ -1,0 +1,25 @@
+id: lvl1-var-basicas
+title: "Variables: crear, usar y proteger"
+level: 1
+kind: lesson
+xp: 15
+estimated_minutes: 6
+prerequisites: []
+tags:
+  - variables
+objective: Asignar variables sin espacios, leerlas con $ y congelarlas con readonly.
+files_to_create:
+  - vars.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: salida-correcta
+      message: bash vars.sh imprime la frase exacta
+      cmd: bash vars.sh
+      expectOutput: ^Mi herramienta es Bash, versi[oó]n 5$
+    - name: usa-readonly
+      message: vars.sh usa readonly sobre version
+      expectFileContains:
+        path: vars.sh
+        regex: readonly\s+version\b

@@ -1,0 +1,32 @@
+id: lvl5-case
+title: case con comodines * y ?
+level: 5
+kind: lesson
+xp: 25
+estimated_minutes: 8
+prerequisites:
+  - lvl5-loops-for
+tags:
+  - case
+objective: Repasar la primera vez case de nivel 1 y hacer matching con glob completo.
+files_to_create:
+  - figura.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: triangulo
+      message: 3 imprime triángulo
+      cmd: bash figura.sh 3
+      expectExit: 0
+      expectOutput: ^triángulo$
+    - name: cuadrilatero
+      message: 4 imprime cuadrilátero
+      cmd: bash figura.sh 4
+      expectExit: 0
+      expectOutput: ^cuadrilátero$
+    - name: otra
+      message: 9 imprime otra
+      cmd: bash figura.sh 9
+      expectExit: 0
+      expectOutput: ^otra$

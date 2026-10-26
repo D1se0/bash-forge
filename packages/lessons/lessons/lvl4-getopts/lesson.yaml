@@ -1,0 +1,26 @@
+id: lvl4-getopts
+title: "getopts: opciones pro (-a -b valor)"
+level: 4
+kind: lesson
+xp: 25
+estimated_minutes: 10
+prerequisites:
+  - lvl4-source-librerias
+tags:
+  - estructura
+  - cli
+objective: Parsear opciones y flags de forma estándar en un script CLI.
+files_to_create:
+  - cli.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: option-b-valor
+      message: "bash cli.sh -n zafra imprime 'nombre: zafra'"
+      cmd: bash cli.sh -n zafra
+      expectOutput: "^nombre: zafra$"
+    - name: option-f
+      message: "bash cli.sh -f imprime 'furia: sí'"
+      cmd: bash cli.sh -f
+      expectOutput: "^furia: sí$"

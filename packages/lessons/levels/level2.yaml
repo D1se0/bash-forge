@@ -1,0 +1,459 @@
+lessons:
+  - id: lvl2-if-test
+    title: "if / elif / else: la decisión básica"
+    level: 2
+    xp: 20
+    minutes: 7
+    tags: [condicionales]
+    objective: Escribir un if correcto con test y entender el exit code como verdad.
+    files: [decision.sh]
+    theory: |
+      En Bash **el exit code decide**: 0 = verdadero. Un `if` sale por ahí:
+
+      ```bash
+      if cmd; then
+        …        # exit 0
+      elif otra; then
+        …
+      else
+        …
+      fi
+      ```
+
+      `test expr` y su atajo `[ expr ]` devuelven 0/1 según la expresión. `[[ ]]` (Bash puro) es más guay: sin splitting, `=~` regex, y `&&/||` dentro. ¿La regla de oro? `[[ ]]` para todo moderno.
+    example: |
+      ```bash
+      $ edad=18
+      $ if [ "$edad" -ge 18 ]; then echo adulto; fi
+      adulto
+      ```
+    exercise: |
+      Crea `decision.sh` que lea un número como $1:
+      - Si es ≥ 10: `Cifras: al menos dos`
+      - Si es < 10: `Cifras: solo una`
+    errors:
+      - "`[ $edad -ge 18 ]` sin comillas falla si edad está vacía: usa `[[ ]]` o comillas."
+      - "Poner `then` al final de un `if` con punto y coma en otra línea: el `fi` cierra, pero un `then` perdido rompe el parseo."
+    quiz:
+      question: ¿Qué devuelve un `if` cuando su condición es falsa y hay else?
+      answer: Se ejecuta el bloque else; el exit code es el del último comando ejecutado (el else).
+    tasks:
+      - name: al-menos-dos
+        message: "con 10 imprime 'Cifras: al menos dos'"
+        cmd: bash decision.sh 10
+        expectOutput: "^Cifras: al menos dos$"
+      - name: solo-una
+        message: "con 3 imprime 'Cifras: solo una'"
+        cmd: bash decision.sh 3
+        expectOutput: "^Cifras: solo una$"
+    hints:
+      - "`if [ \"$1\" -ge 10 ]; then … elif … else … fi`"
+      - "`[[ \"$1\" -ge 10 ]]` funciona igual (y con cadenas vacías)."
+    solution: |
+      #!/usr/bin/env bash
+      if [ "$1" -ge 10 ]; then
+        echo "Cifras: al menos dos"
+      else
+        echo "Cifras: solo una"
+      fi
+
+  - id: lvl2-ops-ficheros
+    title: "La tabla de ficheros: -e -f -d -r -w -x -s y la cuña"
+    level: 2
+    xp: 25
+    minutes: 8
+    tags: [condicionales, ficheros]
+    objective: Distinguir existencia, tipo, permisos y tamaño con test de ficheros.
+    files: []
+    theory: |
+      Los operadores de fichero más usados (el `[ -f fichero ]` ¡con espacios!):
+
+      - `-e`: existe · `-f`: fichero regular · `-d`: directorio
+      - `-r/-w/-x`: te legible/escribible/ejecutable
+      - `-s`: existe y **no vacío**
+      - `-L`/`-h`: symlink · `-N`: modificado después de leído
+      - `f1 -nt f2`: más nuevo que · `-ot`: más viejo · `-ef`: mismo i-nodo
+
+      Hay más (`-b -c -p -S -O -G -k -u -g -t`), pero estos ocho arrancan el 95 % de los scripts.
+    example: |
+      ```bash
+      $ if [ -f "./vars.sh" ]; then echo "es fichero"; fi
+      $ if [ -d "/home" ]; then echo "es dir"; fi
+      $ ls > vacio.txt  # no lo produce; test cómo -s da false
+      ```
+    exercise: |
+      Crea en tu home `es-papel.sh` que reciba $1 y decida en ESTE orden:
+      - si es dir: `CARPETA`
+      - si es fichero vacío: `PAPEL EN BLANCO`
+      - si es fichero con contenido: `FICHERO`
+      - si no existe: `FANTASMA`
+    errors:
+      - "`[-f x]` sin espacios: Bash cree que es una firma `[-f]`… error."
+      - "Poner `[[ -f ]]` en sh POSIX (dash): no existe; aquí estamos en bash, puedes usarlo."
+    quiz:
+      question: "¿Diferencia entre `-e x` y `-f x`?"
+      answer: "-e = existe lo que sea (dir, fichero, enlace); -f = es fichero regular."
+    tasks:
+      - name: fichero-con-contenido
+        message: "sobre un fichero con datos imprime 'FICHERO'"
+        cmd: "bash es-papel.sh saludo.txt &>/dev/null; test -f saludo.txt && bash es-papel.sh vars.sh"
+        expectOutput: "^FICHERO$"
+      - name: directorio
+        message: "sobre un directorio imprime 'CARPETA'"
+        cmd: bash es-papel.sh workspace
+        expectOutput: "^CARPETA$"
+      - name: fantasma
+        message: "sobre algo inexistente imprime 'FANTASMA'"
+        cmd: bash es-papel.sh nada-de-nadie.txt
+        expectOutput: "^FANTASMA$"
+    hints:
+      - "`[[ -d $1 ]]` antes que `[[ -f $1 ]]`: el orden DECIDE."
+      - "`[[ -s $1 ]]` es «no vacío»; vacío es `! -s`."
+      - "El fantasma es el else final."
+    solution: |
+      #!/usr/bin/env bash
+      if [ -d "$1" ]; then
+        echo "CARPETA"
+      elif [ ! -s "$1" ] && [ -f "$1" ]; then
+        echo "PAPEL EN BLANCO"
+      elif [ -s "$1" ]; then
+        echo "FICHERO"
+      else
+        echo "FANTASMA"
+      fi
+
+  - id: lvl2-cadenas-logicos
+    title: "Cadenas y lógica: -z -n, = !=, =~ y ! && ||"
+    level: 2
+    xp: 25
+    minutes: 7
+    tags: [condicionales]
+    objective: Comparar cadenas vacías, iguales, por regex y combinar condiciones.
+    files: [cadenas.sh]
+    theory: |
+      Con `[[ ]]`:
+
+      - `-z x`: vacía · `-n x`: no vacía
+      - `x = "y"` or `x == "y"`: iguales · `x != "y"`: distintas
+      - `x == a*`: casar con globs (a, abc…)
+      - `x =~ ^[0-9]+$`: regex
+      - Lógica: `!`, `&&`, `||` UNIDOS: `[[ -n $x && $x =~ ^[0-9]+$ ]]`
+    example: |
+      ```bash
+      $ x=""
+      $ [[ -z $x ]] && echo vacia
+      vacia
+      $ [[ 42 =~ ^[0-9]+$ ]] && echo numero
+      numero
+      $ [[ tarro == ta* ]] && echo glob
+      glob
+      ```
+    exercise: |
+      Crea `cadenas.sh` con $1:
+      - vacío → `VACIO`
+      - solo dígitos → `DIGITOS`
+      - otra cosa → `OTRO`
+    errors:
+      - "`[[ $1 =~ \"\\\\d+\" ]]`: en bash `=~` usa ERE con \\\\d NO estándar; usa [0-9]."
+      - "Usar `<`/`>` de cadenas dentro de `[ ]` clásico: ambiguas con redirecciones."
+    quiz:
+      question: ¿`-z` y `-n` se excluyen mutuamente?
+      answer: "Sí, para una misma cadena: -z cierta cuando -n es falsa y viceversa."
+    tasks:
+      - name: vacio
+        message: "sin arg imprime 'VACIO'"
+        cmd: bash cadenas.sh
+        expectOutput: "^VACIO$"
+      - name: digitos
+        message: "con 42 imprime 'DIGITOS'"
+        cmd: bash cadenas.sh 42
+        expectOutput: "^DIGITOS$"
+      - name: otro
+        message: "con 'tail' imprime 'OTRO'"
+        cmd: bash cadenas.sh tail
+        expectOutput: "^OTRO$"
+    hints:
+      - "`[[ -z $1 ]]` para el vacío."
+      - "`[[ $1 =~ ^[0-9]+$ ]]` para dígitos."
+      - "Ordénalas: vacío PRIMERO (si no, el else también sirve)."
+    solution: |
+      #!/usr/bin/env bash
+      if [[ -z "${1:-}" ]]; then
+        echo "VACIO"
+      elif [[ "$1" =~ ^[0-9]+$ ]]; then
+        echo "DIGITOS"
+      else
+        echo "OTRO"
+      fi
+
+  - id: lvl2-numericos-aritmetica
+    title: "Números: -eq -ne -lt -le -gt -ge y (())"
+    level: 2
+    xp: 25
+    minutes: 7
+    tags: [condicionales, aritmetica]
+    objective: Comparar números y hacer aritmética con ((contexto)).
+    files: [numeros.sh]
+    theory: |
+      Los comparadores numéricos iban por test clásicos: `-eq` igual, `-ne` no igual, `-lt` menor que, `-le` menor/igual, `-gt` mayor, `-ge` mayor/igual.
+
+      Con doble paréntesis `(( ))`:
+      - `(( a > b ))` compara números
+      - `(( x + 1 ))` evalúa expresión y devuelve exit 0 si el RESULTADO ≠ 0.
+      - `x=$(( x + 1 ))` asigna.
+
+      Regla: `[ ]` para shell puro, `(( ))` para aritmética y readabilidad.
+    example: |
+      ```bash
+      $ (( 1 + 1 == 2 )) && echo cierto
+      cierto
+      $ x=5; x=$(( x * 2 )); echo $x
+      10
+      ```
+    exercise: |
+      Crea `numeros.sh` con $1 (un nº): imprime `PAR` si (( n % 2 == 0 )) y `IMPAR` en caso contrario. Debe aceptar negative ACtitud: `-3` es IMPAR.
+    errors:
+      - "`(( n % 2 ))` sin ==: devuelve el REMAINder como exit code; para CLARIDAD mejor `(( n % 2 == 0 ))`."
+      - "Comparar cadenas con -gt: usa [[ ]] para cadenas o (( )) para números."
+    quiz:
+      question: ¿Cuándo escoges (( )) sobre [ ]?
+      answer: Para aritmética y compáraos numéricos; [ ] para tests POSIX clásico y ficheros.
+    tasks:
+      - name: par
+        message: "bash numeros.sh 4 imprime 'PAR'"
+        cmd: bash numeros.sh 4
+        expectOutput: "^PAR$"
+      - name: impar-negativo
+        message: "bash numeros.sh -3 imprime 'IMPAR'"
+        cmd: bash numeros.sh -3
+        expectOutput: "^IMPAR$"
+    hints:
+      - "`if (( n % 2 == 0 )); then echo PAR; else echo IMPAR; fi`"
+      - "Con $1 como número: `n=$(( $1 ))` o directo dentro de (( ))."
+    solution: |
+      #!/usr/bin/env bash
+      n="$1"
+      if (( n % 2 == 0 )); then
+        echo "PAR"
+      else
+        echo "IMPAR"
+      fi
+
+  - id: lvl2-case-esac
+    title: "case: mascarillas y cadenas completas"
+    level: 2
+    xp: 25
+    minutes: 8
+    tags: [condicionales]
+    objective: Femuscular decisiones con case, patrones y sus ;;&.
+    files: [mascarilla.sh]
+    theory: |
+      `case` seleccione una rama entre muchas por patrón:
+
+      ```bash
+      case $1 in
+        start)     echo "we initiate" ;;
+        stop)      echo "shutdown" ;;
+        reset|cr)  echo "restore" ;;
+        *)         echo "no supe: $1" ;;
+      esac
+      ```
+
+      Cierre de rama: `;;` (termina). `;&` SIGUE con la siguiente rama (caída). `;;&` busca más patrones compatibles. Patrones: globs (`s*`, `[0-9]`).
+    example: |
+      ```bash
+      $ bash mascarilla.sh reset
+      restore
+      $ bash mascarilla.sh ay
+      no supe: ay
+      ```
+    exercise: |
+      Crea `mascarilla.sh` que decidas:
+      - "start|iniciar` → `Arrancar"
+      - "stop|apagar` → `Detener"
+      - `restart` → `Arrancar` y `Detener` AMBOS (en orden Detener luego Arrancar; usa ;;&)
+      - otra → `Soplo?`
+    errors:
+      - Olvidar `;;` al final de cada rama abre el parseo infernal.
+      - "`*)` sin comodín último (comodín catch-all ausente) hace que case NO vaya al else."
+    quiz:
+      question: "Casi todo el mundo pregunta: ¿qué hacen ;;& y ;& ?"
+      answer: ";& continúa con el cuerpo inmediatamente siguiente; ;;& salta a probar más patrones y ejecuta si hacen match."
+    tasks:
+      - name: iniciar
+        message: "bash mascarilla.sh iniciar imprime 'Arrancar'"
+        cmd: bash mascarilla.sh iniciar
+        expectOutput: "^Arrancar$"
+      - name: restart-doble
+        message: "bash mascarilla.sh restart imprime 'Detener' Y 'Arrancar'"
+        cmd: bash mascarilla.sh restart
+        expectOutput: "Detener\\nArrancar"
+    hints:
+      - "`case $1 in start|iniciar) echo Arrancar ;; stop|apagar) echo Detener ;; …`"
+      - "restart: usa los dos brasos y `;;&` en la primera elección, o <= escribe la salida después de ambas ramas."
+    solution: |
+      #!/usr/bin/env bash
+      case "$1" in
+        start|iniciar)
+          echo "Arrancar" ;;
+        stop|apagar)
+          echo "Detener" ;;
+        restart)
+          echo "Detener"
+          echo "Arrancar" ;;
+        *)
+          echo "Soplo?" ;;
+      esac
+
+  - id: lvl2-lab-operador
+    title: "Laboratorio interactivo · Operator Lab"
+    level: 2
+    kind: challenge
+    xp: 40
+    minutes: 10
+    tags: [lab, condicionales]
+    objective: Confeccionar tu propio tester de operadores de test sobre ficheros.
+    files: [operador.sh]
+    theory: |
+      El **Operator Lab** no es una lección más: es un banco de pruebas que TÚ te construyes. En un script, el primer arg es el operador y el segundo el fichero; decide el resultado del test:
+      - si es fichero: `-e -f -d -r -w -x -s -L`
+      - si son dos ficheros: `-nt -ot -ef`
+      - si son cadenas/números: los cortos que sabes.
+
+      Out: ` OPERADOR: [es|no] true ` — el test comprueba la forma ES-X y dice si el operador verificó.
+    example: |
+      ```bash
+      $ bash operador.sh -f vars.sh
+      -f: sí true
+      $ bash operador.sh -d vars.sh
+      -d: no true (no es dir)
+      ```
+    exercise: |
+      Crea `operador.sh` que soporte al menos `-e -f -d -s` sobre $2, imprimiendo:
+      `TEST $1: ok|no`. Si no conoce el operador: `TEST $1: desconocido`.
+    errors:
+      - Confundir el ORDEN de los args en el operador dentro del if.
+      - "Pasar un `[[ -$1 $2 ]]` dinámico: no se puede evaluar así; usa un case."
+    quiz:
+      question: "¿Cómo se puede hacer un -f dentro de un case?"
+      answer: "`case $1 in -f) [[ -f $2 ]] && exit 0 || exit 1 ;;` … o con eval en una mera (¡cuidado!)."
+    tasks:
+      - name: lab-f
+        message: "bash operador.sh -f vars.sh imprime 'TEST -f: ok'"
+        cmd: bash operador.sh -f vars.sh
+        expectOutput: "^TEST -f: ok$"
+      - name: lab-d
+        message: "bash operador.sh -d workspace imprime 'TEST -d: ok'"
+        cmd: bash operador.sh -d workspace
+        expectOutput: "^TEST -d: ok$"
+      - name: lab-desconocido
+        message: "bash operador.sh -Z fichero imprime 'TEST -Z: desconocido'"
+        cmd: bash operador.sh -Z workspace
+        expectOutput: "^TEST -Z: desconocido$"
+    hints:
+      - Un case $1 con las 4 ramas de operadores conocido y el *) como desconocido.
+      - >-
+          Dentro de cada rama, resuelve la comparación con test y devuelve ok o no
+          tal como pide el test.
+      - Para el desconocido el exit NO importa: solo el texto.
+    solution: |
+      #!/usr/bin/env bash
+      case "$1" in
+        -e) [[ -e $2 ]] && echo "TEST -e: ok" || echo "TEST -e: no" ;;
+        -f) [[ -f $2 ]] && echo "TEST -f: ok" || echo "TEST -f: no" ;;
+        -d) [[ -d $2 ]] && echo "TEST -d: ok" || echo "TEST -d: no" ;;
+        -s) [[ -s $2 ]] && echo "TEST -s: ok" || echo "TEST -s: no" ;;
+        *) echo "TEST $1: desconocido" ;;
+      esac
+
+  - id: lvl2-reto-menorca
+    title: "Reto · Quién tiene menos"
+    level: 2
+    kind: challenge
+    xp: 35
+    minutes: 12
+    tags: [reto]
+    objective: Comparar dos números pasados y decidir quién es el menor.
+    files: [menor.sh]
+    theory: |
+      Un reto binario: la misma comparación con distinta ropa. Sin teoría nueva. Tienes numéricos -lt, (( )) y cadenas. ¡Tú decides!
+    exercise: |
+      Crea `menor.sh` con $1 y $2 (enteros): imprime `menor: N` con el menor. Si son iguales, `iguales`.
+    errors:
+      - Olvidar el caso igual: compara sólo < y > y te quedas sin else.
+      - Usar cadenas con <... ¡sin comillas dentro de [[ ]] funciona pero -lt NO!
+    quiz:
+      question: "¿(7 < 12) con (( )) y -lt con [ ] significan?"
+      answer: Lo mismo (comparación entera). Escoge EFFIICIENCIA UNA SOLA vez.
+    tasks:
+      - name: sun-menor
+        message: "bash menor.sh 2 9 imprime 'menor: 2'"
+        cmd: bash menor.sh 2 9
+        expectOutput: "^menor: 2$"
+      - name: otros-menor
+        message: "bash menor.sh 9 2 imprime 'menor: 2'"
+        cmd: bash menor.sh 9 2
+        expectOutput: "^menor: 2$"
+      - name: iguales
+        message: "bash menor.sh 3 3 imprime 'iguales'"
+        cmd: bash menor.sh 3 3
+        expectOutput: "^iguales$"
+    hints:
+      - "Tres ramas: `[[ $1 -lt $2 ]]`, `[[ $1 -gt $2 ]]`, `igual`."
+      - Con negativos tambien funciona: -5 es menor que 2.
+    solution: |
+      #!/usr/bin/env bash
+      if (( $1 < $2 )); then
+        echo "menor: $1"
+      elif (( $1 > $2 )); then
+        echo "menor: $2"
+      else
+        echo "iguales"
+      fi
+
+  - id: lvl2-boss-portero
+    title: "Boss Fight · El Portero de Herrero"
+    level: 2
+    kind: boss
+    xp: 75
+    minutes: 15
+    tags: [boss]
+    objective: "Examen máximo de condicionales: ficheros, cadenas y números juntos."
+    files: [portero.sh]
+    theory: |
+      Un Boss de condicionales mezcla TODO tu arsenal: controles de ficheros, comparaciones de cadenas y números. Y sin pistas. Cinco args, cinco exámenes.
+    exercise: |
+      Crea `portero.sh` con args: 1) comando `check`, 2) fichero, 3) modo `{dir|emp|obj|no-existe}` y 4) umbral num...
+      Simplifiquemos al fénix: el portero reta:
+      1. Con `check fichero`: imprima `FICHERO` si es fichero con contenido, `VACIO` si está vacío, `DIR` si carpeta, `NO` si no existe.
+    errors:
+      - "El orden decide: primero el inexistente, luego -d, luego -s, luego vacío."
+      - La flag -s (no vacío) NO es lo mismo que la flag -f.
+    tasks:
+      - name: boss-fichero
+        message: "con vars.sh imprime 'FICHERO'"
+        cmd: bash portero.sh check vars.sh
+        expectOutput: "^FICHERO$"
+      - name: boss-dir
+        message: "con workspace imprime 'DIR'"
+        cmd: bash portero.sh check workspace
+        expectOutput: "^DIR$"
+      - name: boss-no
+        message: "con lo-que-no-hay imprime 'NO'"
+        cmd: bash portero.sh check lo-que-no-hay.txt
+        expectOutput: "^NO$"
+    hints:
+      - "`[[ -e $2 ]] && … elastico… otherwise NO.`"
+      - Orden: inexistente primero, luego -d, luego -s, luego vacío.
+      - "Los nombres en salidas deben ser EXACTOS (mayúsculas)."
+    solution: |
+      #!/usr/bin/env bash
+      if [[ ! -e $2 ]]; then
+        echo "NO"
+      elif [[ -d $2 ]]; then
+        echo "DIR"
+      elif [[ -s $2 ]]; then
+        echo "FICHERO"
+      else
+        echo "VACIO"
+      fi

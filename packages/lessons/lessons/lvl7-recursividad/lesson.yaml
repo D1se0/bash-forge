@@ -1,0 +1,27 @@
+id: lvl7-recursividad
+title: Recursividad con funciones
+level: 7
+kind: lesson
+xp: 35
+estimated_minutes: 15
+prerequisites:
+  - lvl7-traps
+tags:
+  - funciones
+objective: Llamadas a la misma función siempres paradas por un caso base.
+files_to_create:
+  - factorial.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: fact-5
+      message: factorial.sh 5 imprime 120
+      cmd: bash factorial.sh 5
+      expectExit: 0
+      expectOutput: ^120$
+    - name: fact-0
+      message: factorial de 0 es 1
+      cmd: bash factorial.sh 0
+      expectExit: 0
+      expectOutput: ^1$

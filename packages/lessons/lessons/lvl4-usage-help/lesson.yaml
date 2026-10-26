@@ -1,0 +1,27 @@
+id: lvl4-usage-help
+title: usage() y --help automático
+level: 4
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites:
+  - lvl4-getopts
+tags:
+  - estructura
+  - cli
+objective: Construir la cara amable de tu CLI.
+files_to_create:
+  - ayudacli.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: sin-args
+      message: bash ayudacli.sh imprime la línea Uso
+      cmd: bash ayudacli.sh
+      expectOutput: "^Uso: ayudacli"
+    - name: flag-h
+      message: bash ayudacli.sh -h imprime la línea Uso Y sale 0
+      cmd: bash ayudacli.sh -h
+      expectExit: 0
+      expectOutput: "^Uso: ayudacli"

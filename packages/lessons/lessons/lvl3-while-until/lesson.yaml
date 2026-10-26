@@ -1,0 +1,21 @@
+id: lvl3-while-until
+title: "while y until: persistencia hasta que salga"
+level: 3
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites:
+  - lvl3-brace-expansion
+tags:
+  - bucles
+objective: Ejecutar mientras (while) o hasta (until) una condición.
+files_to_create:
+  - cuenta.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: cuenta-descendente
+      message: imprime 3, 2, 1 y despega ya
+      cmd: bash cuenta.sh
+      expectOutput: ^3\n2\n1\ndespega$

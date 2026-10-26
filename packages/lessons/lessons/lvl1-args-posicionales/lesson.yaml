@@ -1,0 +1,29 @@
+id: lvl1-args-posicionales
+title: "Argumentos: $1…$9, ${10}, $# y el resto"
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl1-comillas
+tags:
+  - argumentos
+objective: Leer parámetros posicionales y contarlos, dependiendo de la décima.
+files_to_create:
+  - params.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: cuenta-tres
+      message: bash params.sh a b c imprime 'Recibidas 3 piezas'
+      cmd: bash params.sh a b c
+      expectOutput: ^Recibidas 3 piezas$
+    - name: pieza-listado
+      message: con 'alfa' imprime 'Pieza 1 → alfa'
+      cmd: bash params.sh alfa
+      expectOutput: ^Pieza 1 → alfa$
+    - name: diez-y-mas
+      message: con 11 args el 11º 'once' sale como 'Pieza 11 → once'
+      cmd: bash params.sh a b c d e f g h i j once
+      expectOutput: ^Pieza 11 → once$

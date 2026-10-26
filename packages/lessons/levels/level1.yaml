@@ -1,0 +1,626 @@
+lessons:
+  - id: lvl1-var-basicas
+    title: "Variables: crear, usar y proteger"
+    level: 1
+    xp: 15
+    minutes: 6
+    tags: [variables]
+    objective: Asignar variables sin espacios, leerlas con $ y congelarlas con readonly.
+    files: [vars.sh]
+    theory: |
+      Una variable es un nombre que guarda texto: `nombre=Alicia` (**sin espacios** alrededor del `=`) y se lee con `$nombre` o `${nombre}`. Las comillas dobles expanden; las simples, no.
+
+      `readonly` congela la variable (revalorar falla como ERROR). `unset` borra.
+    example: |
+      ```bash
+      $ metal=cobre
+      $ echo "Fundimos $metal"
+      Fundimos cobre
+      $ metal=oro
+      bash: metal: readonly variable   # si la habrás congelado con readonly
+      ```
+    exercise: |
+      Escribe `vars.sh` que defina `herramienta=Bash` y `version=5`, marque `readonly version`, e imprima exactamente `Mi herramienta es Bash, versión 5`.
+    errors:
+      - "`herramienta = Bash` con espacios: Bash piensa que estás ejecutando el comando `herramienta`."
+      - "Olvidar `readonly` delante del nombre: la primera asignación no requiere nada más."
+    quiz:
+      question: ¿Qué imprime `echo '$alerta'` si alerta = FUEGO?
+      answer: "`$alerta`: las comillas simples evitan la expansión."
+    tasks:
+      - name: salida-correcta
+        message: bash vars.sh imprime la frase exacta
+        cmd: bash vars.sh
+        expectOutput: "^Mi herramienta es Bash, versi[oó]n 5$"
+      - name: usa-readonly
+        message: vars.sh usa readonly sobre version
+        expectFileContains: { path: vars.sh, regex: "readonly\\s+version\\b" }
+    hints:
+      - "`herramienta=Bash`, `version=5` (sin espacios alrededor de =)."
+      - "`readonly version` en la segunda asignación."
+      - "`echo \"Mi herramienta es $herramienta, versión $version\"`."
+    solution: |
+      #!/usr/bin/env bash
+      herramienta=Bash
+      version=5
+      readonly version
+      echo "Mi herramienta es $herramienta, versión $version"
+
+  - id: lvl1-comillas
+    title: "Comillas: simples, dobles y $'…'"
+    level: 1
+    xp: 20
+    minutes: 8
+    tags: [comillas]
+    objective: Elegir la comilla correcta y entender word-splitting.
+    files: [quotes.sh]
+    theory: |
+      Tres maneras de acotar texto:
+
+      1. **Dobles** `"…"`: expanden `$var`, `$(cmd)`.
+      2. **Simples** `'…'`: TODo literal, ni $ ni escapes.
+      3. `$'…'`: ANSI string que interpreta escapes (`a\tb` es a+tab).
+
+      Cuidado con el **word-splitting**: `$frase` sin comillas se rompe en palabras; `"$frase"` viaja entera.
+    example: |
+      ```bash
+      $ frase="hola que tal"
+      $ printf '%s\n' $frase       # tres líneas!
+      $ printf '%s\n' "$frase"     # una sola
+      $ echo $'tab\there'
+      tab	here
+      ```
+    exercise: |
+      Crea `quotes.sh` que defina `frase="cinco seis siete"` e imprima:
+      1. `expandida: cinco seis siete`
+      2. `literal: $frase` (¿cómo haces un `$frase` literal?)
+    errors:
+      - "`echo \"literal: '$frase'\"` FALSA: sigue expandiendo (el \"$\" no está escapado)."
+      - "Confundir `$'frase'` (ANSI) con `'$frase'` (literal)."
+    quiz:
+      question: ¿Cómo imprimes un tab ENTRE palabras?
+      answer: Con `echo $'a\tb'` o `printf 'a\tb\n'` (el `$'…'` interpreta escapes).
+    tasks:
+      - name: expandida
+        message: "imprime 'expandida: cinco seis siete'"
+        cmd: bash quotes.sh
+        expectOutput: "^expandida: cinco seis siete$"
+      - name: literal
+        message: "imprime 'literal: $frase' sin expandir"
+        cmd: bash quotes.sh
+        expectOutput: "literal: \\$frase"
+    hints:
+      - "Dobles expanden, simples no. Dos echos, cada uno con su tipo."
+      - "Para el literal: `echo 'literal: $frase'`."
+      - "El output debe tener esas dos líneas."
+    solution: |
+      #!/usr/bin/env bash
+      frase="cinco seis siete"
+      echo "expandida: $frase"
+      echo 'literal: $frase'
+
+  - id: lvl1-args-posicionales
+    title: "Argumentos: $1…$9, ${10}, $# y el resto"
+    level: 1
+    xp: 20
+    minutes: 8
+    tags: [argumentos]
+    objective: Leer parámetros posicionales y contarlos, dependiendo de la décima.
+    files: [params.sh]
+    theory: |
+      Llamas `script a b c` y dentro: `$1=a`, `$2=b`… `$#` es el número. Desde el 10 la zona NO general: `$10` se lee como `$1`+"0"; usa `${10}`. `$0` es el nombre del script.
+    example: |
+      ```bash
+      $ cat params.sh
+      #!/usr/bin/env bash
+      echo "Total: $#"
+      if [ $# -ge 10 ]; then echo "Décimo: ${10}"; fi
+      ```
+    exercise: |
+      Crea `params.sh` que diga `Recibidas N piezas` ($#) e imprima `Pieza 1 → <valor>` por cada arg. Debe responder 10+ args también (¡${11} con llaves!).
+    errors:
+      - "Usar `$10` para el décimo: Bash lo lee como `$1` concatenado con \"0\"."
+      - Generar el último arg con `$$#`: inventado y roto.
+    quiz:
+      question: Con ./params alfa beta, ¿qué vale $1 y $#?
+      answer: "$1 = alfa; $# = 2. ($0 sigue siendo el nombre del script.)"
+    tasks:
+      - name: cuenta-tres
+        message: "bash params.sh a b c imprime 'Recibidas 3 piezas'"
+        cmd: bash params.sh a b c
+        expectOutput: "^Recibidas 3 piezas$"
+      - name: pieza-listado
+        message: "con 'alfa' imprime 'Pieza 1 → alfa'"
+        cmd: bash params.sh alfa
+        expectOutput: "^Pieza 1 → alfa$"
+      - name: diez-y-mas
+        message: "con 11 args el 11º 'once' sale como 'Pieza 11 → once'"
+        cmd: bash params.sh a b c d e f g h i j once
+        expectOutput: "^Pieza 11 → once$"
+    hints:
+      - "`echo \"Recibidas $# piezas\"` para el contador."
+      - "Para cada arg: `echo \"Pieza 1 → $1\"` o un bucle (nivel 3: lo verás)."
+      - "Para i≥10 usa `${11}` con llaves."
+    solution: |
+      #!/usr/bin/env bash
+      echo "Recibidas $# piezas"
+      n=1
+      for arg in "$@"; do echo "Pieza $n → $arg"; n=$((n+1)); done
+
+  - id: lvl1-at-vs-ast
+    title: "La demo visual: \"$@\" vs $*"
+    level: 1
+    xp: 20
+    minutes: 8
+    tags: [argumentos, comillas]
+    objective: Ver con variables y espacios por qué \"$@\" conserva y $* funde.
+    files: [args.sh]
+    theory: | 
+      Ambos expanden todos los argumetos, pero:
+
+      - `"$@"`: cada uno es una pieza aparte (los espacios internos se preservan).
+      - `$*` (o `"$*"`): todos en una cadena, pegados por el primer char de `IFS` (normalmente espacio).
+
+      Es la diferencia más importante para escribir scripts sin el síndrome de espacios rotos.
+    example: |
+      ```bash
+      $ cat args.sh
+      #!/usr/bin/env bash
+      printf 'arg: %s\n' "$@"
+      echo "fusión: $*"
+      $ bash args.sh "uno solo" dos
+      arg: uno solo
+      arg: dos
+      fusión: uno solo dos
+      ```
+    exercise: |
+      Crea `args.sh` que imprima una línea por argumento (`arg: <valor>`) y una última `fusión: <todos pegados>`. Verificala con `bash args.sh "dos palabras" tres`.
+    errors:
+      - "`printf '%s' \"$@\"` sin \\n: los args salen pegados sin saltos."
+      - "`for arg in $@` sin comillas: el splitting rompe los espacios."
+    quiz:
+      question: ¿Qué imprime printf con formato líneaxN y los argumentos «a b» y «c»?
+      answer: 'Dos líneas: «a b» y «c». La comilla de "$@" preserva los cadens con espacios.'
+    tasks:
+      - name: un-arg-por-linea
+        message: "con 'dos palabras' y 'tres' imprime dos líneas 'arg: …'"
+        cmd: bash args.sh "dos palabras" tres
+        expectOutput: "arg: dos palabras\\narg: tres"
+      - name: fusion
+        message: "la última línea es 'fusión: dos palabras tres'"
+        cmd: bash args.sh "dos palabras" tres
+        expectOutput: "^fusión: dos palabras tres$"
+    hints:
+      - "`printf 'arg: %s\\n' \"$@\"` repite por cada arg."
+      - "`echo \"fusión: $*\"` funde con espacios."
+      - "Verifica con `bash args.sh \"dos palabras\" tres`."
+    solution: |
+      #!/usr/bin/env bash
+      printf 'arg: %s\n' "$@"
+      echo "fusión: $*"
+
+  - id: lvl1-read
+    title: "read: preguntar al usuario (y secretos)"
+    level: 1
+    xp: 20
+    minutes: 7
+    tags: [entrada]
+    objective: Leer teclado con -p, ocultar con -s, limitar con -n, -t.
+    files: [pregunta.sh]
+    theory: |
+      `read var` lee una línea de stdin. Banderas:
+
+      - `-p "prompt"`: pregunta en una línea.
+      - `-s`: silencio (contraseñas).
+      - `-n 3`: corto con 3 pulsaciones.
+      - `-t 5`: timeout de 5 s (falla con exit ≠ 0 si nadie responde).
+      - `read -ra arr <<< "a b c"` trocea en un array.
+
+      Nota: `read` devuelve 0 si leyó, ≠ 0 si EOF o timeout.
+    example: |
+      ```bash
+      $ read -rp "¿Orgullo? " org
+      ¿Orgullo? mucho
+      $ read -sp "PIN: " pin
+      PIN:        # oculto
+      ```
+    exercise: |
+      Crea `pregunta.sh` que pregunte `¿Nombre? ` y responda `Ahora te llamas <nombre>`. El test lo llama con `printf 'Iris\n' | bash pregunta.sh`.
+    errors:
+      - "Saltar la comilla del mensaje y usar echo para el prompt: se pinta en stdout CON pipa y COUNTA (sirve para el test)."
+      - "Usar la variable sin comillas: `echo Te llamo $nombre` rompe si entra con espacios."
+    quiz:
+      question: "`read` devuelve 1: ¿qué ha pasado?"
+      answer: "EOF o timeout: stdin cerrado sin línea (o expiró tu -t)."
+    tasks:
+      - name: nombre-leido
+        message: leyendo 'Iris' responde 'Ahora te llamas Iris'
+        cmd: printf 'Iris\n' | bash pregunta.sh
+        expectOutput: "^Ahora te llamas Iris$"
+      - name: usa-read-p
+        message: pregunta.sh usa read -p/-rp
+        expectFileContains: { path: pregunta.sh, regex: "read\\s+.*-r?p" }
+    hints:
+      - "`read -rp \"¿Nombre? \" nombre`"
+      - "`echo \"Ahora te llamas $nombre\"`"
+      - "El pipe debe producir la línea exacta."
+    solution: |
+      #!/usr/bin/env bash
+      read -rp "¿Nombre? " nombre
+      echo "Ahora te llamas $nombre"
+
+  - id: lvl1-especiales
+    title: "Especiales: $?, $$, $!, shift y set --"
+    level: 1
+    xp: 20
+    minutes: 8
+    tags: [argumentos, procesos]
+    objective: Leer exit code, PID y reconstruir la lista con shift/set --.
+    files: [especiales.sh]
+    theory: |
+      Parámetros especiales:
+
+      - `$?`: código de salida del último comando.
+      - `$$`: PID del shell actual.
+      - `$!`: PID del último trabajo en background.
+      - `shift`: descarta $1 y corre el resto ($2 pasa a $1).
+      - `set -- a b c`: reconstruye la lista de args desde cero.
+    example: |
+      ```bash
+      $ bash especiales.sh uno dos tres
+      Tenía 3
+      tras shift: 2 — ahora dos
+      exit de false: 1
+      ```
+    exercise: |
+      Con 3 args: imprime `Tenía 3`, después `shift` e imprime `Me quedo con 2: <nuevo $1> <nuevo $2>`, y NO confundir con un `echo "false devolvió 1"` tras un `false`.
+    errors:
+      - "Beber de `$?` tras un `echo`: has perdido el código original."
+      - "`shift 4` con menos de 4 args: la lista queda vacía."
+    quiz:
+      question: ¿Qué vale $1 tras `shift 2` con args a b c?
+      answer: c (descarta los dos primeros args).
+    tasks:
+      - name: total-3
+        message: "bash especiales.sh x y z imprime 'Tenía 3'"
+        cmd: bash especiales.sh x y z
+        expectOutput: "^Tenía 3$"
+      - name: shift-cambios
+        message: "tras shift queda 'Me quedo con 2: y z'"
+        cmd: bash especiales.sh x y z
+        expectOutput: "^Me quedo con 2: y z$"
+      - name: exit-false
+        message: "aparece 'false devolvió 1'"
+        cmd: bash especiales.sh x y z
+        expectOutput: "^false devolvió 1$"
+    hints:
+      - "`echo \"Tenía $#\"` → `shift` → `echo \"Me quedo con $#: $1 $2\"`."
+      - "Conserva `$#` en una variable ANTES del shift si lo necesitas luego."
+      - "`false; echo \"false devolvió $?\"`"
+    solution: |
+      #!/usr/bin/env bash
+      echo "Tenía $#"
+      shift
+      echo "Me quedo con $#: $1 $2"
+      false
+      echo "false devolvió $?"
+
+  - id: lvl1-defaults-expansion
+    title: "Valores por defecto: ${var:-x}, :=, :? y :+"
+    level: 1
+    xp: 20
+    minutes: 8
+    tags: [expansion]
+    objective: Dar valores por defecto, exigir variables y detectarlas sin if.
+    files: [fallback.sh]
+    theory: |
+      La expansión de parámetros soluciona lógica sin if:
+
+      - `${VAR:-defecto}`: defecto si VAR está vacía o sin definir.
+      - `${VAR:=defecto}`: defecto Y asigna a VAR.
+      - `${VAR:?mensaje}`: aborta el script con mensaje si VAR falta.
+      - `${VAR:+algo}`: solo si VAR TIENE valor, devuelve algo.
+    example: |
+      ```bash
+      $ cat fallback.sh
+      #!/usr/bin/env bash
+      echo "Puerto: ${PORT:-8080}"
+      $ bash fallback.sh
+      Puerto: 8080
+      $ PORT=9000 bash fallback.sh
+      Puerto: 9000
+      ```
+    exercise: |
+      Crea `fallback.sh` que imprima `Saludo: ${SALUDO:-hola por defecto}`. El test lo prueba de dos modos: sin variable y con `SALUDO=coder`.
+    errors:
+      - "`$VAR:-defecto` sin las llaves: `$VAR` expande primero y «:-defecto» queda literal."
+      - "Confundir `:-` (si falta) con `:+` (si está)."
+    quiz:
+      question: "¿Qué hace ${NOMBRE:?falta NOMBRE}?"
+      answer: "Aborta el script con exit 1 mostrando «falta NOMBRE» si NOMBRE no vale nada."
+    tasks:
+      - name: defeto
+        message: "sin SALUDO imprime 'Saludo: hola por defecto'"
+        cmd: "env -u SALUDO bash fallback.sh"
+        expectOutput: "^Saludo: hola por defecto$"
+      - name: personalizado
+        message: "con SALUDO=coder imprime 'Saludo: coder'"
+        cmd: "SALUDO=coder bash fallback.sh"
+        expectOutput: "^Saludo: coder$"
+    hints:
+      - "`${SALUDO:-hola por defecto}` EN las llaves."
+      - "El mismo ${SALUDO:-…} cubre el caso del env personalizado."
+      - "Prueba los dos modos antes de Comprobar."
+    solution: |
+      #!/usr/bin/env bash
+      echo "Saludo: ${SALUDO:-hola por defecto}"
+
+  - id: lvl1-longitud-substrings
+    title: "Longitud y troceado: ${#var}, ${var:0:3}, ${var#…}"
+    level: 1
+    xp: 20
+    minutes: 8
+    tags: [expansion]
+    objective: Medir cadenas y cortar por delante/detrás sin awk.
+    files: [troceado.sh]
+    theory: |
+      Expansión para medir y cortar:
+
+      - `${#var}`: longitud.
+      - `${var:2:3}`: rodaja desde el carácter 2, largo 3 (0-indexed).
+      - `${var#patrón}`: borra del **inicio** lo casante más corto.
+      - `${var##patrón}`: la versión más larga (grands).
+      - `${var%patrón}` / `${var%%patrón}`: lo mismo por el **final**.
+    example: |
+      ```bash
+      $ nombre="bashforge.sh"
+      $ echo ${#nombre}       # 12
+      $ echo ${nombre:0:4}    # bash
+      $ echo ${nombre##*.}    # sh
+      ```
+    exercise: |
+      Con `lengua="bashforge.sh"` imprime tres líneas:
+      1. `cantidad: 12`
+      2. `comienzo: bash`
+      3. `extension: sh`
+    errors:
+      - "`$#var` sin llaves: mezcla parámetros especiales."
+      - "Confundir `#` (inicio) con `%` (final)."
+    quiz:
+      question: "Con f=a/b/c.sh, ¿qué dan ${f##*/} y ${f%/*}?"
+      answer: "c.sh (nombre del fichero) y a/b (directorio)."
+    tasks:
+      - name: longitud
+        message: "imprime 'cantidad: 12'"
+        cmd: bash troceado.sh
+        expectOutput: "^cantidad: 12$"
+      - name: prefijo
+        message: "imprime 'comienzo: bash'"
+        cmd: bash troceado.sh
+        expectOutput: "^comienzo: bash$"
+      - name: extension
+        message: "imprime 'extension: sh'"
+        cmd: bash troceado.sh
+        expectOutput: "^extension: sh$"
+    hints:
+      - "`${#lengua}` mide; `${lengua:0:4}` corta."
+      - "`${lengua##*.}` borra del inicio todo hasta el último punto."
+      - "Una sola variable y tres echos."
+    solution: |
+      #!/usr/bin/env bash
+      lengua="bashforge.sh"
+      echo "cantidad: ${#lengua}"
+      echo "comienzo: ${lengua:0:4}"
+      echo "extension: ${lengua##*.}"
+
+  - id: lvl1-export-entorno
+    title: "export y unset: el entorno que heredan tus scripts"
+    level: 1
+    xp: 20
+    minutes: 7
+    tags: [variables, entorno]
+    objective: Publicar variables al child processes y limpiarlas con unset.
+    files: [envpass.sh, hijo.sh]
+    theory: |
+      Las variables de tu shell solo viajan a los hijos si están **exportadas**.
+
+      - `export VAR=valor`: la hace heredable.
+      - `unset VAR`: la borra.
+      - Verificación: `env | grep VAR` o `printenv VAR`.
+    example: |
+      ```bash
+      $ LLAVE=cocina bash hijo.sh     # temporal ✓
+      Veo: cocina
+      $ bash hijo.sh                  # sin export, no la ve
+      Veo: nada
+      ```
+    exercise: |
+      Crea `hijo.sh` que imprima `Veo: ${LLAVE:-nada}`, y `envpass.sh` que exporte `LLAVE=emergencias` y llame a `bash hijo.sh`.
+    errors:
+      - "`export LLAVE = emergencias` con espacios: eso ejecuta 'export' con tres palabras."
+      - "Olvidar export y solo asignar en el padre: el hijo ve «nada»."
+    quiz:
+      question: "`VAR=1 bash hijo.sh` vs `export VAR; bash hijo.sh`."
+      answer: "La primera es temporaria para ese hijo; la segunda exporta para todo lo que lances después."
+    tasks:
+      - name: hijo-define
+        message: "hijo.sh sin herencia imprime 'Veo: nada'"
+        cmd: "env -u LLAVE bash hijo.sh"
+        expectOutput: "^Veo: nada$"
+      - name: padre-exporta
+        message: "envpass.sh hace que el hijo vea 'emergencias'"
+        cmd: "env -u LLAVE bash envpass.sh"
+        expectOutput: "Veo: emergencias"
+        expectOutputAbsent: "Veo: nada"
+    hints:
+      - "El hijo: `echo \"Veo: ${LLAVE:-nada}\"`."
+      - "envpass.sh: `export LLAVE=emergencias` y luego `bash hijo.sh`."
+      - "El resultado debe mostrar solo la línea emergencias."
+    solution: |
+      cat > hijo.sh <<'EOF'
+      #!/usr/bin/env bash
+      echo "Veo: ${LLAVE:-nada}"
+      EOF
+      cat > envpass.sh <<'EOF'
+      #!/usr/bin/env bash
+      export LLAVE=emergencias
+      bash hijo.sh
+      EOF
+      bash envpass.sh
+
+  - id: lvl1-reto-invertidor
+    title: "Reto · Inverción de argumentos"
+    level: 1
+    kind: challenge
+    xp: 30
+    minutes: 10
+    tags: [reto, argumentos]
+    objective: Reimprimir la lista de argumentos al revés.
+    files: [reverse.sh]
+    theory: |
+      En un reto no hay teoría nueva: combinas lo aprendido. Tools útiles: `set --` reinstala la lista de argumentos, `shift` consume, y con un `case $2` sabes cuantos hay y puedas reordenar manualmente.
+    exercise: |
+      Crea `reverse.sh` que imprima sus argumentos **en orden inverso**, con formato `rev: <arg>` por línea.  
+      Verifica con:
+      ```
+      $ bash reverse.sh a b
+      rev: b
+      rev: a
+      $ bash reverse.sh "a b" c
+      rev: c
+      rev: a b
+      ```
+    errors:
+      - Consumir la lista con shift ANTES de saber cuántos hay.
+      - Dividirse por el orden interno de $@ sin plan.
+    quiz:
+      question: "set -- c b a reconsidera qué?"
+      answer: Reinstala tu lista de args como c, b, a (es decir, al revés).
+    tasks:
+      - name: dos-args
+        message: "bash reverse.sh a b imprime 'rev: b' y 'rev: a'"
+        cmd: bash reverse.sh a b
+        expectOutput: "rev: b\nrev: a"
+      - name: space-arg
+        message: "con 'a b' y c imprime 'rev: c' y 'rev: a b'"
+        cmd: bash reverse.sh "a b" c
+        expectOutput: "rev: c\nrev: a b"
+    hints:
+      - Puedes inspeccionar $# y decidir manualmente el orden con un case.
+      - Con 2 args, reinstala la lista como segundo primero y luego imprime cada pieza con echo.
+      - La invariante es fragmentar cada arg CON COMILLAS siempre.
+    solution: |
+      cat > reverse.sh <<'EOF'
+      #!/usr/bin/env bash
+      case $# in
+        1) set -- "$1" ;;
+        2) set -- "$2" "$1" ;;
+        3) set -- "$3" "$2" "$1" ;;
+      esac
+      for a in "$@"; do echo "rev: $a"; done
+      EOF
+      bash reverse.sh a b
+
+  - id: lvl1-reto-gastro
+    title: "Reto · Contraseña camuflada"
+    level: 1
+    kind: challenge
+    xp: 35
+    minutes: 12
+    tags: [reto, entrada]
+    objective: Pedir PIN con read -s y leerlo sin dejar rastro.
+    files: [secreto.sh]
+    theory: |
+      Este reto es de disciplina de entrada: el PIN **no puede imprimirse en la terminal** antes de una comparación que derive una respuesta. Conclusión: antes `read -s`, después resultado.
+    exercise: |
+      Crea `secreto.sh` con read -s que escriba el contenido de $PIN del entorno (útil para tests, no imprime la cipher). El resultado:
+      - Si le lt PIN introducido == PIN del entorno: imprime `Acceso concedido`.
+      - Si falla lo escrito o el PIN: imprime `Acceso denegado`.
+      Testeará: `PIN=1302 printf '1302\n' | bash secreto.sh` → Acceso concedido.
+    errors:
+      - Olvidar que el input del usuario viaja por stdin aunque uses read -s (lo sices a `/dev/null` en los tests). 
+      - Imprimir el PIN por accidente (echo $PIN es fehaciente en los códigos).
+    quiz:
+      question: ¿ Qué es distinctly read -s?
+      answer: Oculta el eco del input en la terminal (le seguro, no lo muestra).
+    tasks:
+      - name: pin-uno-grant
+        message: PIN correcto → 'Acceso concedido'
+        cmd: printf '1302\n' | PIN=1302 bash secreto.sh
+        expectOutput: "^Acceso concedido$"
+      - name: pin-deny
+        message: PIN incorrecto → 'Acceso denegado'
+        cmd: printf '7777\n' | PIN=1302 bash secreto.sh
+        expectOutput: "^Acceso denegado$"
+      - name: selencioso
+        message: usa read -s (no queda rastro de la clave en la salida)
+        expectFileContains:
+          path: secreto.sh
+          regex: "read[[:space:]]+(-r)?[[:space:]]*-s"
+    hints:
+      - "Usa read -rsp con un prompt para el PIN; el -r evita sorpresas con backslash."
+      - Compara el intento con el PIN del entorno y decide entre conceder o denegar.
+      - Imprime clasificado que hagia accesos al final.
+    solution: |
+      cat > secreto.sh <<'EOF'
+      #!/usr/bin/env bash
+      read -rsp "PIN: " intent
+      echo
+      if [ "$intent" == "$PIN" ]; then
+        echo "Acceso concedido"
+      else
+        echo "Acceso denegado"
+      fi
+      EOF
+      
+
+  - id: lvl1-boss-herrero
+    title: "Boss Fight · El Ayudante de Herrero"
+    level: 1
+    kind: boss
+    xp: 70
+    minutes: 12
+    tags: [boss]
+    objective: "Examen de nivel 1: variables, args, defaults y comillas todo junto."
+    files: [sello.sh]
+    theory: |
+      Se acabó la teoría: es examen de nivel. Un `sello.sh` que se comporta de un modo u otro según lo que tenga a mano: argumento, entorno, o nada. Igual que en la vida real.
+    exercise: |
+      Crea `sello.sh` que:
+      1. Si llega $1, imprima `Sello: $1`.
+      2. Sin $1, use `ROTULO` del entorno si existe.
+      3. Si nada, imprima `Sello: sin marca`.
+    errors:
+      - Olvidar el caso sin argumento y entregar vacío.
+      - Usar $1 sin comprobar si existe: imprime una línea vacía tras el Sello.
+    tasks:
+      - name: con-arg
+        message: "bash sello.sh venta imprime 'Sello: venta'"
+        cmd: env -u ROTULO bash sello.sh venta
+        expectOutput: "^Sello: venta$"
+      - name: con-entorno
+        message: "con ROTULO=pani imprime 'Sello: pani'"
+        cmd: ROTULO=pani bash sello.sh
+        expectOutput: "^Sello: pani$"
+      - name: sin-nada
+        message: "sin arg ni entorno imprime 'Sello: sin marca'"
+        cmd: env -u ROTULO bash sello.sh
+        expectOutput: "^Sello: sin marca$"
+    hints:
+      - Tres caminos: $1 si existe, ROTULO si existe, defecto.
+      - Una expansión anidada con defaults resuelve el caso 2 y el 3 en una línea.
+      - La expansión con +x muestra si ROTULO existe sin que se expanda.
+    solution: |
+      cat > sello.sh <<'EOF'
+      #!/usr/bin/env bash
+      if [ -n "$1" ]; then
+        echo "Sello: $1"
+      elif [ -n "${ROTULO+x}" ]; then
+        echo "Sello: $ROTULO"
+      else
+        echo "Sello: sin marca"
+      fi
+      EOF
+      bash sello.sh
+      bash sello.sh venta
+

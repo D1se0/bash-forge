@@ -1,0 +1,26 @@
+id: lvl3-break-continue
+title: "break / continue: manotazos de emergencia"
+level: 3
+kind: lesson
+xp: 20
+estimated_minutes: 6
+prerequisites:
+  - lvl3-while-until
+tags:
+  - bucles
+objective: Cortar bucles temprano y saltar elementos indeseados.
+files_to_create:
+  - selectivo.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: salta-menores
+      message: con '-oculto sol STOP nada' imprime 'sol' y para
+      cmd: bash selectivo.sh -oculto sol STOP nada
+      expectOutput: ^sol$
+      expectOutputAbsent: nada
+    - name: continua-fluye
+      message: con 'a -malo b等形式 imprime 'a' y 'b'
+      cmd: bash selectivo.sh a -malo b
+      expectOutput: a\nb

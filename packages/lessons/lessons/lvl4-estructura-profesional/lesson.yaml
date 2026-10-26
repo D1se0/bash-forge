@@ -1,0 +1,32 @@
+id: lvl4-estructura-profesional
+title: Estructura de un script profesional
+level: 4
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl4-usage-help
+tags:
+  - estructura
+  - buenas-practicas
+objective: "Ordenar tu script: shebang, variables, funciones y main."
+files_to_create:
+  - beatriz.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: version-readonly
+      message: define readonly VERSION
+      expectFileContains:
+        path: beatriz.sh
+        regex: readonly\s+VERSION
+    - name: main-estructura
+      message: hay una función main que se invoca
+      expectFileContains:
+        path: beatriz.sh
+        regex: main\s*\(\)
+    - name: saluda
+      message: "bash beatriz.sh imprime 'Beatriz saluda: versión 1.0'"
+      cmd: bash beatriz.sh
+      expectOutput: "Beatriz saluda: version 1\\.0"

@@ -1,0 +1,27 @@
+id: lvl5-cadena-vacia
+title: Detectar si una cadena está vacía
+level: 5
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites:
+  - lvl5-cadena-comparar
+tags:
+  - strings
+objective: Controlar que lleguemos a hacer algo con lo que NO llegó.
+files_to_create:
+  - vacio.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: vacio
+      message: sin args imprime vacío
+      cmd: bash vacio.sh
+      expectExit: 1
+      expectOutput: ^vacío$
+    - name: ok
+      message: con hola imprime ok
+      cmd: bash vacio.sh hola
+      expectExit: 0
+      expectOutput: ^ok$

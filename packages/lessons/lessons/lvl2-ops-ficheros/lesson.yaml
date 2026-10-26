@@ -1,0 +1,29 @@
+id: lvl2-ops-ficheros
+title: "La tabla de ficheros: -e -f -d -r -w -x -s y la cuña"
+level: 2
+kind: lesson
+xp: 25
+estimated_minutes: 8
+prerequisites:
+  - lvl2-if-test
+tags:
+  - condicionales
+  - ficheros
+objective: Distinguir existencia, tipo, permisos y tamaño con test de ficheros.
+files_to_create: []
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: fichero-con-contenido
+      message: sobre un fichero con datos imprime 'FICHERO'
+      cmd: bash es-papel.sh saludo.txt &>/dev/null; test -f saludo.txt && bash es-papel.sh vars.sh
+      expectOutput: ^FICHERO$
+    - name: directorio
+      message: sobre un directorio imprime 'CARPETA'
+      cmd: bash es-papel.sh workspace
+      expectOutput: ^CARPETA$
+    - name: fantasma
+      message: sobre algo inexistente imprime 'FANTASMA'
+      cmd: bash es-papel.sh nada-de-nadie.txt
+      expectOutput: ^FANTASMA$

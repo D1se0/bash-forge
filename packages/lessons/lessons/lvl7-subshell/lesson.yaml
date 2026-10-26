@@ -1,0 +1,22 @@
+id: lvl7-subshell
+title: Subshells y ámbito
+level: 7
+kind: lesson
+xp: 30
+estimated_minutes: 10
+prerequisites:
+  - lvl7-comillas
+tags:
+  - variables
+objective: Gestionado por encerrado en () vs {}.
+files_to_create:
+  - ambito.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: subshell
+      message: "fuera: (y vacío después)"
+      cmd: bash ambito.sh
+      expectExit: 0
+      expectOutput: "^fuera: ?$"

@@ -1,0 +1,28 @@
+id: lvl6-boss
+title: Boss Fight · El Inspector de Datos
+level: 6
+kind: lesson
+xp: 60
+estimated_minutes: 15
+prerequisites:
+  - lvl6-reto-inventario
+tags:
+  - boss
+objective: "Examen del talento: trocear, filtrar, transformar y contar."
+files_to_create:
+  - log.txt
+  - inspector.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: info
+      message: inspector.sh info imprime el número de líneas de nivel info
+      cmd: bash inspector.sh info
+      expectExit: 0
+      expectOutput: "[0-9]+"
+    - name: mal
+      message: "nivel vacío no: imprime Uso y sale 1"
+      cmd: bash inspector.sh
+      expectExit: 1
+      expectOutput: Uso

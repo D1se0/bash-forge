@@ -1,0 +1,28 @@
+id: lvl6-exit-codes
+title: exit codes, && y ||
+level: 6
+kind: lesson
+xp: 25
+estimated_minutes: 9
+prerequisites:
+  - lvl6-printf
+tags:
+  - control
+objective: Encadenar comandos por éxito/fallo.
+files_to_create:
+  - cadena.sh
+  - cadena.txt
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: ok
+      message: ok imprime bien y exit 0
+      cmd: bash cadena.sh ok
+      expectExit: 0
+      expectOutput: ^bien$
+    - name: mal
+      message: otra cosa imprime mal y exit 3
+      cmd: bash cadena.sh falso
+      expectExit: 3
+      expectOutput: ^mal$

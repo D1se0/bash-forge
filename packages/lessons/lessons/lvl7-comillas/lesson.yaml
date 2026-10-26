@@ -1,0 +1,21 @@
+id: lvl7-comillas
+title: Comillas dobles, simples y escapes
+level: 7
+kind: lesson
+xp: 25
+estimated_minutes: 10
+prerequisites: []
+tags:
+  - strings
+objective: Controlar exactamente qué expande Bash y qué no.
+files_to_create:
+  - archivo.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: literal
+      message: "valor: hola"
+      cmd: bash archivo.sh hola
+      expectExit: 0
+      expectOutput: "valor: hola"

@@ -1,0 +1,28 @@
+id: lvl5-reto-contador
+title: Reto · Contador de números pares
+level: 5
+kind: lesson
+xp: 35
+estimated_minutes: 15
+prerequisites:
+  - lvl5-bucles-anidados
+tags:
+  - reto
+  - loops
+objective: Cuenta últimos y aplican modulo y condicionales combinados.
+files_to_create:
+  - pares.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: pares-10
+      message: 10 dice que hay 4 pares (2,4,6,8)
+      cmd: bash pares.sh 10
+      expectExit: 0
+      expectOutput: "4"
+    - name: pares-11
+      message: 11 dice que hay 5
+      cmd: bash pares.sh 11
+      expectExit: 0
+      expectOutput: "5"

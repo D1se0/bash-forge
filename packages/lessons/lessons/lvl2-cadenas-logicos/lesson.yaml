@@ -1,0 +1,29 @@
+id: lvl2-cadenas-logicos
+title: "Cadenas y lógica: -z -n, = !=, =~ y ! && ||"
+level: 2
+kind: lesson
+xp: 25
+estimated_minutes: 7
+prerequisites:
+  - lvl2-ops-ficheros
+tags:
+  - condicionales
+objective: Comparar cadenas vacías, iguales, por regex y combinar condiciones.
+files_to_create:
+  - cadenas.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: vacio
+      message: sin arg imprime 'VACIO'
+      cmd: bash cadenas.sh
+      expectOutput: ^VACIO$
+    - name: digitos
+      message: con 42 imprime 'DIGITOS'
+      cmd: bash cadenas.sh 42
+      expectOutput: ^DIGITOS$
+    - name: otro
+      message: con 'tail' imprime 'OTRO'
+      cmd: bash cadenas.sh tail
+      expectOutput: ^OTRO$

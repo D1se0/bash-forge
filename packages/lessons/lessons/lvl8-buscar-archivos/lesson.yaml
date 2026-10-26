@@ -1,0 +1,22 @@
+id: lvl8-buscar-archivos
+title: "buscar: find con filtros"
+level: 8
+kind: lesson
+xp: 30
+estimated_minutes: 12
+prerequisites:
+  - lvl8-argumentos
+tags:
+  - paths
+objective: Localizar fichero por nombre, tamaño o extensión.
+files_to_create:
+  - explora.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: txt
+      message: explora.sh . devuelve los .txt de aquí
+      cmd: bash explora.sh .
+      expectExit: 0
+      expectOutput: "[.]txt$"

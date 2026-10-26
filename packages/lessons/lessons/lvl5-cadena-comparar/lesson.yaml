@@ -1,0 +1,26 @@
+id: lvl5-cadena-comparar
+title: Comparar cadenas con test
+level: 5
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites: []
+tags:
+  - strings
+objective: Comparar igualdad, orden y vacío sin sed ni grep.
+files_to_create:
+  - cadena.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: iguales
+      message: cadena.sh hola hola imprime iguales
+      cmd: bash cadena.sh hola hola
+      expectExit: 0
+      expectOutput: ^iguales$
+    - name: distintas
+      message: cadena.sh hola chau imprime distintas
+      cmd: bash cadena.sh hola chau
+      expectExit: 0
+      expectOutput: ^distintas$

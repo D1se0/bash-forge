@@ -1,0 +1,23 @@
+id: lvl6-cut
+title: "cut: trocear por columna o delimitador"
+level: 6
+kind: lesson
+xp: 25
+estimated_minutes: 9
+prerequisites:
+  - lvl6-tr
+tags:
+  - filtrado
+objective: Extraer columnas de CSVs y posiciones de carácteres.
+files_to_create:
+  - datos.csv
+  - columna.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: edades
+      message: columna.sh imprime solo la columna de edad
+      cmd: bash columna.sh
+      expectExit: 0
+      expectOutput: "[0-9]"

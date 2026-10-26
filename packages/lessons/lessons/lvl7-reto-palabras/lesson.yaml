@@ -1,0 +1,24 @@
+id: lvl7-reto-palabras
+title: Reto · Contador de palabras únicas
+level: 7
+kind: lesson
+xp: 40
+estimated_minutes: 18
+prerequisites:
+  - lvl7-arrays
+tags:
+  - reto
+  - filtrado
+objective: Contar palabras únicas y las más repetidas.
+files_to_create:
+  - texto.txt
+  - unicas.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: unicas
+      message: unicas.sh imprime el número de palabras únicas
+      cmd: bash unicas.sh
+      expectExit: 0
+      expectOutput: "[0-9]+"

@@ -1,0 +1,27 @@
+id: lvl6-sed
+title: "sed: sustituir texto en línea"
+level: 6
+kind: lesson
+xp: 25
+estimated_minutes: 10
+prerequisites:
+  - lvl6-grep
+tags:
+  - filtrado
+objective: Reemplazar, borrar y filtrar por número de línea.
+files_to_create:
+  - nombres.txt
+  - toca.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: cambio
+      message: toca.sh cambia Basura por Tesoro en todas las líneas
+      cmd: bash toca.sh
+      expectExit: 0
+      expectOutput: Tesoro
+    - name: intacto
+      message: el fichero no quedó tocado
+      cmd: grep -c Basura nombres.txt
+      expectExit: 0

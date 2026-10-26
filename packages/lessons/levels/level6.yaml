@@ -1,0 +1,231 @@
+level: 6
+lessons:
+  - id: lvl6-grep
+    title: "grep: bucear en el texto"
+    level: 6
+    xp: 20
+    minutes: 8
+    tags: ["filtrado"]
+    objective: "Filtrar líneas por patrón y contar coincidencias."
+    files: ["notas.txt", "contar.sh"]
+    theory: |
+      `grep patron fichero` imprime las líneas que matchean; `-c` cuenta; `-i` ignora mayúsculas; `-v` invierte ('los que NO').
+    exercise: |
+      Se creó `notas.txt` con varias líneas de texto. Crea `contar.sh` que reciba un patrón e imprima cuántas líneas lo contienen.
+    errors:
+      - "Olvidar comillas alrededor del patr\u00f3n si tiene espacios o `*`."
+      - Confundir -c (cuenta de LÍNEAS matcheadas) con el número de pares.
+    tasks:
+      - name: contar
+        message: "contar.sh hola devuelve el número correcto de líneas con hola"
+        cmd: bash contar.sh hola
+        expectOutput: "[0-9]+"
+        expectExit: 0
+      - name: cero
+        message: "patrón que no existe devuelve 0"
+        cmd: bash contar.sh zzzznoexiste
+        expectOutput: "^0$"
+        expectExit: 0
+      - name: zero-match-exit
+        message: "grep con 0 matches sale 1 pero tu script termina ok"
+        cmd: bash contar.sh nada
+        expectExit: 0
+
+  - id: lvl6-sed
+    title: "sed: sustituir texto en línea"
+    level: 6
+    xp: 25
+    minutes: 10
+    tags: ["filtrado"]
+    objective: "Reemplazar, borrar y filtrar por número de línea."
+    files: ["nombres.txt", "toca.sh"]
+    theory: |
+      `sed s/viejo/nuevo/` cambia el primero de cada línea; `s/viejo/nuevo/g` si quieres TODOS; `-i` edita el fichero.
+    exercise: |
+      Se creó `nombres.txt`. Crea `toca.sh` que imprima su contenido con la palabra "Basura" cambiada por "Tesoro" en TODAS las líneas, sin modificar el fichero original.
+    errors:
+      - Olvidar /g: solo cambia la primera aparición de cada línea.
+      - Olvidar comillas alrededor del patrón del sed.
+    tasks:
+      - name: cambio
+        message: "toca.sh cambia Basura por Tesoro en todas las líneas"
+        cmd: bash toca.sh
+        expectOutput: "Tesoro"
+        expectExit: 0
+      - name: intacto
+        message: "el fichero no quedó tocado"
+        cmd: grep -c Basura nombres.txt
+        expectExit: 0
+
+  - id: lvl6-tee
+    title: "tee: escribir a la vez en pantalla y fichero"
+    level: 6
+    xp: 20
+    minutes: 7
+    tags: ["pipes"]
+    objective: "Guardrar y mostrar lo mismo sin ejecutar dos veces."
+    files: ["guarda.sh"]
+    theory: |
+      `comando | tee fichero` manda al stdout Y al fichero a la vez. Con `-a` añade al final en lugar de machacar.
+    exercise: |
+      Crea `guarda.sh` que imprima `hola tee` y lo deje además en demo.txt.
+    errors:
+      - Confundir | con ; : este sí que pasa por la tubería, este no.
+    tasks:
+      - name: guarda
+        message: "guarda.sh imprime hola tee"
+        cmd: bash guarda.sh
+        expectOutput: "hola tee"
+        expectExit: 0
+      - name: fichero
+        message: "demo.txt quedó con hola tee"
+        cmd: cat demo.txt | grep "^hola tee$"
+        expectExit: 0
+
+  - id: lvl6-tr
+    title: "tr: clonar, cortar y cambiar carácteres"
+    level: 6
+    xp: 20
+    minutes: 8
+    tags: ["filtrado"]
+    objective: "Convertir a mayúsculas/minúsculas, borrar, condensar."
+    files: ["transformar.sh"]
+    theory: |
+      `tr 'a-z' 'A-Z'` mapea carácteres de un set a otro; `-d` borra los que matchean; `-s` condensa repetidos.
+    exercise: |
+      Crea `transformar.sh` que reciba una palabra y la imprimte en MAYÚSCULAS.
+    errors:
+      - "Usar tr sobre un fichero: mejor que leer con `<` o por pipe."
+      - tr solo funciona por SETS de carácteres, no por cadenas de longitud distinta.
+    tasks:
+      - name: upper
+        message: "transformar.sh hola imprime HOLA"
+        cmd: bash transformar.sh hola
+        expectOutput: "^HOLA$"
+        expectExit: 0
+
+  - id: lvl6-cut
+    title: "cut: trocear por columna o delimitador"
+    level: 6
+    xp: 25
+    minutes: 9
+    tags: ["filtrado"]
+    objective: "Extraer columnas de CSVs y posiciones de carácteres."
+    files: ["datos.csv", "columna.sh"]
+    theory: |
+      `cut -f2 -d','` toma el CAMPO 2 separado por comas; `cut -c1-4` toma los CARÁCTERES del 1 al 4.
+    exercise: |
+      Se creó `datos.csv` con formato nombre,edad,ciudad. Crea `columna.sh` que imprima SOLO las edades.
+    errors:
+      - Confundir -d con el delimitador por defecto (tabulación): SIEMPRE especifíca -d en CSVs.
+    tasks:
+      - name: edades
+        message: "columna.sh imprime solo la columna de edad"
+        cmd: bash columna.sh
+        expectOutput: "[0-9]"
+        expectExit: 0
+
+  - id: lvl6-printf
+    title: "printf: formato de no errores"
+    level: 6
+    xp: 20
+    minutes: 8
+    tags: ["salida"]
+    objective: "Formatear salidas con padding y números con precisión."
+    files: ["formato.sh"]
+    theory: |
+      `printf "%5s|%-5s|\n"` genera columnas de 5, alinear derecha/izquierda. No hace salto de línea automático".
+    exercise: |
+      Crea `formato.sh` que reciba $1 e imprima `x=` con separadores: `printf "%-6s]\n"` dejándolo de ancho mínimo 6, alineado a la izquierda.
+    errors:
+      - Olvidar saltos de línea \n: printf NO los agrega solos como echo.
+      - Usar %d con cadenas: no, eso es para números.
+    tasks:
+      - name: forma
+        message: "formato.sh hola imprime la línea en col. de 6"
+        cmd: bash formato.sh hola
+        expectOutput: "hola   ]"
+        expectExit: 0
+
+  - id: lvl6-exit-codes
+    title: "exit codes, && y ||"
+    level: 6
+    xp: 25
+    minutes: 9
+    tags: ["control"]
+    objective: "Encadenar comandos por éxito/fallo."
+    files: ["cadena.sh", "cadena.txt"]
+    theory: |
+      `a && b`: b SOLO si a salió bien (0). `a || b`: b SOLO si a falló. Cada combinación respete cuando pasa el control.
+    exercise: |
+      Crea `cadena.sh` que reciba $1:
+      - "si $1 vale ok: imprime bien y exit 0."
+      - "si $1 NO vale ok: imprime mal y exit 3."
+    errors:
+      - Confundir && con || al operar con && : && es "si sí", || es "si no".
+    tasks:
+      - name: ok
+        message: "ok imprime bien y exit 0"
+        cmd: bash cadena.sh ok
+        expectOutput: "^bien$"
+        expectExit: 0
+      - name: mal
+        message: "otra cosa imprime mal y exit 3"
+        cmd: bash cadena.sh falso
+        expectOutput: "^mal$"
+        expectExit: 3
+
+  - id: lvl6-reto-inventario
+    title: "Reto · Mini inventario con grep y cut"
+    level: 6
+    xp: 35
+    minutes: 15
+    tags: ["reto", "filtrado"]
+    objective: "Componer múltiples comandos con pipes."
+    files: ["stock.csv", "inventario.sh"]
+    theory: |
+      grep para filtrar, cut para columnas, sort para ordenar, uniq -c para contar repetidos.
+    exercise: |
+      Se creó `stock.csv` con formato articulo,cantidad. Crea `inventario.sh` que reciba un artículo e imprima SU cantidad.
+    errors:
+      - Olvidar -d',' en cut: te va a separar por tab por defecto.
+      - No quitar las cabeceras (headlines): chequear que el CSV tiene cabecera y filtrarla.
+    tasks:
+      - name: cantidad
+        message: "inventario.sh de un articulo devuelve su número"
+        cmd: bash inventario.sh destornillador
+        expectOutput: "[0-9]"
+        expectExit: 0
+      - name: cero-si-no
+        message: "artículo que no existe imprime 0"
+        cmd: bash inventario.sh unicornio
+        expectOutput: "^0$"
+        expectExit: 0
+
+  - id: lvl6-boss
+    title: "Boss Fight · El Inspector de Datos"
+    level: 6
+    xp: 60
+    minutes: 15
+    tags: ["boss"]
+    objective: "Examen del talento: trocear, filtrar, transformar y contar."
+    files: ["log.txt", "inspector.sh"]
+    theory: |
+      Combinación completa de filtrado: grep, sed, cut, sort, uniq, tee. Solo con herramientas estándar.
+    exercise: |
+      Se creó `log.txt` con líneas del tipo `nivel: mensaje`. Crea `inspector.sh <nivel>`:
+      - "cuenta cuántas líneas de ese nivel: imprime el número."
+      - "con el nivel falso: exit 1 y muestra Uso."
+    errors:
+      - El nivel con espacios a su alrededor: usa grep -E para el patrón exacto.
+    tasks:
+      - name: info
+        message: "inspector.sh info imprime el número de líneas de nivel info"
+        cmd: bash inspector.sh info
+        expectOutput: "[0-9]+"
+        expectExit: 0
+      - name: mal
+        message: "nivel vacío no: imprime Uso y sale 1"
+        cmd: bash inspector.sh
+        expectOutput: "Uso"
+        expectExit: 1

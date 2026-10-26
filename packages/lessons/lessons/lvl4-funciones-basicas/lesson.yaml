@@ -1,0 +1,25 @@
+id: lvl4-funciones-basicas
+title: "Funciones: empaquetar lógica reutilizable"
+level: 4
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites: []
+tags:
+  - funciones
+objective: Definir y llamar funciones con argumentos propios.
+files_to_create:
+  - taller.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: llamada
+      message: bash taller.sh imprime 'fundiendo cobre con estaño'
+      cmd: bash taller.sh
+      expectOutput: ^fundiendo cobre con estaño$
+    - name: definicion
+      message: el fichero define la función funde
+      expectFileContains:
+        path: taller.sh
+        regex: funde\s*\(\)

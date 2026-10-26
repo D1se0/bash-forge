@@ -1,0 +1,25 @@
+id: lvl2-case-esac
+title: "case: mascarillas y cadenas completas"
+level: 2
+kind: lesson
+xp: 25
+estimated_minutes: 8
+prerequisites:
+  - lvl2-numericos-aritmetica
+tags:
+  - condicionales
+objective: Femuscular decisiones con case, patrones y sus ;;&.
+files_to_create:
+  - mascarilla.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: iniciar
+      message: bash mascarilla.sh iniciar imprime 'Arrancar'
+      cmd: bash mascarilla.sh iniciar
+      expectOutput: ^Arrancar$
+    - name: restart-doble
+      message: bash mascarilla.sh restart imprime 'Detener' Y 'Arrancar'
+      cmd: bash mascarilla.sh restart
+      expectOutput: Detener\nArrancar

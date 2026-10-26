@@ -1,0 +1,25 @@
+id: lvl3-select
+title: "select: menús interactivos de regalo"
+level: 3
+kind: lesson
+xp: 25
+estimated_minutes: 7
+prerequisites:
+  - lvl3-read-linea-a-linea
+tags:
+  - bucles
+objective: Formúlale un menú con select y consciente read con restricciones.
+files_to_create:
+  - menu.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: menu-enviado
+      message: el menú se ve y '3) salir' aparece
+      cmd: printf '3\n' | bash menu.sh
+      expectOutput: 3\) salir
+    - name: eleccion-visa
+      message: eligir 2 imprime 'tomaste tijera'
+      cmd: printf '2\n' | bash menu.sh
+      expectOutput: ^tomaste tijera$

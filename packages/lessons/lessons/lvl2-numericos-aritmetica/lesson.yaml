@@ -1,0 +1,26 @@
+id: lvl2-numericos-aritmetica
+title: "Números: -eq -ne -lt -le -gt -ge y (())"
+level: 2
+kind: lesson
+xp: 25
+estimated_minutes: 7
+prerequisites:
+  - lvl2-cadenas-logicos
+tags:
+  - condicionales
+  - aritmetica
+objective: Comparar números y hacer aritmética con ((contexto)).
+files_to_create:
+  - numeros.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: par
+      message: bash numeros.sh 4 imprime 'PAR'
+      cmd: bash numeros.sh 4
+      expectOutput: ^PAR$
+    - name: impar-negativo
+      message: bash numeros.sh -3 imprime 'IMPAR'
+      cmd: bash numeros.sh -3
+      expectOutput: ^IMPAR$

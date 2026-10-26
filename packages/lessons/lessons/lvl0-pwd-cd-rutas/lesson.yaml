@@ -1,0 +1,25 @@
+id: lvl0-pwd-cd-rutas
+title: "Dónde estás: pwd, cd y rutas absolutas/relativas"
+level: 0
+kind: lesson
+xp: 10
+estimated_minutes: 6
+prerequisites:
+  - lvl0-que-es-un-shell
+tags:
+  - rutas
+  - basico
+objective: Moverte por el sistema de ficheros y distinguir ruta absoluta de relativa.
+files_to_create:
+  - ruta.txt
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: carpetas-creadas
+      message: Existe workspace/proyectos/capitulo1
+      cmd: test -d workspace/proyectos/capitulo1
+    - name: ruta-absoluta
+      message: ruta.txt contiene la ruta absoluta de workspace
+      hint: "`cd workspace && pwd > ../ruta.txt && cd ..`"
+      cmd: test "$(cat ruta.txt 2>/dev/null)" = "$HOME/workspace"

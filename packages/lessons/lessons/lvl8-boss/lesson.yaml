@@ -1,0 +1,37 @@
+id: lvl8-boss
+title: Boss Fight · El Constructor de Herramientas
+level: 8
+kind: lesson
+xp: 80
+estimated_minutes: 20
+prerequisites:
+  - lvl8-reto-rename
+tags:
+  - boss
+objective: "Examen final: escribe una mini-herramienta CLI profesional."
+files_to_create:
+  - herramienta.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: hola
+      message: "-n debe imprimir: ¡Hola, Ana!"
+      cmd: bash herramienta.sh -n Ana
+      expectExit: 0
+      expectOutput: Hola, Ana
+    - name: help
+      message: -h imprime Uso y exit 0
+      cmd: bash herramienta.sh -h
+      expectExit: 0
+      expectOutput: Uso
+    - name: sin-args
+      message: "sin args: Uso y exit 1"
+      cmd: bash herramienta.sh
+      expectExit: 1
+      expectOutput: Uso
+    - name: trap
+      message: al terminar imprime adios
+      cmd: bash herramienta.sh -n Ana
+      expectExit: 0
+      expectOutput: adios

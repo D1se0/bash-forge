@@ -1,0 +1,32 @@
+id: lvl5-elif
+title: elif, else y orden de evaluación
+level: 5
+kind: lesson
+xp: 25
+estimated_minutes: 9
+prerequisites:
+  - lvl5-cadena-vacia
+tags:
+  - condicionales
+objective: Encadenar varias condiciones y pensar el orden.
+files_to_create:
+  - escalera.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: nino
+      message: edad 7 imprime niño
+      cmd: bash escalera.sh 7
+      expectExit: 0
+      expectOutput: ^niño$
+    - name: senior
+      message: edad 70 imprime senior
+      cmd: bash escalera.sh 70
+      expectExit: 0
+      expectOutput: ^senior$
+    - name: error
+      message: sin args imprime error y exit 1
+      cmd: bash escalera.sh
+      expectExit: 1
+      expectOutput: ^error$

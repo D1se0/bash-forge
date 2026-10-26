@@ -1,0 +1,30 @@
+id: lvl1-reto-invertidor
+title: Reto · Inverción de argumentos
+level: 1
+kind: challenge
+xp: 30
+estimated_minutes: 10
+prerequisites:
+  - lvl1-export-entorno
+tags:
+  - reto
+  - argumentos
+objective: Reimprimir la lista de argumentos al revés.
+files_to_create:
+  - reverse.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: dos-args
+      message: "bash reverse.sh a b imprime 'rev: b' y 'rev: a'"
+      cmd: bash reverse.sh a b
+      expectOutput: |-
+        rev: b
+        rev: a
+    - name: space-arg
+      message: "con 'a b' y c imprime 'rev: c' y 'rev: a b'"
+      cmd: bash reverse.sh "a b" c
+      expectOutput: |-
+        rev: c
+        rev: a b

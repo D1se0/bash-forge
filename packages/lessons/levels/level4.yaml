@@ -1,0 +1,490 @@
+lessons:
+  - id: lvl4-funciones-basicas
+    title: "Funciones: empaquetar lógica reutilizable"
+    level: 4
+    xp: 20
+    minutes: 7
+    tags: [funciones]
+    objective: Definir y llamar funciones con argumentos propios.
+    files: [taller.sh]
+    theory: |
+      Una función define un bloque con nombre:
+
+      ```bash
+      saluda() {
+        echo "Hola, $1"
+      }
+      saluda "Herminia"    # Hola, Herminia
+      ```
+
+      Sus argumentos son $1, $2… LOCALES a la llamada (no heredan los del script). `return N` fija el código de salida de la función.
+    example: |
+      ```bash
+      $ cat taller.sh
+      #!/usr/bin/env bash
+      funde() {
+        echo "fundiendo $1 con $2"
+      }
+      funde cobre estaño
+      ```
+    exercise: |
+      Crea `taller.sh` con una función `funde` que imprima `fundiendo A con B` para sus dos argumentos, y llámala con `cobre` y `estaño`.
+    errors:
+      - Llamar la función antes de definirla: Bash la lee de arriba abajo.
+      - Usar $1 global esperando que la función lo vea: dentro vale el ARGUMENTO de la llamada.
+    quiz:
+      question: ¿Los argumentos de la función machacan $1…$# del script?
+      answer: "Solo dentro de la función: al volver, los originales del script reaparecen."
+    tasks:
+      - name: llamada
+        message: "bash taller.sh imprime 'fundiendo cobre con estaño'"
+        cmd: bash taller.sh
+        expectOutput: "^fundiendo cobre con estaño$"
+      - name: definicion
+        message: el fichero define la función funde
+        expectFileContains: { path: taller.sh, regex: "funde\\s*\\(\\)" }
+    hints:
+      - "funde() { echo \"fundiendo $1 con $2\"; }"
+      - "Llama con `funde cobre estaño` (sin paréntesis al invocar)."
+    solution: |
+      #!/usr/bin/env bash
+      funde() {
+        echo "fundiendo $1 con $2"
+      }
+      funde cobre estaño
+
+  - id: lvl4-local-return
+    title: "local y return: el alcance de tus variables"
+    level: 4
+    xp: 20
+    minutes: 8
+    tags: [funciones]
+    objective: Evitar fugas de variables y usar códigos de retorno correctos.
+    files: [recuento.sh]
+    theory: |
+      Sin `local`, las variables de una función FUGAN al shell entero. `local var` las encierra en la función.
+
+      `return N` devuelve un código (0..255) — para DATOS usa la salida estándar (echo) y captúrala con `$(función)`.
+    example: |
+      ```bash
+      duplica() { echo $(( $1 * 2 )); }
+      resultado=$(duplica 21)   # 42
+      es_par() { return $(( $1 % 2 )); }  # 0 = par
+      ```
+    exercise: |
+      Crea `recuento.sh` con una función `cuenta` que cuente de 1 a $1 usando una variable `local`, y devuelva True si llegó a 10+…  Simplifica: imprime la suma 1..N con `echo` y captúrala en `total` desde la llamada. Imprime `total: <suma>`.
+    errors:
+      - "`local var=algo` FUERA de una función: error."
+      - "Confundir `return` (exit status) con `echo` (retorno de datos)."
+    quiz:
+      question: ¿Cómo devuelves una STRING desde una función?
+      answer: por stdout con echo/printf y capturando con RESULT=$(funcion).
+    tasks:
+      - name: suma-total
+        message: "bash recuento.sh 4 imprime 'total: 10'"
+        cmd: bash recuento.sh 4
+        expectOutput: "^total: 10$"
+      - name: usa-local
+        message: la función declara una variable local
+        expectFileContains: { path: recuento.sh, regex: "local\\s+[a-z_]+" }
+    hints:
+      - "Dentro de cuenta: `local i; local s=0; for i in $(seq 1 \"$1\"); do s=$((s+i)); done; echo $s`"
+      - "Archivo: `total=$(cuenta \"$1\"); echo \"total: $total\"`. Capturas POR STDOUT."
+      - Ojo: seq está disponible en coreutils.
+    solution: |
+      #!/usr/bin/env bash
+      cuenta() {
+        local i s=0
+        for i in $(seq 1 "$1"); do
+          s=$((s+i))
+        done
+        echo "$s"
+      }
+      total=$(cuenta "$1")
+      echo "total: $total"
+
+  - id: lvl4-source-librerias
+    title: "source: bibliotecas de código compartido"
+    level: 4
+    xp: 20
+    minutes: 7
+    tags: [estructura]
+    objective: Compartir funciones entra scripts con source, no copiar/pegar.
+    files: [lib.sh, usalib.sh]
+    theory: |
+      `source ./lib.sh` (o `. ./lib.sh`) ejecuta el fichero MIS shell: sus funciones y variables quedan disponibles.
+
+      Un patrón clásico: `lib.sh` define utilidades; los scripts la cargan con un guard para errores:
+
+      ```bash
+      source "${BASH_SOURCE[0]%/*}/lib.sh"
+      ```
+    example: |
+      ```bash
+      $ cat lib.sh
+      quien_soy() { forja: $0 }
+      $ . ./lib.sh && quien_soy
+      ```
+    exercise: |
+      Crea `lib.sh` con una función `medir` que imprima `medir: <arg>`, y `usalib.sh` que la cargue con `source lib.sh` y la llame con `herramienta`.
+    errors:
+      - "Ruta relativa rota: si ejecutas desde otro cwd, `source lib.sh` falla. Usa rutas absolutas o cd antes."
+      - Usar exec en vez de source: ejecutaría el fichero como proceso nuevo.
+    quiz:
+      question: ¿Diferencia entre `source lib.sh` y `bash lib.sh`?
+      answer: source corre EN tu shell (funciones que quedan); bash crea un proceso nuevo que termina con sus cosas.
+    tasks:
+      - name: lib-defined
+        message: "lib.sh define la función medir"
+        expectFileContains: { path: lib.sh, regex: "medir\\s*\\(\\)" }
+      - name: usa-liburacion
+        message: "bash usalib.sh imprime 'medir: herramienta'"
+        cmd: bash usalib.sh
+        expectOutput: "^medir: herramienta$"
+    hints:
+      - "lib.sh: `medir() { echo \"medir: $1\"; }`"
+      - "usalib.sh: `source lib.sh` (¡en la misma carpeta!) y luego `medir herramienta`."
+      - Prueba desde la carpeta actual antes de Comprobar.
+    solution: |
+      cat > lib.sh <<'EOF'
+      #!/usr/bin/env bash
+      medir() {
+        echo "medir: $1"
+      }
+      EOF
+      cat > usalib.sh <<'EOF'
+      #!/usr/bin/env bash
+      source lib.sh
+      medir herramienta
+      EOF
+      bash usalib.sh
+
+  - id: lvl4-getopts
+    title: "getopts: opciones pro (-a -b valor)"
+    level: 4
+    xp: 25
+    minutes: 10
+    tags: [estructura, cli]
+    objective: Parsear opciones y flags de forma estándar en un script CLI.
+    files: [cli.sh]
+    theory: |
+      `getopts` es el parser de opciones NATIVO de bash:
+
+      ```bash
+      while getopts "ab:f" opt; do
+        case $opt in
+          a) a=$1 ;;
+          b) b=$OPTARG ;;
+          f) flag=$1 ;;
+        esac
+      done
+      shift $((OPTIND-1))   # lo que queda en $@ son posicionesales
+      ```
+
+      - "`-b valor` (con los dos puntos luego de b) CONSUME un argumento: OPTARG."
+      - "`b:` define que toma arg; `ab:f` = admite -a, -b valor y -f."
+    example: |
+      ```bash
+      $ cli.sh -a -b 42
+      $ bash cli.sh -b "texto" archivo
+      ```
+    exercise: |
+      Crea `cli.sh` con getopts que acepte:
+      - "`-n nombre` → imprime `nombre: $nombre`"
+      - "`-f` → imprime `furia: sí`"
+      - opciones posicionales extra mientras $1 exista.
+    errors:
+      - Los dos puntos tras la letra definen si la opción espera argumento.
+      - "No hacer `shift $((OPTIND-1))`: tus args posicionales se mezclan las opciones."
+    quiz:
+      question: ¿Qué es OPTARGS?
+      answer: "es la variable con el VALOR de la opción actual cuando toma un arg (por ej: con -b signt)."
+    tasks:
+      - name: option-b-valor
+        message: "bash cli.sh -n zafra imprime 'nombre: zafra'"
+        cmd: bash cli.sh -n zafra
+        expectOutput: "^nombre: zafra$"
+      - name: option-f
+        message: "bash cli.sh -f imprime 'furia: sí'"
+        cmd: bash cli.sh -f
+        expectOutput: "^furia: sí$"
+    hints:
+      - "while getopts \"n:fh\" opt; do … case. \"n:\" espera un arg → OPTARG."
+      - "Solo getopts cae en $1 ya procesado; recuerda shift $((OPTIND-1))."
+      - Imprimen separadas cada dato a medida de la flag que se recibió (dos opciones → dos líneas).
+    solution: |
+      #!/usr/bin/env bash
+      while getopts "n:f" opt; do
+        case $opt in
+          n) echo "nombre: $OPTARG" ;;
+          f) echo "furia: sí" ;;
+        esac
+      done
+
+  - id: lvl4-usage-help
+    title: "usage() y --help automático"
+    level: 4
+    xp: 20
+    minutes: 7
+    tags: [estructura, cli]
+    objective: Construir la cara amable de tu CLI.
+    files: [ayudacli.sh]
+    theory: |
+      Toda herramienta con más de 20 líneas necesita una función `usage` e imprime <<god menaged>>:
+
+      ```bash
+      usage() {
+        cat <<EOF
+      Uso: $(basename "$0") [opciones] fichero
+        -h   muestra esta ayuda
+      EOF
+      }
+      ```
+
+      Pattern: si NO pasaron nada o -h → imprime usage y exit 1 o 0 (0 si pidieron ayuda).
+    example: |
+      ```bash
+      $ ./uso.sh --help
+      Uso: uso.sh [opciones] fichero
+      ```
+    exercise: |
+      Crea `ayudacli.sh` que:
+      - "imprima `Uso: ayudacli.sh [opciones]` si EINVAL errores en funciones? Simplemente: imprime usage cuando llamen con `-h` o sin args."
+    errors:
+      - La heredoc dentro de la función rompe si pierdes EOF.
+      - Salir con exit 0 SIEMPRE (aunque pidan ayuda): ayuda OK con 0, mal uso con 1.
+    quiz:
+      question: ¿Qué código sale de `prog --help` si ayuda ciudadana?
+      answer: "0 (la operación -pedir ayuda- funcionó)."
+    tasks:
+      - name: sin-args
+        message: "bash ayudacli.sh imprime la línea Uso"
+        cmd: bash ayudacli.sh
+        expectOutput: "^Uso: ayudacli"
+      - name: flag-h
+        message: "bash ayudacli.sh -h imprime la línea Uso Y sale 0"
+        cmd: bash ayudacli.sh -h
+        expectOutput: "^Uso: ayudacli"
+        expectExit: 0
+    hints:
+      - "En any parte del case con `-h`: usage() y exit 0."
+      - Sin args ($# -eq 0): usage y exit 1.
+      - La línea de Uso debe empezar exact con "Uso: ayudacli.sh".
+    solution: |
+      #!/usr/bin/env bash
+      usage() {
+        echo "Uso: ayudacli.sh [opciones] fichero…"
+      }
+      if [ $# -eq 0 ]; then usage; exit 1; fi
+      case "$1" in
+        -h) usage; exit 0 ;;
+      esac
+      usage
+
+  - id: lvl4-estructura-profesional
+    title: "Estructura de un script profesional"
+    level: 4
+    xp: 20
+    minutes: 8
+    tags: [estructura, buenas-practicas]
+    objective: "Ordenar tu script: shebang, variables, funciones y main."
+    files: [beatriz.sh]
+    theory: |
+      Esqueleto Q&A:
+
+      ```bash
+      #!/usr/bin/env bash
+      set -euo pipefail        # (se detalla en nivel 7)
+      readonly SCRIPT_NAME="$(basename "$0")"
+
+      funcion_a() { … }
+      funcion_b() { … }
+
+      main() {
+        funcion_a
+        funcion_b
+      }
+      main "$@"
+      ```
+
+      Ventajas: main() con args explícitos hace TESTABLE el script (sources...), variables en arriba, funciones en el medio, main al final.
+    example: |
+      ```bash
+      $ bash beatriz.sh
+      …
+      ```
+    exercise: |
+      Reescribe `beatriz.sh` con la estructura completa: defina `saluda()` e imprime `Beatriz saluda: versión 1.0`, y main() la invoque. Añade la línea `readonly VERSION="1.0"`.
+    errors:
+      - Llamar main ANTES de definir funciones: las funciones no existen aún.
+      - No pasar "$@" a main: pierdes los argumentos dentro de la función.
+    quiz:
+      question: ¿Por qué A-NALIZAR main "$@"?
+      answer: Hace que el punto de entrada sea explicito, testable y analizable.
+    tasks:
+      - name: version-readonly
+        message: define readonly VERSION
+        expectFileContains: { path: beatriz.sh, regex: "readonly\\s+VERSION" }
+      - name: main-estructura
+        message: hay una función main que se invoca
+        expectFileContains: { path: beatriz.sh, regex: "main\\s*\\(\\)" }
+      - name: saluda
+        message: "bash beatriz.sh imprime 'Beatriz saluda: versión 1.0'"
+        cmd: bash beatriz.sh
+        expectOutput: "Beatriz saluda: version 1\\.0"
+    hints:
+      - "readonly VERSION=\"1.0\" debajo del shebang."
+      - "saluda() { … } con el echo pedido; main() { saluda; }; main \"$@\"."
+      - Verifica la salida con bash beatriz.sh.
+    solution: |
+      #!/usr/bin/env bash
+      readonly VERSION="1.0"
+      saluda() {
+        echo "Beatriz saluda: versión $VERSION"
+      }
+      main() {
+        saluda
+      }
+      main "$@"
+
+  - id: lvl4-reto-calculadora
+    title: "Reto · Mini calculadora de clases"
+    level: 4
+    kind: challenge
+    xp: 35
+    minutes: 12
+    tags: [reto, funciones]
+    objective: Arma una calculadora con funciones por operación.
+    files: [calc.sh]
+    theory: |
+      Combination de funciones + case + aritmética. Sin teoría: aplica.
+    exercise: |
+      Crea `calc.sh` que reciba `num op num` (num = enteros; op ∈ {+,-,x,/}) e imprime el resultado. Para multiplicar usa `x` (la * es glob). Con división por cero: `no dividir cero` y exit 1.
+    errors:
+      - "Usar `/` y no revisar cero: (( $2 / 0 )) abort frames el script con exit ≠0."
+      - Recuerda separar bien los argumentos con espacios; la multiplicación usa la letra x.
+    quiz:
+      question: ¿Exacto error con 2/0 en (( ))?
+      answer: Divide by zero error y el (( )) devuelve exit ≠ 0 (a menos que set +e…).
+    tasks:
+      - name: suma
+        message: "bash calc.sh 2 + 3 imprime '5'"
+        cmd: bash calc.sh 2 + 3
+        expectOutput: "^5$"
+      - name: multiplica
+        message: "bash calc.sh 4 x 5 imprime '20'"
+        cmd: bash calc.sh 4 x 5
+        expectOutput: "^20$"
+      - name: divide-cero
+        message: "bash calc.sh 4 / 0 imprime 'no dividir cero' y sale 1"
+        cmd: bash calc.sh 4 / 0
+        expectOutput: "no dividir cero"
+    hints:
+      - "`case \"$2\" in` con ramas +, -, x, / y `*)` de error."
+      - "Divisi\u00f3n: `(( b == 0 )) && echo \"no dividir cero\" && exit 1`."
+      - "Resultado: `echo $(( $1 $OP $3 ))` si te lo ahorras (\u00a1juego limpio: la may\u00e1 es usar case!)."
+    solution: |
+      #!/usr/bin/env bash
+      case "$2" in
+        +) echo $(( $1 + $3 )) ;;
+        -) echo $(( $1 - $3 )) ;;
+        x) echo $(( $1 * $3 )) ;;
+        /)
+          if (( $3 == 0 )); then
+            echo "no dividir cero"
+            exit 1
+          fi
+          echo $(( $1 / $3 ))
+          ;;
+      esac
+
+  - id: lvl4-reto-paquete
+    title: "Reto · El instalador idempotente chiquito"
+    level: 4
+    kind: challenge
+    xp: 40
+    minutes: 14
+    tags: [reto, funciones]
+    objective: Un instalador que puedes ejecutar DOS veces sin estropearse.
+    files: [instalador.sh]
+    theory: |
+      **Idempotencia**: ejecutar algo 2 o 200 veces deja el MISMO estado. Para eso: checks antes de crear (existencia de ficheros), `-p` para mkdir, Noise cordial cuando no hace nada.
+    exercise: |
+      Crea `instalador.sh` que:
+      - "cree la carpeta `instalado/` con -p,"
+      - "cree el fichero `instalado/VERSION` con `1.0.0` SOLO si no existe,"
+      - "imprima `instalando…` cuando se creó algo y `nada que hacer` cuando ya estaba."
+    errors:
+      - Sobrescribir el fichero cada vez: no es idempotente (cambias mtime).
+      - Usar mkdir sin -p y morir al corromper segundo.
+    quiz:
+      question: ¿Qué es idempotencia con palabras clavos?
+      answer: Ejecutarlo más veces NO cambia el resultado final.
+    tasks:
+      - name: primera-pasada
+        message: "instalando… al crear"
+        cmd: rm -rf instalado && bash instalador.sh
+        expectOutput: "instalando"
+      - name: segunda-pasada
+        message: "segunda pasada imprime 'nada que hacer'"
+        cmd: bash instalador.sh
+        expectOutput: "nada que hacer"
+      - name: contenido-constante
+        message: instalado/VERSION dice 1.0.0
+        cmd: cat instalado/VERSION
+        expectOutput: "1\\.0\\.0"
+    hints:
+      - "`mkdir -p instalado` nunca falla."
+      - "`if [ ! -f instalado/VERSION ]; then echo instalando…; echo 1.0.0 > instalado/VERSION; else echo nada que hacer; fi`"
+      - Probado dos veces seguidas: ambas respuestas difieren pero la versinan no.
+    solution: |
+      #!/usr/bin/env bash
+      mkdir -p instalado
+      if [ ! -f instalado/VERSION ]; then
+        echo "instalando…"
+        echo "1.0.0" > instalado/VERSION
+      else
+        echo "nada que hacer"
+      fi
+
+  - id: lvl4-boss-arquitecto
+    title: "Boss Fight · El Arquitecto de la Fragua"
+    level: 4
+    kind: boss
+    xp: 85
+    minutes: 15
+    tags: [boss]
+    objective: "Examen de estructuras: funciones + getopts + usage + exit codes."
+    files: [fragua.sh]
+    theory: |
+      Un boss de arquitectura definitiva. Para pasar, necesitas: usage(), getopts, funciones y exit codes convencionales (0 ok, 1 error).
+    exercise: |
+      Crea `fragua.sh` con:
+      - "`usage()` instructiva (`Uso: fragua.sh -n nombre`)."
+      - "`-n nombre` → imprime `forjando para nombre`."
+      - "sin args → usage y exit 1; con `-h` → usage y exit 0."
+      - "funci\u00f3n `forjar(nombre)` llamando desde main."
+    errors:
+      - Usage con exit 0 cuando pidieron -h y exit 1 cuando no llega nada.
+      - Olvidar shift $((OPTIND-1)) si doesn't confuse las opciones con posicionesales.
+    tasks:
+      - name: uso-sin-args
+        message: "sin args imprime Uso y sale 1"
+        cmd: bash fragua.sh
+        expectOutput: "^Uso: fragua\\.sh"
+        expectExit: 1
+      - name: ayuda-h
+        message: "con -h imprime Uso y sale 0"
+        cmd: bash fragua.sh -h
+        expectOutput: "^Uso: fragua\\.sh"
+        expectExit: 0
+      - name: forjando
+        message: "con -n acero imprime 'forjando para acero'"
+        cmd: bash fragua.sh -n acero
+        expectOutput: "^forjando para acero$"
+    hints:
+      - "Estructura: usage() { …; }; función forjar() { echo \"forjando para $1\"; }; main() Getopts."
+      - "case -h: usage; exit 0."
+      - Sin $# → usage → exit 1.
+
+  # MORE_L4

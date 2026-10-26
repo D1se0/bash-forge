@@ -1,0 +1,31 @@
+id: lvl1-reto-gastro
+title: Reto · Contraseña camuflada
+level: 1
+kind: challenge
+xp: 35
+estimated_minutes: 12
+prerequisites:
+  - lvl1-reto-invertidor
+tags:
+  - reto
+  - entrada
+objective: Pedir PIN con read -s y leerlo sin dejar rastro.
+files_to_create:
+  - secreto.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: pin-uno-grant
+      message: PIN correcto → 'Acceso concedido'
+      cmd: printf '1302\n' | PIN=1302 bash secreto.sh
+      expectOutput: ^Acceso concedido$
+    - name: pin-deny
+      message: PIN incorrecto → 'Acceso denegado'
+      cmd: printf '7777\n' | PIN=1302 bash secreto.sh
+      expectOutput: ^Acceso denegado$
+    - name: selencioso
+      message: usa read -s (no queda rastro de la clave en la salida)
+      expectFileContains:
+        path: secreto.sh
+        regex: read[[:space:]]+(-r)?[[:space:]]*-s

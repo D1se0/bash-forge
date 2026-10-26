@@ -1,0 +1,27 @@
+id: lvl4-source-librerias
+title: "source: bibliotecas de código compartido"
+level: 4
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites:
+  - lvl4-local-return
+tags:
+  - estructura
+objective: Compartir funciones entra scripts con source, no copiar/pegar.
+files_to_create:
+  - lib.sh
+  - usalib.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: lib-defined
+      message: lib.sh define la función medir
+      expectFileContains:
+        path: lib.sh
+        regex: medir\s*\(\)
+    - name: usa-liburacion
+      message: "bash usalib.sh imprime 'medir: herramienta'"
+      cmd: bash usalib.sh
+      expectOutput: "^medir: herramienta$"

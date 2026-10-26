@@ -1,0 +1,23 @@
+id: lvl0-nano-primer-fichero
+title: "Tu editor: guardar y salir con nano"
+level: 0
+kind: lesson
+xp: 15
+estimated_minutes: 8
+prerequisites:
+  - lvl0-cat-help
+tags:
+  - editores
+objective: Crear y guardar ficheros con nano sin quedar atrapado.
+files_to_create:
+  - notas.md
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: notas-existen
+      message: "notas.md tiene al menos una línea Nota:"
+      cmd: grep -q "^Nota:" notas.md
+    - name: notas-dos-lineas
+      message: "notas.md tiene al menos dos líneas Nota:"
+      cmd: test "$(grep -c "^Nota:" notas.md)" -ge 2

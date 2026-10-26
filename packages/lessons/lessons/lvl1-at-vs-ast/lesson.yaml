@@ -1,0 +1,26 @@
+id: lvl1-at-vs-ast
+title: 'La demo visual: "$@" vs $*'
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl1-args-posicionales
+tags:
+  - argumentos
+  - comillas
+objective: Ver con variables y espacios por qué \"$@\" conserva y $* funde.
+files_to_create:
+  - args.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: un-arg-por-linea
+      message: "con 'dos palabras' y 'tres' imprime dos líneas 'arg: …'"
+      cmd: bash args.sh "dos palabras" tres
+      expectOutput: "arg: dos palabras\\narg: tres"
+    - name: fusion
+      message: "la última línea es 'fusión: dos palabras tres'"
+      cmd: bash args.sh "dos palabras" tres
+      expectOutput: "^fusión: dos palabras tres$"

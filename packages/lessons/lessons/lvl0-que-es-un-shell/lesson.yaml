@@ -1,0 +1,25 @@
+id: lvl0-que-es-un-shell
+title: ¿Qué es un shell y qué es Bash?
+level: 0
+kind: lesson
+xp: 10
+estimated_minutes: 5
+prerequisites: []
+tags:
+  - conceptos
+  - basico
+objective: Distinguir shell de Bash y guardar tu primer saludo con echo.
+files_to_create:
+  - saludo.txt
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: saludo-existente
+      message: El fichero saludo.txt existe en tu home
+      hint: Comprueba con `ls` dónde estás; crea el fichero con `echo ... > saludo.txt`.
+      cmd: test -f saludo.txt
+    - name: saludo-contenido
+      message: El contenido de saludo.txt es el texto exacto
+      hint: El texto sin espacios extra al final; verifica con `cat saludo.txt`.
+      cmd: test "$(cat saludo.txt)" = "Hola desde Bash Forge"

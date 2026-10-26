@@ -1,0 +1,22 @@
+id: lvl8-basenames
+title: basename y dirname en scripts
+level: 8
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl8-strict-mode
+tags:
+  - paths
+objective: Sacar el nombre y la carpeta de una ruta confiablemente.
+files_to_create:
+  - rutear.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: rutear
+      message: rutear.sh /opt/cosas/f.sh hace basename f.sh
+      cmd: bash rutear.sh /opt/cosas/f.sh
+      expectExit: 0
+      expectOutput: f[.]sh

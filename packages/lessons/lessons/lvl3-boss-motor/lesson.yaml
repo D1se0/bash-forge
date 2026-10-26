@@ -1,0 +1,29 @@
+id: lvl3-boss-motor
+title: Boss Fight · El Motor de Fragutos
+level: 3
+kind: boss
+xp: 80
+estimated_minutes: 15
+prerequisites:
+  - lvl3-reto-flujo
+tags:
+  - boss
+objective: "Gran examen de bucles: listas, ficheros, condicionales y saltos."
+files_to_create:
+  - motor.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: maker-fichero
+      message: tareas.txt existe con las tres líneas
+      cmd: grep -q "comprar hierro barato" tareas.txt && grep -q "cerrar fragua" tareas.txt && grep -q "tocar campana"
+        tareas.txt
+    - name: motor-linea
+      message: "motor.sh imprime cada línea como 'motor: contenido'"
+      cmd: bash motor.sh < /dev/null
+      expectOutput: "motor: comprar hierro barato"
+    - name: motor-entiedad
+      message: con '#' en líneas no imprime comentario
+      cmd: bash motor.sh
+      expectOutputAbsent: "motor: #"

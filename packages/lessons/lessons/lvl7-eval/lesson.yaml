@@ -1,0 +1,22 @@
+id: lvl7-eval
+title: eval y sus peligros
+level: 7
+kind: lesson
+xp: 30
+estimated_minutes: 10
+prerequisites:
+  - lvl7-subshell
+tags:
+  - control
+objective: Entender cuándo vale la pena y cuando es una trampa.
+files_to_create:
+  - señal.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: eval
+      message: señal.sh imprime ejecutado por eval
+      cmd: bash señal.sh
+      expectExit: 0
+      expectOutput: ^ejecutado por eval$

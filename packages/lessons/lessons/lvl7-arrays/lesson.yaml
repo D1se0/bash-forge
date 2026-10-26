@@ -1,0 +1,22 @@
+id: lvl7-arrays
+title: Arrays indexados
+level: 7
+kind: lesson
+xp: 35
+estimated_minutes: 12
+prerequisites:
+  - lvl7-recursividad
+tags:
+  - variables
+objective: Declarar, leer, recorrer y medir un array.
+files_to_create:
+  - lista.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: frutas
+      message: "lista.sh imprime fruta: X por cada una"
+      cmd: bash lista.sh
+      expectExit: 0
+      expectOutput: "fruta: "

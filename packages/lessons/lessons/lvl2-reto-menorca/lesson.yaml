@@ -1,0 +1,29 @@
+id: lvl2-reto-menorca
+title: Reto · Quién tiene menos
+level: 2
+kind: challenge
+xp: 35
+estimated_minutes: 12
+prerequisites:
+  - lvl2-lab-operador
+tags:
+  - reto
+objective: Comparar dos números pasados y decidir quién es el menor.
+files_to_create:
+  - menor.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: sun-menor
+      message: "bash menor.sh 2 9 imprime 'menor: 2'"
+      cmd: bash menor.sh 2 9
+      expectOutput: "^menor: 2$"
+    - name: otros-menor
+      message: "bash menor.sh 9 2 imprime 'menor: 2'"
+      cmd: bash menor.sh 9 2
+      expectOutput: "^menor: 2$"
+    - name: iguales
+      message: bash menor.sh 3 3 imprime 'iguales'
+      cmd: bash menor.sh 3 3
+      expectOutput: ^iguales$

@@ -1,0 +1,24 @@
+id: lvl2-if-test
+title: "if / elif / else: la decisión básica"
+level: 2
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites: []
+tags:
+  - condicionales
+objective: Escribir un if correcto con test y entender el exit code como verdad.
+files_to_create:
+  - decision.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: al-menos-dos
+      message: "con 10 imprime 'Cifras: al menos dos'"
+      cmd: bash decision.sh 10
+      expectOutput: "^Cifras: al menos dos$"
+    - name: solo-una
+      message: "con 3 imprime 'Cifras: solo una'"
+      cmd: bash decision.sh 3
+      expectOutput: "^Cifras: solo una$"

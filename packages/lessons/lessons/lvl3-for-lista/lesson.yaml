@@ -1,0 +1,24 @@
+id: lvl3-for-lista
+title: "for sobre listas: la máquina de rodajas"
+level: 3
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites: []
+tags:
+  - bucles
+objective: Iterar listas con for clásico y contar con un índice.
+files_to_create:
+  - listado.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: tres-lineas
+      message: "con alfa beta gamma imprime 'piezas 1: alfa' … 'piezas 3: gamma'"
+      cmd: bash listado.sh alfa beta gamma
+      expectOutput: "piezas 2: beta"
+    - name: espacios-en-arg
+      message: "con 'uno solo' imprime 'piezas 1: uno solo'"
+      cmd: bash listado.sh "uno solo"
+      expectOutput: "^piezas 1: uno solo$"

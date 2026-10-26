@@ -1,0 +1,22 @@
+id: lvl6-printf
+title: "printf: formato de no errores"
+level: 6
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl6-cut
+tags:
+  - salida
+objective: Formatear salidas con padding y números con precisión.
+files_to_create:
+  - formato.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: forma
+      message: formato.sh hola imprime la línea en col. de 6
+      cmd: bash formato.sh hola
+      expectExit: 0
+      expectOutput: hola   ]

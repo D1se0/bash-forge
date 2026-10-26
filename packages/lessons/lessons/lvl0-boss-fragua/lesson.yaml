@@ -1,0 +1,31 @@
+id: lvl0-boss-fragua
+title: Boss Fight · El Aprendiz de la Fragua
+level: 0
+kind: boss
+xp: 60
+estimated_minutes: 15
+prerequisites:
+  - lvl0-terminales-vida
+tags:
+  - boss
+objective: "Examen de nivel 0: script ejecutable + carpetas + README a la vez."
+files_to_create:
+  - forge.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: boss-script
+      message: forge.sh con shebang, ejecutable y con salida correcta
+      cmd: ./forge.sh
+      expectOutput: ^Fragua encendida$
+      expectExecutable: forge.sh
+      expectFileContains:
+        path: forge.sh
+        regex: ^#!/usr/bin/env bash
+    - name: boss-carpetas
+      message: Existe forge/log
+      cmd: test -d forge/log
+    - name: boss-readme
+      message: README.md empieza por "# Forja de"
+      cmd: grep -q "^# Forja de" README.md

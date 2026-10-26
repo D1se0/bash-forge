@@ -1,0 +1,25 @@
+id: lvl3-brace-expansion
+title: "Brace expansion: {1..10}, {a..c} y {x,y,z}"
+level: 3
+kind: lesson
+xp: 20
+estimated_minutes: 6
+prerequisites:
+  - lvl3-for-lista
+tags:
+  - bucles
+  - expansion
+objective: Generar listas sin escribir a mano.
+files_to_create:
+  - coladas.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: ficheros-colados
+      message: existen dias.lunes y dias.viernes
+      cmd: test -f dias.lunes && test -f dias.viernes
+    - name: fechas-loop
+      message: imprime feb01..feb05 una por línea
+      cmd: bash coladas.sh
+      expectOutput: feb02\nfeb03\nfeb04

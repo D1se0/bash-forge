@@ -1,0 +1,431 @@
+lessons:
+  - id: lvl0-que-es-un-shell
+    title: ¿Qué es un shell y qué es Bash?
+    level: 0
+    xp: 10
+    minutes: 5
+    tags: [conceptos, basico]
+    objective: Distinguir shell de Bash y guardar tu primer saludo con echo.
+    files: [saludo.txt]
+    theory: |
+      La **shell** es el programa que traduce lo que escribes en la terminal a llamadas al sistema. En Linux conviven varias: `sh`, `zsh`, `fish`… y la más famosa: **Bash** (Bourne-Again SHell), compatible con el shell original de Unix.
+
+      La terminal es la ventana; la shell es el motor que corre dentro. En Bash Forge tu proceso es un Bash de verdad corriendo en Ubuntu dentro de un contenedor: todo lo que hagas aquí es real.
+
+      `echo` imprime texto a la salida estándar (stdout). Es la "impresora" universal de Bash.
+    example: |
+      ```bash
+      $ echo "¡Hola, Bash Forge!"
+      ¡Hola, Bash Forge!
+      $ echo una palabra suelta
+      una palabra suelta   # sin comillas, Bash separa por espacios
+      ```
+    exercise: |
+      Crea el fichero `saludo.txt` en tu home con el texto exacto `Hola desde Bash Forge`, usando `echo` y la redirección `>`:
+
+      ```bash
+      echo "Hola desde Bash Forge" > saludo.txt
+      ```
+    errors:
+      - "Escribir `echo>saludo.txt` pegado: Bash lo interpreta como redirección rara y falla."
+      - "Confundir `>` (crea/sobrescribe) con `>>` (añade al final)."
+    quiz:
+      question: ¿Qué hace `echo hola > fichero` si `fichero` ya tenía contenido?
+      answer: "Lo sobrescribe: `>` crea o trunca antes de escribir."
+    tasks:
+      - name: saludo-existente
+        message: El fichero saludo.txt existe en tu home
+        cmd: test -f saludo.txt
+        hint: Comprueba con `ls` dónde estás; crea el fichero con `echo ... > saludo.txt`.
+      - name: saludo-contenido
+        message: El contenido de saludo.txt es el texto exacto
+        cmd: test "$(cat saludo.txt)" = "Hola desde Bash Forge"
+        hint: El texto sin espacios extra al final; verifica con `cat saludo.txt`.
+    hints:
+      - "`echo texto > fichero` escribe en un archivo sin abrir un editor."
+      - "`echo \"Hola desde Bash Forge\" > saludo.txt` desde tu home."
+      - Verifica con `cat saludo.txt`: debe imprimir exactamente la frase.
+    solution: |
+      echo "Hola desde Bash Forge" > saludo.txt
+      cat saludo.txt
+
+  - id: lvl0-pwd-cd-rutas
+    title: "Dónde estás: pwd, cd y rutas absolutas/relativas"
+    level: 0
+    xp: 10
+    minutes: 6
+    tags: [rutas, basico]
+    objective: Moverte por el sistema de ficheros y distinguir ruta absoluta de relativa.
+    files: [ruta.txt]
+    theory: |
+      `pwd` imprime dónde estás; `cd` te mueve. Una ruta **absoluta** empieza por `/` (`cd /tmp`); una **relativa** parte de donde estás (`cd docs`). `.` es "aquí", `..` es "el padre": `cd ..` sube un nivel y `cd` a secas vuelve a tu `$HOME`.
+    example: |
+      ```bash
+      $ pwd
+      /home/forge_000
+      $ cd workspace && pwd
+      /home/forge_000/workspace
+      $ cd .. && pwd
+      /home/forge_000
+      ```
+    exercise: |
+      Crea la carpeta `workspace/proyectos/capitulo1` con **una sola orden** (`mkdir -p`) y guarda la ruta absoluta de `workspace` en `ruta.txt` (un `cd` al interior + `pwd` con redirection).
+    errors:
+      - "`mkdir carpeta/subcarpeta` sin `-p` falla si la carpeta padre no existe."
+      - "`cd /workspace` busca un directorio en la raíz; tu workspace está bajo tu home."
+    quiz:
+      question: Si estás en /home/forge_001/workspace/proyectos, ¿dónde acabas tras `cd ../..`?
+      answer: En /home/forge_001 (subes dos niveles).
+    tasks:
+      - name: carpetas-creadas
+        message: Existe workspace/proyectos/capitulo1
+        cmd: test -d workspace/proyectos/capitulo1
+      - name: ruta-absoluta
+        message: ruta.txt contiene la ruta absoluta de workspace
+        cmd: test "$(cat ruta.txt 2>/dev/null)" = "$HOME/workspace"
+        hint: "`cd workspace && pwd > ../ruta.txt && cd ..`"
+    hints:
+      - "`mkdir -p workspace/proyectos/capitulo1` crea todo el árbol de golpe."
+      - "Para el fichero: entra con `cd workspace`, captura `pwd > ../ruta.txt` y vuelve con `cd ..`."
+      - "Comprueba con `cat ruta.txt`."
+    solution: |
+      mkdir -p workspace/proyectos/capitulo1
+      cd workspace && pwd > ../ruta.txt && cd ..
+
+  - id: lvl0-ls-flags
+    title: "ls con lupa: -l, -a, -h y las columnas"
+    level: 0
+    xp: 10
+    minutes: 6
+    tags: [ficheros]
+    objective: Leer la salida de ls -la como un profesional.
+    files: []
+    theory: |
+      `ls -l` imprime una columna por fichero: tipo y permisos (`d` directorio, `-` fichero), nº de enlaces, dueño, **grupo**, tamaño, fecha, nombre. `ls -a` añade los ocultos (los que empiezan por punto, como `.bashrc`); `ls -h` da tamaños legibles (K, M, G). Combínalas: `ls -lah`.
+    example: |
+      ```bash
+      $ ls -a
+      .  ..  .bashrc  saludo.txt
+      $ ls -l /etc | head -2
+      total 1004
+      drwxr-xr-x  3 root root 4096 Oct  8 07:11 adduser.d
+      ```
+    exercise: |
+      Crea en tu home tres ficheros: `.secreto` (oculto), `publico.txt` y `grande.txt` (un megabyte con `head -c 1M /dev/urandom > grande.txt`). Después guarda en `registro.txt` el resultado de `ls -A` para demostrar que ves el oculto.
+    errors:
+      - "`ls` a secas no muestra ocultos: hace falta `-a` o `-A`."
+      - "`head -c 1M` sirve; `head -n 1M` pide LÍNEAS y no genera megas de datos."
+    quiz:
+      question: En `ls -l`, ¿cómo distingues un directorio de un fichero?
+      answer: "Por el primer carácter: `d` para directorios, `-` para ficheros regulares."
+    tasks:
+      - name: fichero-oculto
+        message: Existe el fichero oculto .secreto
+        cmd: test -f .secreto
+        hint: "`touch .secreto` crea ficheros vacíos; el punto inicial lo deja oculto."
+      - name: grande-creado
+        message: Existe grande.txt de al menos 1 MB
+        cmd: test "$(stat -c %s grande.txt)" -ge 1048576
+        hint: "`head -c 1M /dev/urandom > grande.txt`"
+      - name: registro-listado
+        message: registro.txt lista .secreto
+        cmd: grep -qx ".secreto" registro.txt
+        hint: "`ls -A > registro.txt` incluye los ocultos."
+    hints:
+      - "`touch .secreto` y `head -c 1M /dev/urandom > grande.txt`."
+      - "`ls -A > registro.txt` guarda el listado con ocultos."
+      - "Verifica con `cat registro.txt`."
+    solution: |
+      touch .secreto
+      head -c 1M /dev/urandom > grande.txt
+      ls -A > registro.txt
+
+  - id: lvl0-cat-help
+    title: "Ayuda integrada: cat, --help y man"
+    level: 0
+    xp: 10
+    minutes: 5
+    tags: [ayuda]
+    objective: "Buscar ayuda antes que Google: cat, --help, man y códigos de salida."
+    files: [ayuda.txt, exito.txt]
+    theory: |
+      Todo comando acepta `--help` y muchos traen **manual** (`man ls`, `man cat`). Navega con las flechas/space y sal con `q`.
+
+      El **código de salida** dice si algo funcionó: `0` = éxito, distinto de `0` = error. Compruébalo con `echo $?` justo después del comando (cada comando nuevo lo sobreescribe).
+    example: |
+      ```bash
+      $ cat saludo.txt
+      Hola desde Bash Forge
+      $ cat --help | head -1
+      Usage: cat [OPTION]... [FILE]...
+      $ cat no-existe
+      cat: no-existe: No such file or directory
+      $ echo $?
+      1     # error
+      ```
+    exercise: |
+      Guarda en `ayuda.txt` las primeras 12 líneas del man de `cat` (`man cat | head -12 > ayuda.txt`). Luego ejecuta `cat /etc/hostname` a éxito y guarda su `$?` en `exito.txt`.
+    errors:
+      - "`echo $?` dos veces seguidas: la segunda ya no vale (otra orden la machaca)."
+      - "Salir de `man` con Ctrl+C en vez de `q`: funciona, pero `q` es lo natural."
+    quiz:
+      question: ¿Qué código de salida devuelve `cat fichero-que-no-existe`?
+      answer: "1 (error). Solo el 0 significa «todo bien»."
+    tasks:
+      - name: ayuda-capturada
+        message: ayuda.txt contiene la cabecera del man de cat
+        cmd: grep -qE "(CAT|Cat|cat)" ayuda.txt && grep -qE "[0-9]{4}" ayuda.txt
+        hint: "`man cat | head -12 > ayuda.txt`"
+      - name: exito-registrado
+        message: exito.txt guarda un 0
+        cmd: test "$(cat exito.txt 2>/dev/null | tr -d '[:space:]')" = "0"
+        hint: "`cat /etc/hostname >/dev/null; echo $? > exito.txt`"
+    hints:
+      - "`man cat | head -12 > ayuda.txt`"
+      - "`cat /etc/hostname >/dev/null; echo $? > exito.txt`"
+      - "`cat exito.txt` debe imprimir 0."
+    solution: |
+      man cat | head -12 > ayuda.txt
+      cat /etc/hostname >/dev/null; echo $? > exito.txt
+
+  - id: lvl0-nano-primer-fichero
+    title: "Tu editor: guardar y salir con nano"
+    level: 0
+    xp: 15
+    minutes: 8
+    tags: [editores]
+    objective: Crear y guardar ficheros con nano sin quedar atrapado.
+    files: [notas.md]
+    theory: |
+      **nano** es el editor de bienvenida: escribes literalmente y en la barra inferior hay ayudas. Guardar = `Ctrl+O` (Write Out), Enter para confirmar. Salir = `Ctrl+X`. Buscar = `Ctrl+W`. `Ctrl+K` corta la línea actual (y `Ctrl+U` la pega).
+    example: |
+      ```bash
+      $ nano notas.md
+      … escribes, Ctrl+O Enter guarda, Ctrl+X sale …
+      $ cat notas.md
+      Nota: uso Ctrl+O para guardar
+      Nota: uso Ctrl+X para salir
+      ```
+    exercise: |
+      Abre `nano notas.md` y deja **dos líneas** que empiecen por la palabra `Nota:` (por ejemplo, `Nota: uso Ctrl+O para guardar`). Guarda y sal sin error.
+    errors:
+      - "Pulsar Ctrl+C esperando cerrar: no cierra nano (Ctrl+X es salir)."
+      - "Guardar dos veces y acabar con `notas.md.md`."
+    quiz:
+      question: En nano, ¿qué combinación guarda sin salir?
+      answer: Ctrl+O (Write Out) más Enter.
+    tasks:
+      - name: notas-existen
+        message: "notas.md tiene al menos una línea Nota:"
+        cmd: grep -q "^Nota:" notas.md
+      - name: notas-dos-lineas
+        message: "notas.md tiene al menos dos líneas Nota:"
+        cmd: test "$(grep -c "^Nota:" notas.md)" -ge 2
+    hints:
+      - "Abre con `nano notas.md`."
+      - "Dos líneas que empiecen literalmente por `Nota:`."
+      - "Guarda con Ctrl+O + Enter y sal con Ctrl+X."
+    solution: |
+      cat > notas.md <<'EOF'
+      Nota: uso Ctrl+O para guardar
+      Nota: uso Ctrl+X para salir
+      EOF
+
+  - id: lvl0-shebang
+    title: "El shebang: #!/usr/bin/env bash"
+    level: 0
+    xp: 15
+    minutes: 7
+    tags: [scripts]
+    objective: Marca un script como ejecutable y entiende la primera línea.
+    files: [hello.sh]
+    theory: |
+      La primera línea de un script Bash profesional es el **shebang**: `#!/usr/bin/env bash`. Al ejecutarlo directamente, el kernel lee esa línea y lanza el intérprete correcto (`env` localiza bash en el PATH).
+
+      Sin bit `x` el sistema no puede ejecutarlo: se da con `chmod +x script.sh` (compruébalo con `ls -l`: verás `-rwx…`).
+    example: |
+      ```bash
+      $ nano hello.sh
+      #!/usr/bin/env bash
+      echo "Hola, herrero"
+      $ chmod +x hello.sh
+      $ ./hello.sh
+      Hola, herrero
+      ```
+    exercise: |
+      Crea `hello.sh` con shebang que imprima `Hola desde Bash Forge`; dale `chmod +x` y ejecútalo.
+    errors:
+      - "Shebang precedido por BOM o espacios: debe ser lo primero del fichero."
+      - "`./hello.sh` con `Permission denied`: falta `chmod +x`."
+    quiz:
+      question: ¿Qué hace el shebang de hecho?
+      answer: "Indica al kernel qué intérprete abrir: bash localizado vía env."
+    tasks:
+      - name: shebang-correcto
+        message: hello.sh empieza por #!/usr/bin/env bash
+        expectFileContains: { path: hello.sh, regex: "^#!/usr/bin/env bash" }
+      - name: ejecutable
+        message: hello.sh tiene bit de ejecución
+        expectExecutable: hello.sh
+      - name: salida-correcta
+        message: ./hello.sh imprime el saludo
+        cmd: ./hello.sh
+        expectOutput: "^Hola desde Bash Forge$"
+    hints:
+      - "Primera línea literal `#!/usr/bin/env bash`, luego `echo \"Hola desde Bash Forge\"`."
+      - "`chmod +x hello.sh` antes de ejecutarlo."
+      - "Ejecuta `./hello.sh`, no `bash hello.sh`, para reivindicar el shebang."
+    solution: |
+      cat > hello.sh <<'EOF'
+      #!/usr/bin/env bash
+      echo "Hola desde Bash Forge"
+      EOF
+      chmod +x hello.sh
+      ./hello.sh
+
+  - id: lvl0-ejecutar-local-vs-bash
+    title: "Ejecutar: ./script.sh vs bash script.sh"
+    level: 0
+    xp: 15
+    minutes: 6
+    tags: [scripts]
+    objective: Distinguir ejecutación directa de interpretación por bash.
+    files: [runme.sh, misma.sh]
+    theory: |
+      `./script.sh` pide al kernel ejecución directa (he indica un shebang). Con `bash script.sh`, tú abres bash y le pasas el archivo; no importan los permisos.
+
+      ¿Y `source script.sh` (o `. script.sh`)? Ejecuta el código EN tu shell actual: alerta, la filosofía puede arrastrar variables que afecten a tu entorno. `$0` dentro de un script es su nombre; te dirá cómo fue invocado.
+    example: |
+      ```bash
+      $ ./hello.sh       # requiere +x
+      $ bash hello.sh    # no necesita permisos
+      $ bash misma.sh
+      vertical: misma.sh
+      ```
+    exercise: |
+      Crea `runme.sh` (shebang + `echo "Modo ./"`) ejecutable, y `misma.sh` con `echo "vertical: $0"`. Ejecuta `./runme.sh` y `bash misma.sh`.
+    errors:
+      - "`./runme.sh` sin +x lanza `Permission denied`."
+      - "`$0` en un script es el nombre del script, no de tu shell."
+    quiz:
+      question: ¿Cuándo NO conviene `source script.sh`?
+      answer: Cuando el script espera argumentos ($1…) o puede sare variables que no quieras tocar.
+    tasks:
+      - name: runme-ejecutable
+        message: runme.sh es ejecutable
+        expectExecutable: runme.sh
+      - name: runme-lanza
+        message: ./runme.sh escribe "Modo ./"
+        cmd: ./runme.sh
+        expectOutput: "^Modo \\./$"
+      - name: misma-llamada
+        message: bash misma.sh imprime su nombre
+        cmd: bash misma.sh
+        expectOutput: "vertical: misma\\.sh"
+    hints:
+      - "runme.sh = `echo \"Modo ./\"`, con shebang y `chmod +x`."
+      - "misma.sh = `echo \"vertical: $0\"`."
+      - "Comprueba ambos modos de ejecución antes del check."
+    solution: |
+      cat > runme.sh <<'EOF'
+      #!/usr/bin/env bash
+      echo "Modo ./"
+      EOF
+      cat > misma.sh <<'EOF'
+      #!/usr/bin/env bash
+      echo "vertical: $0"
+      EOF
+      chmod +x runme.sh
+      ./runme.sh
+      bash misma.sh
+
+  - id: lvl0-terminales-vida
+    title: "Sobrevivir a la terminal: Ctrl+C, Ctrl+D e historial"
+    level: 0
+    xp: 10
+    minutes: 5
+    tags: [terminal]
+    objective: Controlar teclas críticas, cancelar procesos y usar el historial.
+    files: []
+    theory: |
+      Tres atajos de supervivencia:
+
+      - **Ctrl+C**: envía SIGINT y mata lo que corre en primer plano.
+      - **Ctrl+D**: EOF en stdin. En tu shell, sale de la sesión; en `cat`, finaliza la entrada.
+      - **↑/↓**: historial. `history` lista; `!34` re-ejecuta la 34ª; `!!` la última.
+
+      Y `$?` te pinta el código de salida del comando anterior (Bash Forge lo en el prompt).
+    example: |
+      ```bash
+      $ sleep 100
+      ^C                  # Ctrl+C lo mata
+      $ history | tail -3
+      ```
+    exercise: |
+      Guarda las últimas 2 líneas de `history` en `mi-historial.txt`. Suficiente: el resto es práctica libre (matando comandos colgados con Ctrl+C, ¡cuidado con `sleep 999`!).
+    errors:
+      - "El `history` solo lo tiene la shell INTERACTIVA: dentro de un script no hay."
+      - "`history -1` no existe; usa `tail -N`."
+    quiz:
+      question: ¿Qué hace `!99`?
+      answer: Re-ejecuta la orden número 99 del historial (¡no la última!).
+    tasks:
+      - name: historial-guardado
+        message: mi-historial.txt tiene las últimas líneas de historial
+        cmd: test -s mi-historial.txt && grep -qE "[0-9]+" mi-historial.txt
+        hint: "`history | tail -2 > mi-historial.txt` guarda con numeración; puede salir vacía en un script de NON-interactive."
+    hints:
+      - "`history` lista las órdenes numeradas de tu terminal."
+      - "`history | tail -2 > mi-historial.txt`"
+      - "`cat mi-historial.txt`: no debe estar vacío."
+    solution: |
+      history | tail -2 > mi-historial.txt
+      cat mi-historial.txt
+
+  - id: lvl0-boss-fragua
+    title: Boss Fight · El Aprendiz de la Fragua
+    level: 0
+    kind: boss
+    xp: 60
+    minutes: 15
+    tags: [boss]
+    objective: "Examen de nivel 0: script ejecutable + carpetas + README a la vez."
+    files: [forge.sh]
+    theory: |
+      Cada nivel culmina con un **Boss Fight**: examen práctico todo-junto sin teoría nueva. Se puntúa: ficheros existentes, shebang/bit +x, salida correcta y limpieza (sin mensajes de error sueltos).
+    exercise: |
+      Completa todo: 
+      1. `forge.sh`: shebang + imprime `Fragua encendida`, ejecutable.
+      2. Carpeta `forge/log` (una orden).
+      3. `README.md` con una línea que empiece por `# Forja de`.
+      4. Ejecuta `./forge.sh`.
+    extra: "> ⚡ Con esto cierras nivel 0: **Aprendiz de la fragua** desbloquean siguientes niveles. ¡A por el nivel 1 (variables)!"
+    errors:
+      - "Ejecatar `bash forge.sh` y pensar que vale: el check pide `./forge.sh` (pide +x)."
+      - "`mkdir forge/log` sin `-p`: falla si `forge/` no existe (aquí no existe)."
+    tasks:
+      - name: boss-script
+        message: forge.sh con shebang, ejecutable y con salida correcta
+        cmd: ./forge.sh
+        expectOutput: "^Fragua encendida$"
+        expectExecutable: forge.sh
+        expectFileContains: { path: forge.sh, regex: "^#!/usr/bin/env bash" }
+      - name: boss-carpetas
+        message: Existe forge/log
+        cmd: test -d forge/log
+      - name: boss-readme
+        message: README.md empieza por "# Forja de"
+        cmd: grep -q "^# Forja de" README.md
+    hints:
+      - "Shebang + `echo \"Fragua encendida\"` + `chmod +x`."
+      - "`mkdir -p forge/log`"
+      - "`echo \"# Forja de nivel 0\" > README.md` y ejecuta `./forge.sh`."
+    solution: |
+      cat > forge.sh <<'EOF'
+      #!/usr/bin/env bash
+      echo "Fragua encendida"
+      EOF
+      chmod +x forge.sh
+      mkdir -p forge/log
+      echo "# Forja de nivel 0" > README.md
+      ./forge.sh

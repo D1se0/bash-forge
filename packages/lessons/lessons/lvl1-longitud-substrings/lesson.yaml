@@ -1,0 +1,29 @@
+id: lvl1-longitud-substrings
+title: "Longitud y troceado: ${#var}, ${var:0:3}, ${var#…}"
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl1-defaults-expansion
+tags:
+  - expansion
+objective: Medir cadenas y cortar por delante/detrás sin awk.
+files_to_create:
+  - troceado.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: longitud
+      message: "imprime 'cantidad: 12'"
+      cmd: bash troceado.sh
+      expectOutput: "^cantidad: 12$"
+    - name: prefijo
+      message: "imprime 'comienzo: bash'"
+      cmd: bash troceado.sh
+      expectOutput: "^comienzo: bash$"
+    - name: extension
+      message: "imprime 'extension: sh'"
+      cmd: bash troceado.sh
+      expectOutput: "^extension: sh$"

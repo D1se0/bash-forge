@@ -1,0 +1,29 @@
+id: lvl2-boss-portero
+title: Boss Fight · El Portero de Herrero
+level: 2
+kind: boss
+xp: 75
+estimated_minutes: 15
+prerequisites:
+  - lvl2-reto-menorca
+tags:
+  - boss
+objective: "Examen máximo de condicionales: ficheros, cadenas y números juntos."
+files_to_create:
+  - portero.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: boss-fichero
+      message: con vars.sh imprime 'FICHERO'
+      cmd: bash portero.sh check vars.sh
+      expectOutput: ^FICHERO$
+    - name: boss-dir
+      message: con workspace imprime 'DIR'
+      cmd: bash portero.sh check workspace
+      expectOutput: ^DIR$
+    - name: boss-no
+      message: con lo-que-no-hay imprime 'NO'
+      cmd: bash portero.sh check lo-que-no-hay.txt
+      expectOutput: ^NO$

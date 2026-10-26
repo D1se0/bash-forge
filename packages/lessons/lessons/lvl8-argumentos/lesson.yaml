@@ -1,0 +1,32 @@
+id: lvl8-argumentos
+title: Argument parsing robusto con while y case
+level: 8
+kind: lesson
+xp: 35
+estimated_minutes: 12
+prerequisites:
+  - lvl8-basenames
+tags:
+  - argumentos
+objective: Aceptar banderas con y sin argumentos, y rutas con espacios.
+files_to_create:
+  - cli.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: hola
+      message: cli.sh -n Ana imprime Hola Ana
+      cmd: bash cli.sh -n Ana
+      expectExit: 0
+      expectOutput: ^Hola Ana$
+    - name: upper
+      message: cli.sh -n ana --upper imprime HOLA ANA
+      cmd: bash cli.sh -n ana --upper
+      expectExit: 0
+      expectOutput: HOLA ANA
+    - name: sin-args
+      message: sin args imprime Uso y sale 1
+      cmd: bash cli.sh
+      expectExit: 1
+      expectOutput: Uso

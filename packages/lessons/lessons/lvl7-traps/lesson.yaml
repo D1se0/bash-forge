@@ -1,0 +1,22 @@
+id: lvl7-traps
+title: "traps: reaccionar a señales"
+level: 7
+kind: lesson
+xp: 35
+estimated_minutes: 12
+prerequisites:
+  - lvl7-eval
+tags:
+  - control
+objective: Ejecutar código al salir, al recivr INT o al recevoir TERM.
+files_to_create:
+  - atrapa.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: exit-trap
+      message: atrapa.sh imprime limpieza al final al acabarse
+      cmd: bash atrapa.sh
+      expectExit: 0
+      expectOutput: limpieza al final

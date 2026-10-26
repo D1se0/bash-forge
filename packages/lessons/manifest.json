@@ -1,0 +1,585 @@
+{
+  "version": 1,
+  "counts": {
+    "total": 82,
+    "lesson": 70,
+    "challenge": 7,
+    "boss": 5
+  },
+  "lessons": [
+    {
+      "id": "lvl0-que-es-un-shell",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 10,
+      "title": "¿Qué es un shell y qué es Bash?"
+    },
+    {
+      "id": "lvl0-pwd-cd-rutas",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 10,
+      "title": "Dónde estás: pwd, cd y rutas absolutas/relativas"
+    },
+    {
+      "id": "lvl0-ls-flags",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 10,
+      "title": "ls con lupa: -l, -a, -h y las columnas"
+    },
+    {
+      "id": "lvl0-cat-help",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 10,
+      "title": "Ayuda integrada: cat, --help y man"
+    },
+    {
+      "id": "lvl0-nano-primer-fichero",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 15,
+      "title": "Tu editor: guardar y salir con nano"
+    },
+    {
+      "id": "lvl0-shebang",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 15,
+      "title": "El shebang: #!/usr/bin/env bash"
+    },
+    {
+      "id": "lvl0-ejecutar-local-vs-bash",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 15,
+      "title": "Ejecutar: ./script.sh vs bash script.sh"
+    },
+    {
+      "id": "lvl0-terminales-vida",
+      "level": 0,
+      "kind": "lesson",
+      "xp": 10,
+      "title": "Sobrevivir a la terminal: Ctrl+C, Ctrl+D e historial"
+    },
+    {
+      "id": "lvl0-boss-fragua",
+      "level": 0,
+      "kind": "boss",
+      "xp": 60,
+      "title": "Boss Fight · El Aprendiz de la Fragua"
+    },
+    {
+      "id": "lvl1-var-basicas",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 15,
+      "title": "Variables: crear, usar y proteger"
+    },
+    {
+      "id": "lvl1-comillas",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Comillas: simples, dobles y $'…'"
+    },
+    {
+      "id": "lvl1-args-posicionales",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Argumentos: $1…$9, ${10}, $# y el resto"
+    },
+    {
+      "id": "lvl1-at-vs-ast",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "La demo visual: \"$@\" vs $*"
+    },
+    {
+      "id": "lvl1-read",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "read: preguntar al usuario (y secretos)"
+    },
+    {
+      "id": "lvl1-especiales",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Especiales: $?, $$, $!, shift y set --"
+    },
+    {
+      "id": "lvl1-defaults-expansion",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Valores por defecto: ${var:-x}, :=, :? y :+"
+    },
+    {
+      "id": "lvl1-longitud-substrings",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Longitud y troceado: ${#var}, ${var:0:3}, ${var#…}"
+    },
+    {
+      "id": "lvl1-export-entorno",
+      "level": 1,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "export y unset: el entorno que heredan tus scripts"
+    },
+    {
+      "id": "lvl1-reto-invertidor",
+      "level": 1,
+      "kind": "challenge",
+      "xp": 30,
+      "title": "Reto · Inverción de argumentos"
+    },
+    {
+      "id": "lvl1-reto-gastro",
+      "level": 1,
+      "kind": "challenge",
+      "xp": 35,
+      "title": "Reto · Contraseña camuflada"
+    },
+    {
+      "id": "lvl1-boss-herrero",
+      "level": 1,
+      "kind": "boss",
+      "xp": 70,
+      "title": "Boss Fight · El Ayudante de Herrero"
+    },
+    {
+      "id": "lvl2-if-test",
+      "level": 2,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "if / elif / else: la decisión básica"
+    },
+    {
+      "id": "lvl2-ops-ficheros",
+      "level": 2,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "La tabla de ficheros: -e -f -d -r -w -x -s y la cuña"
+    },
+    {
+      "id": "lvl2-cadenas-logicos",
+      "level": 2,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "Cadenas y lógica: -z -n, = !=, =~ y ! && ||"
+    },
+    {
+      "id": "lvl2-numericos-aritmetica",
+      "level": 2,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "Números: -eq -ne -lt -le -gt -ge y (())"
+    },
+    {
+      "id": "lvl2-case-esac",
+      "level": 2,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "case: mascarillas y cadenas completas"
+    },
+    {
+      "id": "lvl2-lab-operador",
+      "level": 2,
+      "kind": "challenge",
+      "xp": 40,
+      "title": "Laboratorio interactivo · Operator Lab"
+    },
+    {
+      "id": "lvl2-reto-menorca",
+      "level": 2,
+      "kind": "challenge",
+      "xp": 35,
+      "title": "Reto · Quién tiene menos"
+    },
+    {
+      "id": "lvl2-boss-portero",
+      "level": 2,
+      "kind": "boss",
+      "xp": 75,
+      "title": "Boss Fight · El Portero de Herrero"
+    },
+    {
+      "id": "lvl3-for-lista",
+      "level": 3,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "for sobre listas: la máquina de rodajas"
+    },
+    {
+      "id": "lvl3-brace-expansion",
+      "level": 3,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Brace expansion: {1..10}, {a..c} y {x,y,z}"
+    },
+    {
+      "id": "lvl3-while-until",
+      "level": 3,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "while y until: persistencia hasta que salga"
+    },
+    {
+      "id": "lvl3-break-continue",
+      "level": 3,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "break / continue: manotazos de emergencia"
+    },
+    {
+      "id": "lvl3-read-linea-a-linea",
+      "level": 3,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "Leer ficheros línea a línea: el IFS= read -r idiomático"
+    },
+    {
+      "id": "lvl3-select",
+      "level": 3,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "select: menús interactivos de regalo"
+    },
+    {
+      "id": "lvl3-for-cstyle",
+      "level": 3,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "for estilo C: la interfaz de los algoritmófilos"
+    },
+    {
+      "id": "lvl3-reto-flujo",
+      "level": 3,
+      "kind": "challenge",
+      "xp": 35,
+      "title": "Reto · Control libre: tus propias reglas"
+    },
+    {
+      "id": "lvl3-boss-motor",
+      "level": 3,
+      "kind": "boss",
+      "xp": 80,
+      "title": "Boss Fight · El Motor de Fragutos"
+    },
+    {
+      "id": "lvl4-funciones-basicas",
+      "level": 4,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Funciones: empaquetar lógica reutilizable"
+    },
+    {
+      "id": "lvl4-local-return",
+      "level": 4,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "local y return: el alcance de tus variables"
+    },
+    {
+      "id": "lvl4-source-librerias",
+      "level": 4,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "source: bibliotecas de código compartido"
+    },
+    {
+      "id": "lvl4-getopts",
+      "level": 4,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "getopts: opciones pro (-a -b valor)"
+    },
+    {
+      "id": "lvl4-usage-help",
+      "level": 4,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "usage() y --help automático"
+    },
+    {
+      "id": "lvl4-estructura-profesional",
+      "level": 4,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Estructura de un script profesional"
+    },
+    {
+      "id": "lvl4-reto-calculadora",
+      "level": 4,
+      "kind": "challenge",
+      "xp": 35,
+      "title": "Reto · Mini calculadora de clases"
+    },
+    {
+      "id": "lvl4-reto-paquete",
+      "level": 4,
+      "kind": "challenge",
+      "xp": 40,
+      "title": "Reto · El instalador idempotente chiquito"
+    },
+    {
+      "id": "lvl4-boss-arquitecto",
+      "level": 4,
+      "kind": "boss",
+      "xp": 85,
+      "title": "Boss Fight · El Arquitecto de la Fragua"
+    },
+    {
+      "id": "lvl5-cadena-comparar",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Comparar cadenas con test"
+    },
+    {
+      "id": "lvl5-cadena-vacia",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Detectar si una cadena está vacía"
+    },
+    {
+      "id": "lvl5-elif",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "elif, else y orden de evaluación"
+    },
+    {
+      "id": "lvl5-case-numbers",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "case para rangos numéricos"
+    },
+    {
+      "id": "lvl5-aritmetica",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "Aritmética: (( )) y $[ ]"
+    },
+    {
+      "id": "lvl5-loops-for",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 30,
+      "title": "for sobre listas y secuencias"
+    },
+    {
+      "id": "lvl5-case",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "case con comodines * y ?"
+    },
+    {
+      "id": "lvl5-bucles-anidados",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 30,
+      "title": "Bucles anidados y tablitas"
+    },
+    {
+      "id": "lvl5-reto-contador",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 35,
+      "title": "Reto · Contador de números pares"
+    },
+    {
+      "id": "lvl5-boss",
+      "level": 5,
+      "kind": "lesson",
+      "xp": 60,
+      "title": "Boss Fight · El Maestro del Taller"
+    },
+    {
+      "id": "lvl6-grep",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "grep: bucear en el texto"
+    },
+    {
+      "id": "lvl6-sed",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "sed: sustituir texto en línea"
+    },
+    {
+      "id": "lvl6-tee",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "tee: escribir a la vez en pantalla y fichero"
+    },
+    {
+      "id": "lvl6-tr",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "tr: clonar, cortar y cambiar carácteres"
+    },
+    {
+      "id": "lvl6-cut",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "cut: trocear por columna o delimitador"
+    },
+    {
+      "id": "lvl6-printf",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "printf: formato de no errores"
+    },
+    {
+      "id": "lvl6-exit-codes",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "exit codes, && y ||"
+    },
+    {
+      "id": "lvl6-reto-inventario",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 35,
+      "title": "Reto · Mini inventario con grep y cut"
+    },
+    {
+      "id": "lvl6-boss",
+      "level": 6,
+      "kind": "lesson",
+      "xp": 60,
+      "title": "Boss Fight · El Inspector de Datos"
+    },
+    {
+      "id": "lvl7-comillas",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "Comillas dobles, simples y escapes"
+    },
+    {
+      "id": "lvl7-subshell",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 30,
+      "title": "Subshells y ámbito"
+    },
+    {
+      "id": "lvl7-eval",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 30,
+      "title": "eval y sus peligros"
+    },
+    {
+      "id": "lvl7-traps",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 35,
+      "title": "traps: reaccionar a señales"
+    },
+    {
+      "id": "lvl7-recursividad",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 35,
+      "title": "Recursividad con funciones"
+    },
+    {
+      "id": "lvl7-arrays",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 35,
+      "title": "Arrays indexados"
+    },
+    {
+      "id": "lvl7-reto-palabras",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 40,
+      "title": "Reto · Contador de palabras únicas"
+    },
+    {
+      "id": "lvl7-boss",
+      "level": 7,
+      "kind": "lesson",
+      "xp": 70,
+      "title": "Boss Fight · La Máquina de Procesamiento"
+    },
+    {
+      "id": "lvl8-strict-mode",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "set -euo pipefail: el modo estricto"
+    },
+    {
+      "id": "lvl8-basenames",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "basename y dirname en scripts"
+    },
+    {
+      "id": "lvl8-argumentos",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 35,
+      "title": "Argument parsing robusto con while y case"
+    },
+    {
+      "id": "lvl8-buscar-archivos",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 30,
+      "title": "buscar: find con filtros"
+    },
+    {
+      "id": "lvl8-sha",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 20,
+      "title": "Integridad: sha256sum básico"
+    },
+    {
+      "id": "lvl8-temporales",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "mktemp y ficheros temporales"
+    },
+    {
+      "id": "lvl8-reto-rename",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 40,
+      "title": "Reto · Renombrador masivo"
+    },
+    {
+      "id": "lvl8-boss",
+      "level": 8,
+      "kind": "lesson",
+      "xp": 80,
+      "title": "Boss Fight · El Constructor de Herramientas"
+    }
+  ]
+}

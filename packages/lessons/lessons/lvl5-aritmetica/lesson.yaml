@@ -1,0 +1,27 @@
+id: lvl5-aritmetica
+title: "Aritmética: (( )) y $[ ]"
+level: 5
+kind: lesson
+xp: 25
+estimated_minutes: 10
+prerequisites:
+  - lvl5-case-numbers
+tags:
+  - aritmetica
+objective: Sumar, restar, multiplicar y comparar números enteros.
+files_to_create:
+  - mate.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: suma
+      message: 7 3 imprime 10
+      cmd: bash mate.sh 7 3
+      expectExit: 0
+      expectOutput: "10"
+    - name: mayor
+      message: 7 3 imprime 7 como mayor
+      cmd: bash mate.sh 7 3
+      expectExit: 0
+      expectOutput: "7"

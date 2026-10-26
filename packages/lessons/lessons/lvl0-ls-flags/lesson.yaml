@@ -1,0 +1,28 @@
+id: lvl0-ls-flags
+title: "ls con lupa: -l, -a, -h y las columnas"
+level: 0
+kind: lesson
+xp: 10
+estimated_minutes: 6
+prerequisites:
+  - lvl0-pwd-cd-rutas
+tags:
+  - ficheros
+objective: Leer la salida de ls -la como un profesional.
+files_to_create: []
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: fichero-oculto
+      message: Existe el fichero oculto .secreto
+      hint: "`touch .secreto` crea ficheros vacíos; el punto inicial lo deja oculto."
+      cmd: test -f .secreto
+    - name: grande-creado
+      message: Existe grande.txt de al menos 1 MB
+      hint: "`head -c 1M /dev/urandom > grande.txt`"
+      cmd: test "$(stat -c %s grande.txt)" -ge 1048576
+    - name: registro-listado
+      message: registro.txt lista .secreto
+      hint: "`ls -A > registro.txt` incluye los ocultos."
+      cmd: grep -qx ".secreto" registro.txt

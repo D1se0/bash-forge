@@ -1,0 +1,26 @@
+id: lvl6-tee
+title: "tee: escribir a la vez en pantalla y fichero"
+level: 6
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites:
+  - lvl6-sed
+tags:
+  - pipes
+objective: Guardrar y mostrar lo mismo sin ejecutar dos veces.
+files_to_create:
+  - guarda.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: guarda
+      message: guarda.sh imprime hola tee
+      cmd: bash guarda.sh
+      expectExit: 0
+      expectOutput: hola tee
+    - name: fichero
+      message: demo.txt quedó con hola tee
+      cmd: cat demo.txt | grep "^hola tee$"
+      expectExit: 0

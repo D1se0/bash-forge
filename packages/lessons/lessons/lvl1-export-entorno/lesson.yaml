@@ -1,0 +1,28 @@
+id: lvl1-export-entorno
+title: "export y unset: el entorno que heredan tus scripts"
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 7
+prerequisites:
+  - lvl1-longitud-substrings
+tags:
+  - variables
+  - entorno
+objective: Publicar variables al child processes y limpiarlas con unset.
+files_to_create:
+  - envpass.sh
+  - hijo.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: hijo-define
+      message: "hijo.sh sin herencia imprime 'Veo: nada'"
+      cmd: env -u LLAVE bash hijo.sh
+      expectOutput: "^Veo: nada$"
+    - name: padre-exporta
+      message: envpass.sh hace que el hijo vea 'emergencias'
+      cmd: env -u LLAVE bash envpass.sh
+      expectOutput: "Veo: emergencias"
+      expectOutputAbsent: "Veo: nada"

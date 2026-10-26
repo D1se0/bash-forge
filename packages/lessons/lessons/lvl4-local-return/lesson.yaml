@@ -1,0 +1,26 @@
+id: lvl4-local-return
+title: "local y return: el alcance de tus variables"
+level: 4
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl4-funciones-basicas
+tags:
+  - funciones
+objective: Evitar fugas de variables y usar códigos de retorno correctos.
+files_to_create:
+  - recuento.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: suma-total
+      message: "bash recuento.sh 4 imprime 'total: 10'"
+      cmd: bash recuento.sh 4
+      expectOutput: "^total: 10$"
+    - name: usa-local
+      message: la función declara una variable local
+      expectFileContains:
+        path: recuento.sh
+        regex: local\s+[a-z_]+

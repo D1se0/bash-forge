@@ -1,0 +1,26 @@
+id: lvl0-cat-help
+title: "Ayuda integrada: cat, --help y man"
+level: 0
+kind: lesson
+xp: 10
+estimated_minutes: 5
+prerequisites:
+  - lvl0-ls-flags
+tags:
+  - ayuda
+objective: "Buscar ayuda antes que Google: cat, --help, man y códigos de salida."
+files_to_create:
+  - ayuda.txt
+  - exito.txt
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: ayuda-capturada
+      message: ayuda.txt contiene la cabecera del man de cat
+      hint: "`man cat | head -12 > ayuda.txt`"
+      cmd: grep -qE "(CAT|Cat|cat)" ayuda.txt && grep -qE "[0-9]{4}" ayuda.txt
+    - name: exito-registrado
+      message: exito.txt guarda un 0
+      hint: "`cat /etc/hostname >/dev/null; echo $? > exito.txt`"
+      cmd: test "$(cat exito.txt 2>/dev/null | tr -d '[:space:]')" = "0"

@@ -1,0 +1,30 @@
+id: lvl1-especiales
+title: "Especiales: $?, $$, $!, shift y set --"
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl1-read
+tags:
+  - argumentos
+  - procesos
+objective: Leer exit code, PID y reconstruir la lista con shift/set --.
+files_to_create:
+  - especiales.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: total-3
+      message: bash especiales.sh x y z imprime 'Tenía 3'
+      cmd: bash especiales.sh x y z
+      expectOutput: ^Tenía 3$
+    - name: shift-cambios
+      message: "tras shift queda 'Me quedo con 2: y z'"
+      cmd: bash especiales.sh x y z
+      expectOutput: "^Me quedo con 2: y z$"
+    - name: exit-false
+      message: aparece 'false devolvió 1'
+      cmd: bash especiales.sh x y z
+      expectOutput: ^false devolvió 1$

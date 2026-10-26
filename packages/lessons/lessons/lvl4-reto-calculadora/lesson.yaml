@@ -1,0 +1,30 @@
+id: lvl4-reto-calculadora
+title: Reto · Mini calculadora de clases
+level: 4
+kind: challenge
+xp: 35
+estimated_minutes: 12
+prerequisites:
+  - lvl4-estructura-profesional
+tags:
+  - reto
+  - funciones
+objective: Arma una calculadora con funciones por operación.
+files_to_create:
+  - calc.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: suma
+      message: bash calc.sh 2 + 3 imprime '5'
+      cmd: bash calc.sh 2 + 3
+      expectOutput: ^5$
+    - name: multiplica
+      message: bash calc.sh 4 x 5 imprime '20'
+      cmd: bash calc.sh 4 x 5
+      expectOutput: ^20$
+    - name: divide-cero
+      message: bash calc.sh 4 / 0 imprime 'no dividir cero' y sale 1
+      cmd: bash calc.sh 4 / 0
+      expectOutput: no dividir cero

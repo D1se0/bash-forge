@@ -1,0 +1,30 @@
+id: lvl4-reto-paquete
+title: Reto · El instalador idempotente chiquito
+level: 4
+kind: challenge
+xp: 40
+estimated_minutes: 14
+prerequisites:
+  - lvl4-reto-calculadora
+tags:
+  - reto
+  - funciones
+objective: Un instalador que puedes ejecutar DOS veces sin estropearse.
+files_to_create:
+  - instalador.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: primera-pasada
+      message: instalando… al crear
+      cmd: rm -rf instalado && bash instalador.sh
+      expectOutput: instalando
+    - name: segunda-pasada
+      message: segunda pasada imprime 'nada que hacer'
+      cmd: bash instalador.sh
+      expectOutput: nada que hacer
+    - name: contenido-constante
+      message: instalado/VERSION dice 1.0.0
+      cmd: cat instalado/VERSION
+      expectOutput: 1\.0\.0

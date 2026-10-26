@@ -1,0 +1,25 @@
+id: lvl1-defaults-expansion
+title: "Valores por defecto: ${var:-x}, :=, :? y :+"
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl1-especiales
+tags:
+  - expansion
+objective: Dar valores por defecto, exigir variables y detectarlas sin if.
+files_to_create:
+  - fallback.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: defeto
+      message: "sin SALUDO imprime 'Saludo: hola por defecto'"
+      cmd: env -u SALUDO bash fallback.sh
+      expectOutput: "^Saludo: hola por defecto$"
+    - name: personalizado
+      message: "con SALUDO=coder imprime 'Saludo: coder'"
+      cmd: SALUDO=coder bash fallback.sh
+      expectOutput: "^Saludo: coder$"

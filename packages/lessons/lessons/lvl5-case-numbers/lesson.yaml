@@ -1,0 +1,27 @@
+id: lvl5-case-numbers
+title: case para rangos numéricos
+level: 5
+kind: lesson
+xp: 25
+estimated_minutes: 9
+prerequisites:
+  - lvl5-elif
+tags:
+  - case
+objective: Elegir ramas por comparaciones numéricas con case/glob.
+files_to_create:
+  - rango.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: dentro
+      message: 1 10 5 imprime dentro
+      cmd: bash rango.sh 1 10 5
+      expectExit: 0
+      expectOutput: ^dentro$
+    - name: fuera
+      message: 1 10 20 imprime fuera
+      cmd: bash rango.sh 1 10 20
+      expectExit: 0
+      expectOutput: ^fuera$

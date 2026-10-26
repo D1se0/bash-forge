@@ -1,0 +1,21 @@
+id: lvl8-strict-mode
+title: "set -euo pipefail: el modo estricto"
+level: 8
+kind: lesson
+xp: 25
+estimated_minutes: 10
+prerequisites: []
+tags:
+  - control
+objective: Escribir scripts que PAREM en todo error en lugar de seguir ciegamente.
+files_to_create:
+  - estricto.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: estricto
+      message: "estricto.sh imprime ok: 1"
+      cmd: bash estricto.sh
+      expectExit: 0
+      expectOutput: "^ok: 1$"

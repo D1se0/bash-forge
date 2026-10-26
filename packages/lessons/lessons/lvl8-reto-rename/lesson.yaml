@@ -1,0 +1,22 @@
+id: lvl8-reto-rename
+title: Reto · Renombrador masivo
+level: 8
+kind: lesson
+xp: 40
+estimated_minutes: 18
+prerequisites:
+  - lvl8-temporales
+tags:
+  - reto
+  - paths
+objective: Renombrar ficheros aplicando ?????raw y contraendo con mv.
+files_to_create:
+  - rename.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: rename
+      message: rename.sh sobre la carpeta actual con hola adios devuelve las rutas com hola
+      cmd: bash rename.sh . hola adios
+      expectExit: 0

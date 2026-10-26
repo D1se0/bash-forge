@@ -1,0 +1,25 @@
+id: lvl1-comillas
+title: "Comillas: simples, dobles y $'…'"
+level: 1
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites:
+  - lvl1-var-basicas
+tags:
+  - comillas
+objective: Elegir la comilla correcta y entender word-splitting.
+files_to_create:
+  - quotes.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: expandida
+      message: "imprime 'expandida: cinco seis siete'"
+      cmd: bash quotes.sh
+      expectOutput: "^expandida: cinco seis siete$"
+    - name: literal
+      message: "imprime 'literal: $frase' sin expandir"
+      cmd: bash quotes.sh
+      expectOutput: "literal: \\$frase"

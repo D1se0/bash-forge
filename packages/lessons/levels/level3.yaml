@@ -1,0 +1,461 @@
+lessons:
+  - id: lvl3-for-lista
+    title: "for sobre listas: la máquina de rodajas"
+    level: 3
+    xp: 20
+    minutes: 7
+    tags: [bucles]
+    objective: Iterar listas con for clásico y contar con un índice.
+    files: [listado.sh]
+    theory: |
+      El `for` Bash itera LISTAS de palabras:
+
+      ```bash
+      for item in mahogany roble haya; do echo $item; done
+      ```
+
+      También sobre ficheros con glob: `for f in *.sh; do …; done`. Cuidado: palabras con espacios se rompen sin comillas — para iterar argumentos usa siempre `"$@"`.
+    example: |
+      ```bash
+      $ for metal in cobre estaño zinc; do echo "Derrito: $metal"; done
+      Derrito: cobre
+      Derrito: estaño
+      Derrito: zinc
+      ```
+    exercise: |
+      Crea `listado.sh` que reciba 3 argumentos e imprima por cada uno `piezas N: <arg>` empezando por N=1:
+      `bash listado.sh alfa beta gamma` debe dar 3 líneas en orden.
+    errors:
+      - Usar `{{` llaves de otros lenguajes; en Bash el bloque son `done`…
+      - Iterar `$@` sin comillas: los espacios dentro de los args rompen la lista.
+    quiz:
+      question: ¿Qué diferencia hay entre `for f in *.txt` y `for f in "$@"`?
+      answer: El primero itera ficheros del glob; el segundo los argumentos recibidos (por cada pieza, con espacios intactos).
+    tasks:
+      - name: tres-lineas
+        message: "con alfa beta gamma imprime 'piezas 1: alfa' … 'piezas 3: gamma'"
+        cmd: bash listado.sh alfa beta gamma
+        expectOutput: "piezas 2: beta"
+      - name: espacios-en-arg
+        message: "con 'uno solo' imprime 'piezas 1: uno solo'"
+        cmd: bash listado.sh "uno solo"
+        expectOutput: "^piezas 1: uno solo$"
+    hints:
+      - Un contador `n=1` que subes con `n=$((n+1))` dentro del bucle.
+      - Itera con `for a in "$@"` (¡comillas!).
+      - El glob "*.sh" sirve para el segundo check si prefieres ficheros.
+    solution: |
+      #!/usr/bin/env bash
+      n=1
+      for a in "$@"; do
+        echo "piezas $n: $a"
+        n=$((n+1))
+      done
+
+  - id: lvl3-brace-expansion
+    title: "Brace expansion: {1..10}, {a..c} y {x,y,z}"
+    level: 3
+    xp: 20
+    minutes: 6
+    tags: [bucles, expansion]
+    objective: Generar listas sin escribir a mano.
+    files: [coladas.sh]
+    theory: |
+      La expansión de llaves produce listas sin ejecutar nada:
+
+      - `{1..5}` → 1 2 3 4 5
+      - `{1..10..2}` → 1 3 5 7 9 (paso 2)
+      - `{a..c}` → a b c
+      - `file.{conf,log}` → file.conf file.log (¡coladas de nombres!)
+
+      Se expande ANTES que el globs y no depende del fichero sistema.
+    example: |
+      ```bash
+      $ echo {1..3}
+      1 2 3
+      $ echo {a..c}-{1..2}
+      a-1 a-2 b-1 b-2 c-1 c-2
+      $ touch {config,data}.{bak,txt}   # crea 4 ficheros de golpe
+      ```
+    exercise: |
+      Crea `coladas.sh` que genere los ficheros `dias.{lunes,viernes}` vacíos con la expansión (una línea, touch) e imprima `Febrero {feb01..feb05}`? (vale, que imprima `feb01` a `feb05` con un for en líneas).
+    errors:
+      - Olvidar que `{1..10..2}` expande O bien la palabra estática: NO es un bucle.
+      - Usar `{1,10}` como rango: eso es lista, no rango; el rango son los dos puntos.
+    quiz:
+      question: ¿Qué imprime `echo {2..8..3}`?
+      answer: "2 5 8 (empieza en 2, salta cada 3)."
+    tasks:
+      - name: ficheros-colados
+        message: existen dias.lunes y dias.viernes
+        cmd: test -f dias.lunes && test -f dias.viernes
+      - name: fechas-loop
+        message: imprime feb01..feb05 una por línea
+        cmd: bash coladas.sh
+        expectOutput: "feb02\\nfeb03\\nfeb04"
+    hints:
+      - "touch dias.{lunes,viernes}"
+      - "for f in {01..05}; do echo feb$f; done"
+      - La {colección} de DOS menos dos es toque fino… {02..04} vale también.
+    solution: |
+      #!/usr/bin/env bash
+      touch dias.{lunes,viernes}
+      for f in {01..05}; do
+        echo "feb$f"
+      done
+
+  - id: lvl3-while-until
+    title: "while y until: persistencia hasta que salga"
+    level: 3
+    xp: 20
+    minutes: 7
+    tags: [bucles]
+    objective: Ejecutar mientras (while) o hasta (until) una condición.
+    files: [cuenta.sh]
+    theory: |
+      `while condición; do …; done` corre WHILE la condición devuelva exit 0.
+      `until condición` es la cara opuesta: corre HASTA que devuelva 0.
+
+      Dentro, `break` rompe y `continue` salta a la siguiente vuelta. Un `sleep` evita que la CPU arda en bucles "infinos".
+    example: |
+      ```bash
+      $ n=3
+      $ while (( n > 0 )); do echo "lleva $n"; ((n--)); done
+      lleva 3
+      lleva 2
+      lleva 1
+      ```
+    exercise: |
+      Crea `cuenta.sh` con while que cuente desde 3 a 1 (imprima `3`, `2`, `1`) y al final `prrroof … despega ya`. Nada de bucle infinito.
+    errors:
+      - Bucle for que NUNCA cambia la condición: la CPU lo agradece… mal.
+      - "((n--)) como comando suelto: cuando n llega a 0 el exit code es ≠0 (y un set -e moriría, más a nivel 7)."
+    quiz:
+      question: ¿until condición corre cuando?
+      answer: Se ejecuta mientras el comando devuelva distinto de 0 y se detiene cuando se cumpla (exit 0).
+    tasks:
+      - name: cuenta-descendente
+        message: imprime 3, 2, 1 y despega ya
+        cmd: bash cuenta.sh
+        expectOutput: "^3\\n2\\n1\\ndespega$"
+    hints:
+      - "Arranca con n=3, crece mientras n sea mayor que cero, imprime el valor y decrementa."
+      - Después del bucle, imprime la línea de despegue.
+      - Prueba en la terminal: úsalo ANTES del Comprobar para que no inf atenaje.
+    solution: |
+      #!/usr/bin/env bash
+      n=3
+      while (( n > 0 )); do
+        echo "$n"
+        ((n--))
+      done
+      echo "despega"
+
+  - id: lvl3-break-continue
+    title: "break / continue: manotazos de emergencia"
+    level: 3
+    xp: 20
+    minutes: 6
+    tags: [bucles]
+    objective: Cortar bucles temprano y saltar elementos indeseados.
+    files: [selectivo.sh]
+    theory: |
+      - `break`: sale del bucle inmediatamente.
+      - `break 2`: sale de DOS niveles anidados.
+      - `continue`: salta al siguiente elemento pero sin cerrar el bucle.
+    example: |
+      ```bash
+      $ for n in 1 2 3 4 5; do
+          [ $n -eq 2 ] && continue
+          [ $n -eq 4 ] && break
+          echo $n
+        done
+      1
+      3
+      ```
+    exercise: |
+      Crea `selectivo.sh` que recibe 4+ args e imprime cada uno, pero saltando todos los que empiezan por guión (`-malo` se menos…) y parando al ver `STOP`.
+    errors:
+      - "`continue` fuera de un bucle: warning y las tortugas no avanzan."
+      - Confundir `break` con `exit`: BREAK solo corta el bucle; exit cierra el script entero.
+    quiz:
+      question: ¿Qué hace `break 2` dentro de dos bucles anidados?
+      answer: Sale del bucle interior Y del exterior (nivela con dos niveles).
+    tasks:
+      - name: salta-menores
+        message: "con '-oculto sol STOP nada' imprime 'sol' y para"
+        cmd: bash selectivo.sh -oculto sol STOP nada
+        expectOutput: "^sol$"
+        expectOutputAbsent: nada
+      - name: continua-fluye
+        message: "con 'a -malo b等形式 imprime 'a' y 'b'"
+        cmd: bash selectivo.sh a -malo b
+        expectOutput: "a\\nb"
+    hints:
+      - Compara con el patrón de guión inicial y salta con continue; para al ver STOP con break.
+      - Al llegar a STOP (compara con break detienes el recorrido).
+      - Reformula la comparación con `[[ ]]` para que la🏁 lean bien.
+    solution: |
+      #!/usr/bin/env bash
+      for a in "$@"; do
+        if [[ "$a" == "STOP" ]]; then break; fi
+        if [[ "$a" == -* ]]; then continue; fi
+        echo "$a"
+      done
+
+  - id: lvl3-read-linea-a-linea
+    title: "Leer ficheros línea a línea: el IFS= read -r idiomático"
+    level: 3
+    xp: 25
+    minutes: 8
+    tags: [bucles, ficheros]
+    objective: Ojo con la forma correcta para leer ficheros sin perder espacios.
+    files: [lector.sh, notas.csv]
+    theory: |
+      El truco UNIVERSAL para leer un fichero:
+
+      ```bash
+      while IFS= read -r línea; do
+        echo "$línea"
+      done < notas.csv
+      ```
+
+      - `IFS=` evita el trimming de espacios.
+      - `read -r` no procesa backslashes.
+      - La redirección `< fichero` baja el fichero a la entrada del while. (Alternativa: pipe con cat pero no es idiomático.)
+
+      ¿Quieres desguantar al final? `done < <(comando)`: process substitution.
+    example: |
+      ```bash
+      $ cat notas.csv
+      piedra,haydos
+      cobre,pesado
+      $ while IFS= read -r l; do echo "nota: $l"; done < notas.csv
+      nota: piedra,haydos
+      nota: cobre,pesado
+      ```
+    exercise: |
+      Crea el fichero `notas.csv` con DOS líneas cualquiera y `lector.sh` que las imprima precedidas por `ley: `. El test te deja crear las tuyas y verifica el formato.
+    errors:
+      - "`while read x < file` sin IFS y -r: come espacios y backslashes."
+      - Leer cabeceras sin uso:rome líneas con solo espacios al final van a pedazos de cero líneas.
+    quiz:
+      question: ¿Por qué `< fichero` en vez de `cat fichero | while`?
+      answer: "Puro estilo: el pipe crea una SUBSHELL donde las variables del while no sobreviven; la redirección es el mismo shell."
+    tasks:
+      - name: dos-lineas
+        message: notas.csv existe con dos líneas
+        cmd: test -s notas.csv && test "$(wc -l < notas.csv)" -ge 2
+      - name: ley-formato
+        message: "lector.sh imprime cada línea como 'ley: contenido'"
+        cmd: bash lector.sh < /dev/null
+        expectOutputAbsent: "^\n$"
+        hint: "El check usa TU lector con TU notas.csv; si está vacío, no pasa nada."
+    hints:
+      - "`while IFS= read -r l; do echo \"ley: $l\"; done < notas.csv`"
+      - Primero crea notas.csv con `printf 'a\\nb\\n' > notas.csv` (¡dos minusculas!).
+      - Comprueba con `bash lector.sh` que sale algo antes de Comprobar.
+    solution: |
+      printf 'entrada primera\nentrada segunda\n' > notas.csv
+      cat > lector.sh <<'EOF'
+      #!/usr/bin/env bash
+      while IFS= read -r l; do
+        echo "ley: $l"
+      done < notas.csv
+      EOF
+      bash lector.sh
+
+  - id: lvl3-select
+    title: "select: menús interactivos de regalo"
+    level: 3
+    xp: 25
+    minutes: 7
+    tags: [bucles]
+    objective: Formúlale un menú con select y consciente read con restricciones.
+    files: [menu.sh]
+    theory: |
+      `select var in opciones; do …; done` genera un MENÚ numerado y lee la elección;_PS3 es el prompt. Unaclassic: while en loop hasta que el usuario define salida.
+
+      Alternativa sin select: `read -p` con validación (más manual pero igual con while true + break).
+    example: |
+      ```bash
+      $ cat menu.sh
+      #!/usr/bin/env bash
+      select opt in "horno" "fragua" "salir"; do
+        [ "$opt" = "salir" ] && break
+        echo "tomaste: $opt"
+      done
+      ```
+    exercise: |
+      Crea `menu.sh` que muestre y procese un menú con select: optiones `piedra papel tijera salir`. El check envía `2\\n` y espera ver el menu destacado con `3) salir` y la línea `tomaste tijera`.
+    errors:
+      - Sin `PS3`: el prompt por defecto es deliberado tipo `?#)`, algo enredado para testear.
+      - No salir: sin `salir`, el while del select puede empeñar en bucle.
+    quiz:
+      question: ¿Qué variable eligió el índice elegido en select?
+      answer: "REPLY abre el número elegido; la variable tomada trae el texto."
+    tasks:
+      - name: menu-enviado
+        message: "el menú se ve y '3) salir' aparece"
+        cmd: "printf '3\\n' | bash menu.sh"
+        expectOutput: "3\\) salir"
+      - name: eleccion-visa
+        message: "eligir 2 imprime 'tomaste tijera'"
+        cmd: "printf '2\\n' | bash menu.sh"
+        expectOutput: "^tomaste tijera$"
+    hints:
+      - "`select opt in \"piedra\" \"papel\" \"tijera\" \"salir\"; do …; done`"
+      - "Has PS3=\"El juego: \" para el prompt, puesto que el check DOSE NA algo veux."
+      - "En cada vuelta: `[[ $opt == salir ]] && break; echo \"tomaste $opt\"`."
+    solution: |
+      cat > menu.sh <<'EOF'
+      #!/usr/bin/env bash
+      PS3="elección: "
+      select opt in "piedra" "papel" "tijera" "salir"; do
+        [[ "$opt" == "salir" ]] && break
+        echo "tomaste $opt"
+      done
+      EOF
+      printf '3\n' | bash menu.sh
+
+  - id: lvl3-for-cstyle
+    title: "for estilo C: la interfaz de los algoritmófilos"
+    level: 3
+    xp: 20
+    minutes: 6
+    tags: [bucles, aritmetica]
+    objective: Usar for (( i=0; i<n; i++ )) como en la escuela de C.
+    files: [cuenta3.sh]
+    theory: |
+      Bash también admite un `for` C-style:
+
+      ```bash
+      for (( i = 0; i < 10; i++ )); do …; done
+      ```
+
+      El cuerpo corre con aritmética nativa (sin `$`). Único detalle: no se rompe con `set -e` si el i++ devuelve 0 (verás en nivel 7).
+    example: |
+      ```bash
+      $ for ((i=1; i<=3; i++)); do echo "vuelta $i"; done
+      vuelta 1
+      vuelta 2
+      vuelta 3
+      ```
+    exercise: |
+      Crea `cuenta3.sh` con for C-style que imprima `time X` para X=0..4 (5 líneas, empezando por 0).
+    errors:
+      - "For C-style con $i dentro: dentro del (( )) se usan nombres SIN $."
+      - Olvidar do/done: el for en (( )) también va con `do … done`.
+    quiz:
+      question: ¿Diferencia entre `i++` y `++i` dentro del(( ))?
+      answer: "Ambos suben en uno; el valor INTERNO asignable (x=$(i++)) da el valor previo con i++."
+    tasks:
+      - name: veces-cinco
+        message: imprime time 0..time 4
+        cmd: bash cuenta3.sh
+        expectOutput: "^time 0$\\n^time 1$\\n^time 4$"
+    hints:
+      - "for ((i=0; i<5; i++)) do …"
+      - Imprime `time $i` siendo $i la salida.
+    solution: |
+      #!/usr/bin/env bash
+      for ((i=0; i<5; i++)); do
+        echo "time $i"
+      done
+
+  - id: lvl3-reto-flujo
+    title: "Reto · Control libre: tus propias reglas"
+    level: 3
+    kind: challenge
+    xp: 35
+    minutes: 12
+    tags: [reto]
+    objective: "Armar tu mini programa de flujo: while, for y condición del flag."
+    files: [regulador.sh]
+    theory: |
+      Combina. Pequeña consigna: estilo ejecutor CPU-como.
+      Tres ideasbnb: dentro de un while true, una condición de salida, y `sleep 0` donde el bucle sea bosque.
+
+    exercise: |
+      Crea `regulador.sh` que reciba N (número) y un flag `--voz`:
+      - Imprime N líneas `pulso N` (N decreciendo).
+      - Con `--voz` como segundo arg, imprima `¡COMANDO RECIBIDO!` tras cada pulso.
+      - Al final: `grácolo fin` (una sola vez).
+    errors:
+      - "Omitir la acentuación/diferencia entre \"--voz\" y \"-- voz\": los args se comparan EXACTOS."
+      - Imprimir el mensaje final DENTRO del bucle: una sola vez.
+    quiz:
+      question: ¿Couns comparas un flag entre args?
+      answer: Con case o if sobre ${2:-}, o iterando los args de "$@" (cuidado la demo del nivel 1).
+    tasks:
+      - name: plain
+        message: "bash regulador.sh 2 imprime 'pulso 2','pulso 1','grácolo fin'"
+        cmd: bash regulador.sh 2
+        expectOutput: "pulso 2\\npulso 1\\ngrácolo fin"
+      - name: con-voz
+        message: "con --voz imprime '¡COMANDO RECIBIDO!🏪' tras cada pulso"
+        cmd: bash regulador.sh 2 --voz
+        expectOutput: "¡COMANDO RECIBIDO!"
+      - name: fin-unico
+        message: "la línea 'grácolo fin' se imprime UNA vez (bash regulador.sh 3)"
+        cmd: bash regulador.sh 3
+        expectOutputAbsent: "grácolo fin\\ngrácolo fin"
+    hints:
+      - Máximo simple: for desde N a 1 descendente; e imprime el fin después.
+      - Primero detecta la bandera del segundo argumento y decide si hay voz.
+      - Sin flag: todo igual sin los REFUERZOS.
+    solution: |
+      #!/usr/bin/env bash
+      n="$1"
+      voz=0
+      [[ "${2:-}" == "--voz" ]] && voz=1
+      for (( i = n; i >= 1; i-- )); do
+        echo "pulso $i"
+        if (( voz )); then echo "¡COMANDO RECIBIDO!"; fi
+      done
+      echo "grácolo fin"
+
+  - id: lvl3-boss-motor
+    title: "Boss Fight · El Motor de Fragutos"
+    level: 3
+    kind: boss
+    xp: 80
+    minutes: 15
+    tags: [boss]
+    objective: "Gran examen de bucles: listas, ficheros, condicionales y saltos."
+    files: [motor.sh]
+    theory: |
+      Un boss de loops con tres pruebas ligeras:
+      1. Tu motor se ejecuta sin línea y lee un fichero de consignas.
+      2. Control de flujo: for con los datos del fichero.
+      3. No rompers ante contenido variado: líneas con espacios, vacías y difíciles.
+    exercise: |
+      Prepara el reto: crea un fichero `tareas.txt` con estas tres líneas EXACTAS:
+      ```
+      comprar hierro barato
+      cerrar fragua
+      tocar campana
+      ```
+      Y crea `motor.sh` que las lea línea a línea, saltando cualquier línea que empieza por `#` (comments), e imprima por cada una `motor: <línea>`.
+    errors:
+      - "Ignorar el fichero de datos: la prueba requiere el while-read con archivo."
+      - Reemplazar while-read con for sobre contenido: los espacios part File estarían rompiendo líneas."
+    quiz: null
+    tasks:
+      - name: maker-fichero
+        message: "tareas.txt existe con las tres líneas"
+        cmd: "grep -q \"comprar hierro barato\" tareas.txt && grep -q \"cerrar fragua\" tareas.txt && grep -q \"tocar campana\" tareas.txt"
+      - name: motor-linea
+        message: "motor.sh imprime cada línea como 'motor: contenido'"
+        cmd: bash motor.sh < /dev/null
+        expectOutput: "motor: comprar hierro barato"
+      - name: motor-entiedad
+        message: "con '#' en líneas no imprime comentario"
+        cmd: bash motor.sh
+        expectOutputAbsent: "motor: #"
+    hints:
+      - Tareas.txt: tres líneas con los textos exactos.
+      - motor.sh: el while IFS= read -r que ya dominas.
+      - Antes de cada línea: comprueba si empieza por #.
+
+  # MORE_L3

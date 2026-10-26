@@ -1,0 +1,29 @@
+id: lvl0-ejecutar-local-vs-bash
+title: "Ejecutar: ./script.sh vs bash script.sh"
+level: 0
+kind: lesson
+xp: 15
+estimated_minutes: 6
+prerequisites:
+  - lvl0-shebang
+tags:
+  - scripts
+objective: Distinguir ejecutación directa de interpretación por bash.
+files_to_create:
+  - runme.sh
+  - misma.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: runme-ejecutable
+      message: runme.sh es ejecutable
+      expectExecutable: runme.sh
+    - name: runme-lanza
+      message: ./runme.sh escribe "Modo ./"
+      cmd: ./runme.sh
+      expectOutput: ^Modo \./$
+    - name: misma-llamada
+      message: bash misma.sh imprime su nombre
+      cmd: bash misma.sh
+      expectOutput: "vertical: misma\\.sh"

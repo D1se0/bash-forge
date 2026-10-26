@@ -1,0 +1,206 @@
+level: 8
+lessons:
+  - id: lvl8-strict-mode
+    title: "set -euo pipefail: el modo estricto"
+    level: 8
+    xp: 25
+    minutes: 10
+    tags: ["control"]
+    objective: "Escribir scripts que PAREM en todo error en lugar de seguir ciegamente."
+    files: ["estricto.sh"]
+    theory: |
+      `set -e`: parar al primer error. `set -u`: error si usas una var no seteada. `set -o pipefail`: la tubería falla si CUALQUIER comando falla.
+    exercise: |
+      Crea `estricto.sh` que arranque con set -euo pipefail, declare `x=1`, imprima `ok: $x` y luego intente leer `$NOEXISTO` dentro de un if que la compruebe, sin romperse.
+    errors:
+      - Con set -u cualquier var sin declarar MATA el script: usa ${VAR:-pordefecto} para defecto.
+    tasks:
+      - name: estricto
+        message: "estricto.sh imprime ok: 1"
+        cmd: bash estricto.sh
+        expectOutput: "^ok: 1$"
+        expectExit: 0
+
+  - id: lvl8-basenames
+    title: "basename y dirname en scripts"
+    level: 8
+    xp: 20
+    minutes: 8
+    tags: ["paths"]
+    objective: "Sacar el nombre y la carpeta de una ruta confiablemente."
+    files: ["rutear.sh"]
+    theory: |
+      `basename ruta/fin.sh` te queda `fin.sh`; `dirname ruta/fin.sh` te queda `ruta`. Para trabajar relativo a donde está el script usa `$(dirname munero)`.
+    exercise: |
+      Crea `rutear.sh` que reciba una ruta e imprime: el basename en la primera línea y el dirname en la segunda.
+    errors:
+      - Olvidar las comillas en "$(dirname "$1")" : las rutas con espacios explotan.
+    tasks:
+      - name: rutear
+        message: "rutear.sh /opt/cosas/f.sh hace basename f.sh"
+        cmd: bash rutear.sh /opt/cosas/f.sh
+        expectOutput: "f[.]sh"
+        expectExit: 0
+
+  - id: lvl8-argumentos
+    title: "Argument parsing robusto con while y case"
+    level: 8
+    xp: 35
+    minutes: 12
+    tags: ["argumentos"]
+    objective: "Aceptar banderas con y sin argumentos, y rutas con espacios."
+    files: ["cli.sh"]
+    theory: |
+      `while (($#)); do case $1 ...; shift; done` te permite procesar un stream de banderas sin confundir orden.
+    exercise: |
+      Crea `cli.sh` con:
+      - "`-n nombre: imprime Hola nombre.`"
+      - "`--upper: lo imprime en mayúsculas.`"
+      - "sin args: Uso y exit 1."
+    errors:
+      - Olvidar shift después de procesar cada bandera, si no se cuela la misma nunca-quitando-shif.
+    tasks:
+      - name: hola
+        message: "cli.sh -n Ana imprime Hola Ana"
+        cmd: bash cli.sh -n Ana
+        expectOutput: "^Hola Ana$"
+        expectExit: 0
+      - name: upper
+        message: "cli.sh -n ana --upper imprime HOLA ANA"
+        cmd: bash cli.sh -n ana --upper
+        expectOutput: "HOLA ANA"
+        expectExit: 0
+      - name: sin-args
+        message: "sin args imprime Uso y sale 1"
+        cmd: bash cli.sh
+        expectOutput: "Uso"
+        expectExit: 1
+
+  - id: lvl8-buscar-archivos
+    title: "buscar: find con filtros"
+    level: 8
+    xp: 30
+    minutes: 12
+    tags: ["paths"]
+    objective: "Localizar fichero por nombre, tamaño o extensión."
+    files: ["explora.sh"]
+    theory: |
+      `find ruta -name "*.sh" -type f` te da todos los .sh a partir de esa ruta; `-mtime` filtra por días de modificación.
+    exercise: |
+      Crea `explora.sh` que reciba una carpeta e imprima los ficheros `.txt` dentro de ella (no recursivo -maxdepth 1).
+    errors:
+      - Olvidar -maxdepth 1: find baja recursivo por defecto, te devuelve CUALQUIER cosa en subcarpetas.
+    tasks:
+      - name: txt
+        message: "explora.sh . devuelve los .txt de aquí"
+        cmd: bash explora.sh .
+        expectOutput: "[.]txt$"
+        expectExit: 0
+
+  - id: lvl8-sha
+    title: "Integridad: sha256sum básico"
+    level: 8
+    xp: 20
+    minutes: 8
+    tags: ["seguridad"]
+    objective: "Fichar un fichero y comparar el hash para saber si cambió."
+    files: ["ficha.sh"]
+    theory: |
+      `sha256sum fichero` imprime el hash. Cualquier byte distinto cambia el resultado. Sirve para detectar archivos corruptos o modificados.
+    exercise: |
+      Crea `ficha.sh` que imprima el hash SHA-256 de $1 (solo el hash, sin el nombre del fichero).
+    errors:
+      - Olvidar la primera columna cut -d' ' -f1: se mezcla el hash con el nombre.
+    tasks:
+      - name: hash
+        message: "ficha.sh imprime solo el hash (64 chars hex)"
+        cmd: bash ficha.sh level0.mjs
+        expectOutput: "[0-9a-f]{4,}"
+        expectExit: 0
+
+  - id: lvl8-temporales
+    title: "mktemp y ficheros temporales"
+    level: 8
+    xp: 25
+    minutes: 10
+    tags: ["paths"]
+    objective: "Crear ficheros temporales únicos con trap EXIT y limpieza."
+    files: ["temporal.sh"]
+    theory: |
+      `mktemp` devuelve una ruta única en /tmp. Combinar con `trap 'rm -f "$tmp"' EXIT` para limpiar SIEMPRE, incluso si algo falla en el medio.
+    exercise: |
+      Crea `temporal.sh` que:
+      - "Cree un tmp con mktemp."
+      - "Escriba hola temporales en él, imprima su contenido."
+      - "Limpie con trap EXIT."
+    errors:
+      - El trap rinde con la variable en el momento desde que se definió: define el trap DESPUÉS del mktemplate.
+    tasks:
+      - name: temporal
+        message: "temporal.sh imprime hola temporales"
+        cmd: bash temporal.sh
+        expectOutput: "^hola temporales$"
+        expectExit: 0
+
+  - id: lvl8-reto-rename
+    title: "Reto · Renombrador masivo"
+    level: 8
+    xp: 40
+    minutes: 18
+    tags: ["reto", "paths"]
+    objective: "Renombrar ficheros aplicando ?????raw y contraendo con mv."
+    files: ["rename.sh"]
+    theory: |
+      Combina for + basename + mv + condicionar que exista antes de sobreescribir.
+    exercise: |
+      Crea `rename.sh <dir> <buscar> <cambiar>` que:
+      - "Recorra todos los ficheros .txt en dir."
+      - "Les compare si contienen buscar."
+      - "Imprima las rutas que matchean."
+    errors:
+      - No coger las rutas con espacios: for sobre *"$(find ...)"* los rompe.
+    tasks:
+      - name: rename
+        message: "rename.sh sobre la carpeta actual con hola adios devuelve las rutas com hola"
+        cmd: bash rename.sh . hola adios
+        expectExit: 0
+
+  - id: lvl8-boss
+    title: "Boss Fight · El Constructor de Herramientas"
+    level: 8
+    xp: 80
+    minutes: 20
+    tags: ["boss"]
+    objective: "Examen final: escribe una mini-herramienta CLI profesional."
+    files: ["herramienta.sh"]
+    theory: |
+      Todo junto: set -euo pipefail, trap, while/case sobre args, funciones, exit codes convencionales. Lo que ves aquí es la estructura de scripts contemporáneos.
+    exercise: |
+      Crea `herramienta.sh` con:
+      - "set -euo pipefail al arranque."
+      - "usage() instructiva implícita; función `saludar <nombre>` que imprime ¡Hola, <nombre>!."
+      - "Main que -n nombre procese, -h muestre usage, y sin args: usage, exit 1."
+      - "trap EXIT que imprima adios."
+    errors:
+      - No declarar el caso de NO args antes que el de banderas.
+    tasks:
+      - name: hola
+        message: "-n debe imprimir: ¡Hola, Ana!"
+        cmd: bash herramienta.sh -n Ana
+        expectOutput: "Hola, Ana"
+        expectExit: 0
+      - name: help
+        message: "-h imprime Uso y exit 0"
+        cmd: bash herramienta.sh -h
+        expectOutput: "Uso"
+        expectExit: 0
+      - name: sin-args
+        message: "sin args: Uso y exit 1"
+        cmd: bash herramienta.sh
+        expectOutput: "Uso"
+        expectExit: 1
+      - name: trap
+        message: "al terminar imprime adios"
+        cmd: bash herramienta.sh -n Ana
+        expectOutput: "adios"
+        expectExit: 0

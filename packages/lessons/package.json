@@ -1,0 +1,18 @@
+{
+  "name": "@bashforge/lessons",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "description": "Bash Forge curriculum: lesson sources + generator + linter",
+  "type": "module",
+  "scripts": {
+    "generate": "node generator.mjs",
+    "lint": "node tools/lint-lessons.mjs"
+  },
+  "dependencies": {
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

@@ -1,0 +1,31 @@
+id: lvl6-grep
+title: "grep: bucear en el texto"
+level: 6
+kind: lesson
+xp: 20
+estimated_minutes: 8
+prerequisites: []
+tags:
+  - filtrado
+objective: Filtrar líneas por patrón y contar coincidencias.
+files_to_create:
+  - notas.txt
+  - contar.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: contar
+      message: contar.sh hola devuelve el número correcto de líneas con hola
+      cmd: bash contar.sh hola
+      expectExit: 0
+      expectOutput: "[0-9]+"
+    - name: cero
+      message: patrón que no existe devuelve 0
+      cmd: bash contar.sh zzzznoexiste
+      expectExit: 0
+      expectOutput: ^0$
+    - name: zero-match-exit
+      message: grep con 0 matches sale 1 pero tu script termina ok
+      cmd: bash contar.sh nada
+      expectExit: 0

@@ -1,0 +1,37 @@
+id: lvl5-boss
+title: Boss Fight · El Maestro del Taller
+level: 5
+kind: lesson
+xp: 60
+estimated_minutes: 15
+prerequisites:
+  - lvl5-reto-contador
+tags:
+  - boss
+objective: Examen de strings, condicionales, case y aritmética.
+files_to_create:
+  - boss5.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: len
+      message: len hola dice 4
+      cmd: bash boss5.sh len hola
+      expectExit: 0
+      expectOutput: "4"
+    - name: mayor
+      message: mayor 7 3 dice 7
+      cmd: bash boss5.sh mayor 7 3
+      expectExit: 0
+      expectOutput: "7"
+    - name: tabla
+      message: tabla 4 incluye 4 x 3 = 12
+      cmd: bash boss5.sh tabla 4
+      expectExit: 0
+      expectOutput: 4 x 3 = 12
+    - name: desconocido
+      message: cmd desconocido imprime Uso y sale 1
+      cmd: bash boss5.sh popo
+      expectExit: 1
+      expectOutput: Uso

@@ -1,0 +1,20 @@
+id: lvl0-terminales-vida
+title: "Sobrevivir a la terminal: Ctrl+C, Ctrl+D e historial"
+level: 0
+kind: lesson
+xp: 10
+estimated_minutes: 5
+prerequisites:
+  - lvl0-ejecutar-local-vs-bash
+tags:
+  - terminal
+objective: Controlar teclas críticas, cancelar procesos y usar el historial.
+files_to_create: []
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: historial-guardado
+      message: mi-historial.txt tiene las últimas líneas de historial
+      hint: "`history | tail -2 > mi-historial.txt` guarda con numeración; puede salir vacía en un script de NON-interactive."
+      cmd: test -s mi-historial.txt && grep -qE "[0-9]+" mi-historial.txt

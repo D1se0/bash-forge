@@ -1,0 +1,22 @@
+id: lvl5-bucles-anidados
+title: Bucles anidados y tablitas
+level: 5
+kind: lesson
+xp: 30
+estimated_minutes: 12
+prerequisites:
+  - lvl5-case
+tags:
+  - loops
+objective: Construir tablas multiplicativas con dos for juntos.
+files_to_create:
+  - tabla.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: tabla-5
+      message: 5 imprime 5 x 10 = 50
+      cmd: bash tabla.sh 5
+      expectExit: 0
+      expectOutput: 5 x 10 = 50

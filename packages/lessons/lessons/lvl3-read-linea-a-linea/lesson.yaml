@@ -1,0 +1,29 @@
+id: lvl3-read-linea-a-linea
+title: "Leer ficheros línea a línea: el IFS= read -r idiomático"
+level: 3
+kind: lesson
+xp: 25
+estimated_minutes: 8
+prerequisites:
+  - lvl3-break-continue
+tags:
+  - bucles
+  - ficheros
+objective: Ojo con la forma correcta para leer ficheros sin perder espacios.
+files_to_create:
+  - lector.sh
+  - notas.csv
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: dos-lineas
+      message: notas.csv existe con dos líneas
+      cmd: test -s notas.csv && test "$(wc -l < notas.csv)" -ge 2
+    - name: ley-formato
+      message: "lector.sh imprime cada línea como 'ley: contenido'"
+      hint: El check usa TU lector con TU notas.csv; si está vacío, no pasa nada.
+      cmd: bash lector.sh < /dev/null
+      expectOutputAbsent: |-
+        ^
+        $

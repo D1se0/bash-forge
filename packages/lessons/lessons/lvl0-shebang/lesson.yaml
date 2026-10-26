@@ -1,0 +1,29 @@
+id: lvl0-shebang
+title: "El shebang: #!/usr/bin/env bash"
+level: 0
+kind: lesson
+xp: 15
+estimated_minutes: 7
+prerequisites:
+  - lvl0-nano-primer-fichero
+tags:
+  - scripts
+objective: Marca un script como ejecutable y entiende la primera línea.
+files_to_create:
+  - hello.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: shebang-correcto
+      message: hello.sh empieza por
+      expectFileContains:
+        path: hello.sh
+        regex: ^#!/usr/bin/env bash
+    - name: ejecutable
+      message: hello.sh tiene bit de ejecución
+      expectExecutable: hello.sh
+    - name: salida-correcta
+      message: ./hello.sh imprime el saludo
+      cmd: ./hello.sh
+      expectOutput: ^Hola desde Bash Forge$

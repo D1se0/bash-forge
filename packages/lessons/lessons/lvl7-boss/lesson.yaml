@@ -1,0 +1,32 @@
+id: lvl7-boss
+title: Boss Fight · La Máquina de Procesamiento
+level: 7
+kind: lesson
+xp: 70
+estimated_minutes: 18
+prerequisites:
+  - lvl7-reto-palabras
+tags:
+  - boss
+objective: Examen total de pipes, arrays, traps y recursividad.
+files_to_create:
+  - entrada.csv
+  - procesa.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: sumar
+      message: "procesa.sh sumar imprime total: N"
+      cmd: bash procesa.sh sumar
+      expectExit: 0
+      expectOutput: "total: [0-9]+"
+    - name: mayor
+      message: procesa.sh mayor imprime la línea ganadora
+      cmd: bash procesa.sh mayor
+      expectExit: 0
+    - name: desconocido
+      message: "comando desconocido: Uso y exit 1"
+      cmd: bash procesa.sh ninguno
+      expectExit: 1
+      expectOutput: Uso
