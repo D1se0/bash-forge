@@ -216,6 +216,8 @@ export class ForgeWsConnection {
     });
     this.activeTerms.add(termId);
     this.termIds.set(termId, true);
+    // anuncia la lista de pestañas (con la nueva) para que el cliente la monte
+    if (this.session) this.sendSession(this.session);
     t.proc.onData((chunk: string) => {
       if (!this.closed) this.send({ type: "output", termId, data: chunk });
     });

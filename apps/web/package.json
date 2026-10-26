@@ -1,0 +1,29 @@
+{
+  "name": "@bashforge/web",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "description": "Bash Forge SPA: terminal real (xterm.js) + lecciones validadas",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.tsx --bundle --format=esm --target=es2022 --outfile=dist/app.js --loader:.woff2=empty --entry-names=[name] && cp public/index.html dist/ && cp src/styles.css dist/",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "dev": "node scripts/dev-server.mjs",
+    "lint": "echo ok"
+  },
+  "dependencies": {
+    "@bashforge/shared": "*",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-web-links": "^0.11.0",
+    "@xterm/xterm": "^5.5.0",
+    "marked": "^12.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "esbuild": "^0.25.5",
+    "typescript": "^5.5.4"
+  }
+}
