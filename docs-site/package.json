@@ -1,0 +1,14 @@
+{
+  "name": "@bashforge/docs-site",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "description": "Sitio estático con el catálogo del currículum, listo para GitHub Pages",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "echo ok",
+    "lint": "echo ok"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,26 @@
+name: Reportar problema
+description: Bug de plataforma o error en una lección
+labels: [needs-triage]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: ¿Dónde está el problema?
+      options:
+        - Lección (contenido / validación demasiado estricta)
+        - Terminal (xterm/PTY en el navegador)
+        - docker / instalación
+        - docs-site
+        - otro
+    validations: { required: true }
+  - type: input
+    id: lesson
+    attributes:
+      label: Lección (si aplica)
+      description: "id de la lección, p. ej. lvl3-for-cuerpo"
+    validations: { required: false }
+  - type: textarea
+    id: what
+    attributes:
+      label: Qué pasó / qué esperabas
+    validations: { required: true }
