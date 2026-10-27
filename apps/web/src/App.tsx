@@ -5,6 +5,7 @@ import { dispatchOutput, TermPane } from "./Terminal";
 import { LessonPanel, Sidebar } from "./panels";
 import type { LevelGroup } from "./catalog";
 import { groupByLevel } from "./catalog";
+import { currentTheme, toggleTheme } from "./theme";
 import {
   bumpStreak,
   computeBadges,
@@ -40,6 +41,7 @@ export function App() {
   const [progress, setProgress] = useState<ProgressSnapshot | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [fullterm, setFullterm] = useState(false);
+  const [theme, setThemeState] = useState<string>(currentTheme());
 
   const ws = wsRef.current;
 
@@ -222,6 +224,13 @@ export function App() {
         </span>
         {session && <span className="session-info">🏠 {session.homeId}</span>}
         <button className="ghost" onClick={createTerm} title="Nueva terminal">＋ Terminal</button>
+        <button
+          className="ghost"
+          onClick={() => setThemeState(toggleTheme())}
+          title="Cambiar tema de interfaz (claro/oscuro)"
+        >
+          {theme === "dark" ? "☀ Día de Nieve" : "🌙 Noche de Fiordo"}
+        </button>
         <button
           className="ghost"
           onClick={() => setFullterm((f) => !f)}

@@ -15,3 +15,7 @@
 | 02 | Tests unitarios | `npm test --workspaces` | 9 passed, 1 skipped | log del shell |
 | 02 | E2E fullscreen | `node apps/web/scripts/e2e-fullscreen.mjs` | ✔ E2E completo en verde | log del shell |
 | 02 | Fix runtime JSX | `React is not defined` → createElement explícito en packages/ui | styleguide recapturada sin errores | commits + capturas 02 |
+| 03 | styles.css 100% tokens | reescritura: 0 colores literales, solo var(--token) | lint verde (typecheck ×3) | `03-app-nordic/app__*.png` |
+| 03 | Toggle dark/light | botón en topbar + localStorage + prefers-color-scheme (initTheme antes del render, sin FOUC) | 0 pageerror / 0 console.error | capturas light + dark revisadas |
+| 03 | Tema claro «Día de Nieve» | captura 1440×900 light | contrast AA (light tokens en tokens.css) | `03-app-nordic/app__1440x900__light__es.png` |
+| 03 | Fix headless colorScheme | chromium headless por defecto es light → captura dark con colorScheme:'dark' | capturas dark correctas | matiz documentado en INDEX |
