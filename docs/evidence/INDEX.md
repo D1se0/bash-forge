@@ -24,3 +24,11 @@
 | 05 | Escaparate README | `node scripts/render-readme.mjs` + render en chromium real | banner según tema (picture/dark), 0 imágenes rotas, móvil OK | `05-escaparate/readme__*.png` |
 | 05 | Banner SVG nórdico | `docs/assets/banner-{dark,light}.svg` (aurora + yunque + kenaz, sin fuentes personalizadas) | revisado visualmente claro/oscuro | `05-escaparate/*.png` |
 | 05 | WebP optimizados | `convert` PNG→WebP de evidencias reales (29–68 KB) | capturas reales de las fases 02–04 | `docs/assets/*.webp` |
+| 06 | Sandbox con nano 7.2 | `docker compose build sandbox` + verificación en contenedor | nano 7.2 + shellcheck 0.9.0 + include /etc/nanorc sin errores (0 “Mistakes”) | log del shell |
+| 06 | Referencia bash-arena | Playwright sobre d1se0.github.io/bash-arena (top/bottom) | navbar + hero + terminal demo + cards + footer | `06-redesign/ref-bash-arena__*.png` |
+| 06 | Nano con sintaxis coloreada | `node scripts/capture-nano.mjs` en la terminal real de la app | shebang/cadenas/vide.ends/keywords coloreados con nanorc de la forja | `06-redesign/nano-colores__1440x900__dark__es.png` |
+| 06 | forge-lint (linter del editor) | `docker/forge-lint.sh` instalado en sandbox + recaptura en app | shellcheck coloreado por línea, resumen y exit ≠ 0 con avisos | `06-redesign/app__forge-lint__*.png` |
+| 06 | Sidebar «por dónde empiezo» | redesign panels.tsx: next-card + numeración + progreso/nivel | next-card=1, 82 dots, 9 grupos, XP-bar | `06-redesign/app__sidebar__1440x900__dark.png` |
+| 06 | Fullscreen con salida | e2e `scripts/capture-app-e2e.mjs`: ESC y botón focusbar | fullterm on→off por ESC y por botón, focusbar accesible | `06-redesign/app__fullterm-{on,off}__*.png` |
+| 06 | docs-site landing | build + `capture-docssite.mjs` bajo `/bash-forge/` | 200 html/css/woff2 ×6 + fuentes loaded ×3 | `06-redesign/docs-site__*.png` |
+| 06 | docs-site sin cifras inventadas | minutes ausentes en manifest → «~0 min» ocultados | hero y taglines sin datos falsos | `docs-site/scripts/build.mjs` (stats) |

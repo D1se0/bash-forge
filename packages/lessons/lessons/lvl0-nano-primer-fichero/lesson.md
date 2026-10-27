@@ -22,7 +22,7 @@ Abre `nano notas.md` y deja **dos líneas** que empiecen por la palabra `Nota:` 
 
 ## Errores típicos
 
-- Pulsar Ctrl+C esperando cerrar: no cierra nano (Ctrl+X es salir).
+- Con nano, Ctrl+T lanza el linter de la forja (shellcheck) sobre el fichero.
 - Guardar dos veces y acabar con `notas.md.md`.
 
 ## Mini-quiz

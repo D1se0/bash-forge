@@ -1,0 +1,48 @@
+# ==============================================================
+# Bash Forge — sintaxis bash para nano 7+ con colores nórdicos.
+# Colores por NOMBRES ANSI (no hex): cada tema del terminal de la
+# app recolorea el editor automáticamente.
+#   violeta = palabras clave   · azul = builtins · cian = variables
+#   verde = cadenas            · naranja = números · amarillo = operadores
+# ==============================================================
+
+syntax bash "\.(sh|bash)$"
+header "^#!.*(/|[[:space:]])(ba)?sh([[:space:]]|$)"
+
+# comando shebang: brasa atención sobre el resto
+color brightyellow "^#!.*"
+
+# palabras clave de control (violeta = brillante morado)
+color brightmagenta "\<(if|then|elif|else|fi|for|while|until|do|done|case|esac|in|function|select|time|coproc)\>"
+
+# builtins (azul)
+color brightblue "\<(echo|read|cd|export|local|return|exit|source|declare|trap|shift|unset|set|shopt|eval|jobs|wait|break|continue|printf|pwd|history|alias|getopts|pushd|popd|umask|ulimit|kill)\>"
+
+# variables y expansiones ($VAR, ${...}, $(...), $((...))) (cian)
+color brightcyan "\$\{?[A-Za-z_][A-Za-z0-9_]*\}?|\$\(.*\)|\$\(\(.*\)\)|\$[@*#?!$0-9]"
+
+# cadenas (verde)
+color brightgreen "'[^']*'|\"[^\"]*\"|`[^`]*`"
+
+# números (naranja rojizo)
+color brightred "\<[0-9]+\>"
+
+# operadores y redirecciones (amarillo)
+color brightyellow "[|&;<>()]+|--?[a-zA-Z]+"
+
+# operadores de test comunes (cian suave)
+color cyan "\<(-[e|f|d|r|w|x|s|L|h|b|c|p|S|O|G|N|k|u|g|t|z|n|eq|ne|lt|le|gt|ge])\>"
+
+# comandos habituales (azul poco saturado)
+color blue "\<(grep|sed|awk|find|cut|sort|uniq|tr|xargs|tee|head|tail|chmod|chown|mkdir|rmdir|cp|mv|rm|ls|cat|touch|ln|tar|gzip|date)\>"
+
+# comentarios (gris: brightblack — nano no tiene paleta “dark”)
+color brightblack "#[^!].*$"
+
+# errores de aprendizaje: espacio pegado a corchetes, asignación con espacios,
+# esles/fos y CRLF en la última columna (marcados con brasa roja)
+color magenta "\[($|[^ ])|[^ \\]\]([;|&<>]|$)|\(\[|(then|do)$"
+color brightmagenta "\<(elsif|esle|fo|thn|fi)$"
+
+# el linter de la forja: shellcheck con formato compilador
+linter shellcheck -x

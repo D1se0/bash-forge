@@ -1,0 +1,20 @@
+# ==============================================================
+# Bash Forge — ajustes globales de nano (aplican a todas las sesiones)
+# ==============================================================
+
+# ergonomía de la forja
+set linenumbers
+set tabsize 4
+set autoindent
+set mouse
+set constantshow
+set indicator
+
+# interfaz coloreada con la paleta del tema de terminal activo
+set titlecolor brightwhite,blue
+set statuscolor brightmagenta,black
+set errorcolor brightwhite,red
+set numbercolor cyan,brightblack
+set functioncolor green,black
+set keycolor brightcyan,black
+set selectedcolor brightblack,brightcyan

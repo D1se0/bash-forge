@@ -1,6 +1,8 @@
 /**
- * Genera docs-site/dist: index.html con el catálogo (de packages/lessons/manifest.json)
- * y una página por nivel. Web estática, sin JS, para GitHub Pages.
+ * Genera docs-site/dist: landing del producto + catálogo de lecciones
+ * (de packages/lessons/manifest.json). Web estática, sin JS, para GitHub Pages.
+ * Estructura tipo bash-arena: navbar fija · hero + demo de terminal ·
+ * tarjetas de características · quickstart · mundos · footer.
  * Identidad nórdica: tokens de @bashforge/ui (copiados a dist) + runas SVG inline.
  * Rutas RELATIVAS para funcionar bajo la base /bash-forge/ de Pages.
  */
@@ -31,7 +33,7 @@ const favicon = `<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const kindIcon = { lesson: "ᚱ", challenge: "ᚢ", boss: "ᚦ", playground: "ᛒ" };
-const kindLabel = { lesson: "lección", challenge: "reto", boss: "Boss Fight", playground: "playground" };
+const kindLabel = { lesson: "lección", challenge: "reto", boss: "Boss", playground: "playground" };
 
 const byLevel = new Map();
 for (const l of lessonList) {
@@ -70,7 +72,6 @@ function runeSvg(name, size = 22) {
 // polilíneas de las runas usadas arriba (coinciden con packages/ui/src/runes.tsx)
 const RUNES = {
   fehu: [[[40, 12], [40, 158]], [[40, 52], [70, 30]], [[40, 88], [70, 66]]],
-  uruz: [[[28, 152], [28, 40], [62, 14], [62, 152]]],
   thurisaz: [[[42, 12], [42, 158]], [[42, 48], [72, 86], [42, 124], [42, 48]]],
   ansuz: [[[36, 12], [36, 158]], [[36, 26], [70, 46]], [[36, 66], [70, 86]]],
   isa: [[[50, 12], [50, 158]]],
@@ -82,21 +83,26 @@ const RUNES = {
   berkana: [[[34, 10], [34, 160]], [[34, 26], [68, 36], [68, 70], [34, 80]], [[34, 92], [68, 102], [68, 136], [34, 146]]],
 };
 
+const REPO_URL = "https://github.com/D1se0/bash-forge";
+
+/* ---------- secciones del catálogo (por mundo) ---------- */
 const sections = [...byLevel.entries()]
   .sort((a, b) => a[0] - b[0])
   .map(([lvl, ls]) => {
     const [nombre, tagline, rune] = MUNDOS[lvl] ?? [`Mundo ${lvl}`, "", "berkana"];
+    const mins = ls.reduce((acc, l) => acc + (l.minutes ?? 0), 0);
+    const stats = [`${ls.length} lecciones`, mins > 0 ? `~${mins} min` : null].filter(Boolean).join(" · ");
     return `
     <section id="nivel-${lvl}" class="mundo">
       <div class="mundo-head">
-        ${runeSvg(rune, 20)}
+        ${runeSvg(rune, 18)}
         <div>
           <h2>${esc(nombre)} <span class="rank">${lvl} · ${esc(ranks[lvl] ?? "")}</span></h2>
-          <p class="tagline">${esc(tagline)}</p>
+          <p class="tagline">${esc(tagline)} · ${stats}</p>
         </div>
       </div>
       <ul>
-        ${ls.map((l) => `<li>
+        ${ls.map((l) => `<li class="${esc(l.kind ?? "lesson")}">
           <span class="kind">${kindIcon[l.kind] ?? "ᚱ"} ${kindLabel[l.kind] ?? "lección"}</span>
           <strong>${esc(l.title)}</strong>
           <span class="xp">★ ${l.xp} XP</span>
@@ -106,11 +112,31 @@ const sections = [...byLevel.entries()]
   })
   .join("\n");
 
+/* ---------- nav de mundos ---------- */
 const toc = [...byLevel.keys()].sort((a, b) => a - b)
   .map((lvl) => `<a href="#nivel-${lvl}">${MUNDOS[lvl]?.[0] ?? `L${lvl}`}</a>`)
   .join("");
 
+/* ---------- tarjetas de características ---------- */
+const features = [
+  ["Terminal real", "Un Ubuntu de verdad corriendo en Docker, con PTY por pestaña. No hay simulación: cada comando se ejecuta de verdad.", "ᚦ"],
+  ["Lecciones validadas", "Cada reto se comprueba por aserciones automáticas: salida exacta, ficheros, permisos y comandos usados.", "ᚱ"],
+  ["Boss Fights", "Cada nivel culmina en un examen práctico todo-junto. Derrota al Boss y desbloquea el siguiente mundo.", "ᚢ"],
+  ["XP · rangos · racha", "De Aprendiz de la fragua a Maestro Forjador. La racha diaria y las insignias premian la constancia.", "ᛝ"],
+  ["nano + ShellCheck", "Editor nano con sintaxis bash coloreada y linter integrado (forge-lint). Tu código se corrige mientras lo escribes.", "ᛚ"],
+  ["Nórdico de verdad", "Tokens AA de contraste, tema Día de Nieve / Noche de Fiordo, runas kenaz y tipografías Inter Tight + Fraunces.", "ᚲ"],
+];
+const featuresHtml = features
+  .map(([t, d, r]) => `
+  <article class="feat">
+    <span class="feat-rune">${r}</span>
+    <h3>${t}</h3>
+    <p>${d}</p>
+  </article>`)
+  .join("\n");
+
 const total = manifest.counts?.total ?? lessonList.length;
+const totalMin = lessonList.reduce((acc, l) => acc + (l.minutes ?? 0), 0);
 
 const html = `<!doctype html>
 <html lang="es" data-theme="dark">
@@ -121,36 +147,104 @@ const html = `<!doctype html>
 <meta property="og:title" content="Bash Forge — aprende Bash forjando scripts de verdad"/>
 <meta property="og:description" content="Terminal web real (Ubuntu + Docker), ${total} lecciones, ${manifest.counts?.boss ?? 0} Boss Fights. Validación automática. Open source."/>
 <meta property="og:type" content="website"/>
-<title>Bash Forge — la forja bajo la aurora</title>
+<title>Bash Forge — aprende Bash forjando scripts de verdad</title>
 ${favicon}
 <link rel="stylesheet" href="fonts.css"/>
 <link rel="stylesheet" href="tokens.css"/>
 <style>
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    margin: 0 auto; max-width: 820px; padding: 0 24px 48px;
-    background: var(--bg-abyss); color: var(--fg);
+    margin: 0; background: var(--bg-abyss); color: var(--fg);
     font-family: var(--font-sans); line-height: var(--ui-lh);
   }
-  /* cenefa de nudos + hero */
-  .knot { height: 6px; margin: 0 0 32px;
-    background: repeating-linear-gradient(90deg, var(--border) 0 2px, transparent 2px 10px, var(--ice-3) 10px 12px, transparent 12px 20px);
-    opacity: .5; border-radius: 2px; }
-  h1 { font-family: var(--font-serif); font-weight: 560; font-size: var(--fs-6); color: var(--fg-strong); margin: 24px 0 8px; letter-spacing: .3px; }
-  .brand { font-family: var(--font-mono); color: var(--ice-3); display: inline-flex; align-items: center; gap: 10px; font-size: 15px; margin-top: 28px; }
+  a { color: inherit; }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- navbar fija ---------- */
+  .navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    background: color-mix(in srgb, var(--bg-abyss) 86%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .navbar .wrap { display: flex; align-items: center; gap: 26px; height: 58px; }
+  .brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
+    font-weight: 700; font-size: 15.5px; color: var(--fg-strong); }
   .brand svg { color: var(--ice-2); }
   .brand em { font-style: normal; color: var(--ember); }
-  .sub { color: var(--fg-muted); max-width: 58ch; margin: 0 0 20px; }
-  .kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0 8px; }
-  .kpi { border: 1px solid var(--border-soft); background: var(--bg-surface); color: var(--fg-strong);
-    border-radius: var(--r-md); padding: 10px 18px; font-family: var(--font-mono); font-size: 14px; }
-  .kpi b { color: var(--ice-2-text); font-weight: 700; }
-  nav { margin: 22px 0 34px; display: flex; flex-wrap: wrap; gap: 6px; }
-  nav a { color: var(--ice-2-text); text-decoration: none; font-size: 13px;
+  .navbar nav { margin-left: auto; display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
+  .navbar nav a { text-decoration: none; color: var(--fg-muted); font-size: 13.5px; padding: 7px 12px; border-radius: var(--r-sm); white-space: nowrap; }
+  .navbar nav a:hover { color: var(--fg-strong); background: var(--bg-surface); }
+  .navbar .nav-cta {
+    background: var(--ice-4); color: var(--fg-strong); font-weight: 650;
+    border-radius: var(--r-sm); padding: 8px 16px; text-decoration: none; margin-left: 8px; white-space: nowrap;
+  }
+  .navbar .nav-cta:hover { background: var(--ice-3); box-shadow: var(--glow-ice); }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 118px 0 30px; display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,.95fr); gap: 40px; align-items: center; }
+  .hero h1 {
+    font-family: var(--font-serif); font-weight: 560; font-size: var(--fs-7);
+    color: var(--fg-strong); margin: 0 0 18px; letter-spacing: .3px; line-height: 1.08;
+  }
+  .hero h1 .hl {
+    background: linear-gradient(100deg, var(--ice-2), var(--aurora-v));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero .lead { color: var(--fg-muted); font-size: 16.5px; max-width: 52ch; margin: 0 0 26px; }
+  .hero .lead strong { color: var(--fg-strong); }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .btn { display: inline-block; padding: 12px 22px; border-radius: var(--r-sm); font-weight: 700; text-decoration: none; font-size: 14.5px; }
+  .btn-primary { background: var(--ice-4); color: var(--fg-strong); }
+  .btn-primary:hover { background: var(--ice-3); box-shadow: var(--glow-ice); }
+  .btn-ghost { background: var(--bg-surface); color: var(--fg-strong); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--ice-3); }
+  .hero-note { margin-top: 22px; color: var(--fg-faint); font-size: 13px; display: flex; gap: 18px; flex-wrap: wrap; }
+  .hero-note span { font-family: var(--font-mono); }
+
+  /* demo de terminal */
+  .term-card {
+    background: #14161c; border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 24px 60px rgb(0 0 0 / .45), var(--shadow-blue); overflow: hidden;
+  }
+  .term-bar { display: flex; gap: 7px; padding: 11px 14px; border-bottom: 1px solid #23262e; }
+  .term-bar i { width: 10px; height: 10px; border-radius: 50%; background: #2e3440; }
+  .term-bar i:nth-child(1) { background: #bf616a; } .term-bar i:nth-child(2) { background: #ebcb8b; } .term-bar i:nth-child(3) { background: #a3be8c; }
+  .term-body { font-family: var(--font-mono); font-size: 13.2px; line-height: 1.75; padding: 16px 18px 20px; }
+  .t-prompt { color: #88c0d0; } .t-cmd { color: #eceff4; } .t-out { color: #96a3b4; }
+  .t-str { color: #a3be8c; } .t-key { color: #b48ead; } .t-ok { color: #a3be8c; font-weight: 700; } .t-xp { color: #ebcb8b; }
+
+  /* ---------- quickstart ---------- */
+  .quick { margin: 44px 0 10px; }
+  .quick h2, .sec-title {
+    font-family: var(--font-serif); font-weight: 560; color: var(--fg-strong);
+    font-size: var(--fs-5); margin: 0 0 16px; letter-spacing: .3px;
+  }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .step { background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--r-md); padding: 15px 17px; }
+  .step b { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-strong); margin-bottom: 8px; }
+  .step .n { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+    border-radius: 6px; background: var(--ice-4); color: var(--fg-strong); font-family: var(--font-mono); font-size: 12px; }
+  .step code { display: block; font-family: var(--font-mono); font-size: 12.6px; color: var(--ice-2-text);
+    background: var(--bg-abyss); border: 1px solid var(--border-soft); border-radius: 8px; padding: 9px 12px; white-space: pre-wrap; }
+
+  /* ---------- features ---------- */
+  .features { padding: 40px 0 16px; }
+  .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .feat { background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: var(--r-md); padding: 20px; }
+  .feat:hover { border-color: var(--ice-3); }
+  .feat-rune { font-size: 21px; color: var(--ice-2); display: inline-block; margin-bottom: 10px; }
+  .feat h3 { margin: 0 0 7px; color: var(--fg-strong); font-size: 15.5px; letter-spacing: .2px; }
+  .feat p { margin: 0; color: var(--fg-muted); font-size: 13.6px; }
+
+  /* ---------- mundos / catálogo ---------- */
+  .mundos { padding: 40px 0 10px; }
+  nav.worlds { margin: 4px 0 22px; display: flex; flex-wrap: wrap; gap: 6px; }
+  nav.worlds a { color: var(--ice-2-text); text-decoration: none; font-size: 13px;
     border: 1px solid var(--border-soft); border-radius: 999px; padding: 5px 13px; background: var(--bg-surface); }
-  nav a:hover { border-color: var(--ice-3); box-shadow: var(--glow-ice); }
-  /* mundos */
-  .mundo { margin: 34px 0; }
+  nav.worlds a:hover { border-color: var(--ice-3); box-shadow: var(--glow-ice); }
+  .mundo { margin: 30px 0; }
   .mundo-head { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
   .mundo-rune { color: var(--ice-2); flex: none; }
   .mundo-head h2 { margin: 0; font-family: var(--font-serif); font-weight: 560; font-size: var(--fs-4); color: var(--fg-strong); }
@@ -161,43 +255,105 @@ ${favicon}
     border: 1px solid var(--border-soft); border-radius: var(--r-sm);
     background: var(--bg-surface); padding: 9px 14px; margin: 6px 0; }
   li:hover { border-color: var(--ice-3); }
-  .kind { font-size: .82em; color: var(--fg-faint); font-family: var(--font-mono); flex: none; min-width: 96px; }
+  .kind { font-size: .82em; color: var(--fg-faint); font-family: var(--font-mono); flex: none; min-width: 84px; }
   li strong { color: var(--fg-strong); font-weight: 620; }
+  li.boss { border-color: var(--border); background: linear-gradient(120deg, var(--bg-surface), var(--bg-raised)); }
   li.boss strong { color: var(--ember-text); }
   .xp { margin-left: auto; color: var(--aurora-v-text); font-size: .82em; font-family: var(--font-mono); flex: none; }
-  footer { margin-top: 46px; color: var(--fg-faint); border-top: 1px solid var(--border-soft); padding-top: 14px; font-size: 13px; }
+
+  /* ---------- footer ---------- */
+  footer { margin-top: 50px; color: var(--fg-faint); border-top: 1px solid var(--border-soft); padding: 18px 0 30px; font-size: 13px; }
+  footer .wrap { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
   footer a { color: var(--ice-2-text); }
-  .cta { display: inline-block; margin: 6px 0 8px; padding: 10px 20px; border-radius: var(--r-sm);
-    background: var(--ember); color: var(--ember-contrast); font-weight: 700; text-decoration: none; }
-  .cta:hover { box-shadow: var(--glow-ember); }
-  .cta-alt { background: var(--ice-4); color: var(--fg-strong); margin-left: 10px; }
-  code { font-family: var(--font-mono); }
-  @media (prefers-color-scheme: light) { html[data-theme="dark"] { /* Pages sin JS: la web respeta el tema del visitante vía archivo? no — se sirve dark */ } }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; padding-top: 96px; }
+    .navbar nav a { display: none; }
+    .navbar .nav-cta { margin-left: auto; }
+  }
+  @media (prefers-color-scheme: light) { html[data-theme="dark"] { /* Pages sin JS: se sirve el tema nórdico oscuro */ } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
-<div class="knot"></div>
-<p class="brand">${runeSvg("kenaz", 14)} bash<span>·</span>forge <em>ᚲ</em></p>
-<h1>La forja bajo la aurora</h1>
-<p class="sub">Aprende <strong>Bash scripting exclusivamente</strong>, escribiendo y ejecutando scripts de verdad en un Ubuntu real dentro de Docker. Una terminal web con acabado nórdico: hielo frío, brasa cálida, cero humo.</p>
-<div class="kpis">
-  <span class="kpi"><b>${total}</b> lecciones</span>
-  <span class="kpi"><b>${manifest.counts?.challenge ?? 0}</b> retos</span>
-  <span class="kpi"><b>${manifest.counts?.boss ?? 0}</b> Boss Fights</span>
-  <span class="kpi"><b>9</b> mundos</span>
-</div>
-<p>
-  <a class="cta" href="https://github.com/D1se0/bash-forge#instalación">ᚲ Empezar a forjar</a>
-  <a class="cta cta-alt" href="https://github.com/D1se0/bash-forge">Código fuente</a>
-</p>
-<nav>${toc}</nav>
-${sections}
-<footer><small>Generado desde <code>packages/lessons</code> — Bash Forge (MIT). Los KPI y el catálogo salen del build real: no hay cifras inventadas.</small></footer>
+
+<header class="navbar">
+  <div class="wrap">
+    <a class="brand" href="#top">${runeSvg("kenaz", 13)} bash·forge <em>ᚲ</em></a>
+    <nav>
+      <a href="#caracteristicas">Características</a>
+      <a href="#quickstart">Instalación</a>
+      <a href="#mundos">Los 9 mundos</a>
+    </nav>
+    <a class="nav-cta" href="${REPO_URL}#instalación">ᚲ Empezar a forjar</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <h1>Aprende Bash <span class="hl">forjando scripts</span>, no memorizando flags</h1>
+        <p class="lead">
+          Cada lección se practica en una <strong>terminal real de Ubuntu</strong> dentro de Docker,
+          y se valida sola: tu script corre, tus ficheros existen, tu salida es la esperada.
+          ${total} lecciones, ${manifest.counts?.challenge ?? 0} retos y ${manifest.counts?.boss ?? 0} Boss Fights repartidos en 9 mundos
+          (${totalMin > 0 ? `~${totalMin} min de práctica` : "niveles con retos y Boss Fights"}).
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="${REPO_URL}#instalación">Empezar a forjar</a>
+          <a class="btn btn-ghost" href="#mundos">Ver el catálogo</a>
+        </div>
+        <div class="hero-note">
+          <span>✓ open source (MIT)</span><span>✓ sin cuenta</span><span>✓ 100% local</span>
+        </div>
+      </div>
+      <div class="term-card" role="img" aria-label="Demo: solucionar una lección en la terminal">
+        <div class="term-bar"><i></i><i></i><i></i></div>
+        <div class="term-body">
+          <div><span class="t-prompt">herrero@forja</span> <span class="t-key">~</span> <span class="t-cmd">nano saludo.sh</span></div>
+          <div><span class="t-out"># escribes el script con la sintaxis coloreada…</span></div>
+          <div><span class="t-prompt">herrero@forja</span> <span class="t-cmd">forge-lint saludo.sh</span></div>
+          <div><span class="t-ok">saludo.sh: ✓ sin problemas</span></div>
+          <div><span class="t-prompt">herrero@forja</span> <span class="t-cmd">./saludo.sh</span></div>
+          <div><span class="t-out">Hola, herrero</span></div>
+          <div><span class="t-xp">🏆 +15 XP · Nivel 0 completado</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart" class="quick">
+      <h2>Listo en tres pasos</h2>
+      <div class="steps">
+        <div class="step"><b><span class="n">1</span> Clona la forja</b><code>git clone ${REPO_URL}.git\ncd bash-forge</code></div>
+        <div class="step"><b><span class="n">2</span> Enciende la web + sandbox</b><code>docker compose up --build</code></div>
+        <div class="step"><b><span class="n">3</span> Abre la terminal</b><code>http://localhost:8080</code></div>
+      </div>
+    </section>
+
+    <section id="caracteristicas" class="features">
+      <h2 class="sec-title">Lo que hay dentro</h2>
+      <div class="feat-grid">${featuresHtml}
+      </div>
+    </section>
+
+    <section id="mundos" class="mundos">
+      <h2 class="sec-title">El camino: 9 mundos, un rango por conquista</h2>
+      <nav class="worlds">${toc}</nav>
+      ${sections}
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <span>ᚲ <strong>Bash Forge</strong> · MIT · <a href="${REPO_URL}">${REPO_URL.replace("https://", "")}</a></span>
+        <span>Catálogo generado del build real (<code>packages/lessons</code>): sin cifras inventadas.</span>
+      </div>
+    </footer>
+  </div>
+</main>
 </body>
 </html>`;
 
 fs.writeFileSync(path.join(out, "index.html"), html);
 // 404 para Pages
 fs.copyFileSync(path.join(out, "index.html"), path.join(out, "404.html"));
-console.log(`✔ docs-site/dist/index.html (${lessonList.length} lecciones, ${byLevel.size} mundos, tokens + fuentes nórdicos incluidos)`);
+console.log(`✔ docs-site/dist/index.html (${lessonList.length} lecciones, ${byLevel.size} mundos, landing bash-arena-style + catálogo)`);

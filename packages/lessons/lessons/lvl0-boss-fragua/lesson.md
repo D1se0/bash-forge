@@ -16,7 +16,7 @@ Completa todo:
 
 ## Errores típicos
 
-- Ejecatar `bash forge.sh` y pensar que vale: el check pide `./forge.sh` (pide +x).
+- Ejecutar `bash forge.sh` y pensar que vale: el check pide `./forge.sh` (pide +x).
 - `mkdir forge/log` sin `-p`: falla si `forge/` no existe (aquí no existe).
 
 > ⚡ Con esto cierras nivel 0: **Aprendiz de la fragua** desbloquean siguientes niveles. ¡A por el nivel 1 (variables)!

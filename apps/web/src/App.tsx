@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CheckDetail, LessonContent, LessonMeta, ServerSessionMsg } from "@bashforge/shared";
 import { ForgeWs, fetchLesson, fetchLessonList } from "./wsClient";
 import { dispatchOutput, TermPane } from "./Terminal";
-import { LessonPanel, Sidebar } from "./panels";
+import { LessonPanel, Sidebar, flatOrder } from "./panels";
 import type { LevelGroup } from "./catalog";
 import { groupByLevel } from "./catalog";
 import { currentTheme, toggleTheme } from "./theme";
@@ -44,6 +44,22 @@ export function App() {
   const [theme, setThemeState] = useState<string>(currentTheme());
 
   const ws = wsRef.current;
+
+  /** --------- modo foco: salir con Ctrl+Alt+F y desde el botón flotante --------- */
+  const exitFocusRef = useRef(() => setFullterm(false));
+  exitFocusRef.current = () => setFullterm(false);
+  useEffect(() => {
+    const onShortcuts = (e: KeyboardEvent) => {
+      // captuta (capture phase): llega ANTES que los handlers internos de xterm
+      if (e.ctrlKey && e.altKey && !e.shiftKey && (e.key === "F" || e.key === "f")) {
+        e.preventDefault();
+        e.stopPropagation();
+        exitFocusRef.current();
+      }
+    };
+    window.addEventListener("keydown", onShortcuts, true);
+    return () => window.removeEventListener("keydown", onShortcuts, true);
+  }, []);
 
   /** ------------- progreso ------------- */
   useEffect(() => {
@@ -214,6 +230,12 @@ export function App() {
   const groups: LevelGroup[] = useMemo(() => groupByLevel(unified), [unified]);
 
   const currentLesson = current ? loaded.get(current) ?? null : null;
+  // siguiente paso del camino (ruta canónica): energiza «Continuar» en la sidebar y el panel
+  const nextLesson = useMemo(() => {
+    const route = flatOrder(groups);
+    const completed = progress?.completed ?? [];
+    return route.find((l) => !completed.includes(l.id)) ?? null;
+  }, [groups, progress]);
 
   return (
     <div className={`app${fullterm ? " fullterm" : ""}`}>
@@ -280,12 +302,16 @@ export function App() {
             <button
               className="ghost"
               onClick={() => setFullterm((f) => !f)}
-              title={fullterm ? "Salir de pantalla completa (ESC)" : "Pantalla completa"}
+              title={fullterm ? "Volver al layout normal (Ctrl+Alt+F)" : "Modo foco: terminal a pantalla completa (Ctrl+Alt+F)"}
             >
-              {fullterm ? "⤢" : "⛶"}
+              {fullterm ? "⤡ Volver" : "⛶ Ampliar"}
             </button>
           </div>
-          <div className="term-host" id="term-host">
+          <div
+            className="term-host"
+            id="term-host"
+            onDoubleClick={() => setFullterm((f) => !f)}
+          >
             {tab.map((t) => (
               <TermPane
                 key={t.id}
@@ -302,6 +328,8 @@ export function App() {
         <LessonPanel
           lesson={currentLesson}
           ws={ws}
+          nextLesson={nextLesson}
+          onGoNext={selectLesson}
           done={current !== null && (progress?.completed.includes(current) ?? false)}
           onCompleted={claimXp}
           checks={checks}
@@ -311,6 +339,16 @@ export function App() {
       </div>
 
       {notice && <div className="notice">{notice}</div>}
+
+      {fullterm && (
+        <div className="focusbar" role="toolbar" aria-label="Modo foco">
+          <span className="focusbar-title">ᚲ Modo foco</span>
+          <span className="focusbar-meta">solo terminal · el resto está fuera de la vista</span>
+          <button className="primary" onClick={exitFocusRef.current} title="Volver al layout (Ctrl+Alt+F o doble clic)">
+            ⤡ Salir del modo foco (Ctrl+Alt+F)
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -209,7 +209,7 @@ lessons:
     exercise: |
       Abre `nano notas.md` y deja **dos líneas** que empiecen por la palabra `Nota:` (por ejemplo, `Nota: uso Ctrl+O para guardar`). Guarda y sal sin error.
     errors:
-      - "Pulsar Ctrl+C esperando cerrar: no cierra nano (Ctrl+X es salir)."
+      - "Con nano, Ctrl+T lanza el linter de la forja (shellcheck) sobre el fichero."
       - "Guardar dos veces y acabar con `notas.md.md`."
     quiz:
       question: En nano, ¿qué combinación guarda sin salir?
@@ -401,7 +401,7 @@ lessons:
       4. Ejecuta `./forge.sh`.
     extra: "> ⚡ Con esto cierras nivel 0: **Aprendiz de la fragua** desbloquean siguientes niveles. ¡A por el nivel 1 (variables)!"
     errors:
-      - "Ejecatar `bash forge.sh` y pensar que vale: el check pide `./forge.sh` (pide +x)."
+      - "Ejecutar `bash forge.sh` y pensar que vale: el check pide `./forge.sh` (pide +x)."
       - "`mkdir forge/log` sin `-p`: falla si `forge/` no existe (aquí no existe)."
     tasks:
       - name: boss-script

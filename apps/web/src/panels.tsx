@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { markdownToHtml } from "./markdown";
-import type { CheckDetail, LessonContent, ProgressSnapshot } from "@bashforge/shared";
+import type { CheckDetail, LessonContent, LessonMeta, ProgressSnapshot } from "@bashforge/shared";
 import { BADGES, LESSON_LEVELS } from "@bashforge/shared";
 import type { ForgeWs } from "./wsClient";
 import type { LevelGroup } from "./catalog";
@@ -16,46 +16,112 @@ export interface SidebarProps {
   onSelect: (id: string) => void;
 }
 
+/** Orden canónico del currículum (nivel asc, luego id): la ruta de la forja. */
+export function flatOrder(groups: LevelGroup[]): LessonMeta[] {
+  return groups.flatMap((g) => g.lessons);
+}
+
 export function Sidebar({ groups, progress, current, onSelect }: SidebarProps) {
+  const route = useMemo(() => flatOrder(groups), [groups]);
+  const next = route.find((l) => !progress.completed.includes(l.id)) ?? null;
+  const doneCount = route.filter((l) => progress.completed.includes(l.id)).length;
+  const pct = route.length ? Math.round((doneCount / route.length) * 100) : 0;
+
+  // niveles abiertos: todo lo anterior y el del siguiente paso (controlado, para no pelear con <details>)
+  const [openLevels, setOpenLevels] = useState<Set<number>>(() => {
+    const limit = next?.level ?? 0;
+    return new Set(LESSON_LEVELS.filter((l) => l.level <= limit).map((l) => l.level));
+  });
+  const toggleLevel = (level: number, open: boolean) => {
+    setOpenLevels((prev) => {
+      const s = new Set(prev);
+      if (open) s.add(level);
+      else s.delete(level);
+      return s;
+    });
+  };
+
   return (
     <aside className="sidebar">
       <div className="xp-block">
-        <div className="xp-value">{progress.xp} XP</div>
+        <div className="xp-top">
+          <span className="xp-value">{progress.xp} XP</span>
+          <span className="xp-meta">🔥 {progress.streak}d</span>
+        </div>
+        <div className="xp-bar" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+          <div className="xp-bar-fill" style={{ width: `${pct}%` }} />
+        </div>
         <div className="xp-meta">
-          🔥 racha {progress.streak}d · ✅ {progress.completed.length} lecciones
+          {doneCount} de {route.length} lecciones · {pct}% del camino
         </div>
-        <div className="badges-row">
-          {BADGES.filter((b) => progress.badges.includes(b.id)).map((b) => (
-            <span key={b.id} title={`${b.title}: ${b.description}`}>{b.icon}</span>
-          ))}
-        </div>
+        {progress.badges.length > 0 && (
+          <div className="badges-row">
+            {BADGES.filter((b) => progress.badges.includes(b.id)).map((b) => (
+              <span key={b.id} title={`${b.title}: ${b.description}`}>{b.icon}</span>
+            ))}
+          </div>
+        )}
       </div>
+
+      {next ? (
+        <button className="next-card" onClick={() => onSelect(next.id)} title={next.objective}>
+          <span className="next-kicker">ᚱ Tu siguiente paso</span>
+          <span className="next-title">{next.title}</span>
+          <span className="next-meta">
+            Nivel {next.level} · {next.xp} XP · ▶ Continuar
+          </span>
+        </button>
+      ) : (
+        <div className="next-card complete">
+          <span className="next-kicker">ᛒ Plan completo</span>
+          <span className="next-title">¡Forja dominada!</span>
+          <span className="next-meta">Repasa lo que quieras</span>
+        </div>
+      )}
+
+      <div className="tree-title">El camino de la forja</div>
       <nav className="lesson-tree">
-        {groups.map((g) => (
-          <details key={g.info.level} open className="level-group">
-            <summary>
-              <span className="lvl-badge">L{g.info.level}</span> {g.info.title}
-            </summary>
-            <ul>
-              {g.lessons.map((l) => (
-                <li key={l.id}>
-                  <button
-                    className={`lesson-link${current === l.id ? " current" : ""}${
-                      progress.completed.includes(l.id) ? " done" : ""
-                    }`}
-                    onClick={() => onSelect(l.id)}
-                    title={l.objective}
-                  >
-                    <span className="kind-icon">
-                      {l.kind === "boss" ? "👹" : l.kind === "challenge" ? "⚔️" : "📘"}
-                    </span>
-                    {l.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </details>
-        ))}
+        {groups.map((g) => {
+          const done = g.lessons.filter((l) => progress.completed.includes(l.id)).length;
+          return (
+            <details
+              key={g.info.level}
+              className="level-group"
+              open={openLevels.has(g.info.level)}
+              onToggle={(e) => toggleLevel(g.info.level, (e.target as HTMLDetailsElement).open)}
+            >
+              <summary>
+                <span className="lvl-badge">L{g.info.level}</span>
+                <span className="lvl-name">{g.info.title}</span>
+                <span className="lvl-progress" data-full={done === g.lessons.length ? "yes" : "no"}>
+                  {done}/{g.lessons.length}
+                </span>
+              </summary>
+              <ul>
+                {g.lessons.map((l, i) => {
+                  const done = progress.completed.includes(l.id);
+                  const isNext = next?.id === l.id;
+                  return (
+                    <li key={l.id}>
+                      <button
+                        className={`lesson-link${current === l.id ? " current" : ""}${done ? " done" : ""}${isNext ? " next" : ""}`}
+                        onClick={() => onSelect(l.id)}
+                        title={l.objective}
+                      >
+                        <span className={`step-dot${done ? " done" : ""}${isNext ? " now" : ""}`}>
+                          {done ? "✓" : String(i + 1)}
+                        </span>
+                        <span className="lesson-title">{l.title}</span>
+                        {l.kind === "boss" && <span className="kind-chip boss">Boss</span>}
+                        {l.kind === "challenge" && <span className="kind-chip">Reto</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          );
+        })}
       </nav>
     </aside>
   );
@@ -73,9 +139,12 @@ export interface LessonPanelProps {
   checks: CheckDetail[] | null;
   busy: string | null;
   currentTermId: string | null;
+  /** siguiente paso del camino (para el botón «Continuar» tras aprobar) */
+  nextLesson: LessonMeta | null;
+  onGoNext: (id: string) => void;
 }
 
-export function LessonPanel({ lesson, ws, done, onCompleted, checks, busy, currentTermId }: LessonPanelProps) {
+export function LessonPanel({ lesson, ws, done, onCompleted, checks, busy, currentTermId, nextLesson, onGoNext }: LessonPanelProps) {
   const [hintLevel, setHintLevel] = useState(0);
   useEffect(() => setHintLevel(0), [lesson?.id]);
 
@@ -167,6 +236,11 @@ export function LessonPanel({ lesson, ws, done, onCompleted, checks, busy, curre
           {checks.every((c) => c.pass) && !done && (
             <button className="primary" onClick={() => onCompleted(lesson.id)}>
               🏆 Reclamar {lesson.xp} XP
+            </button>
+          )}
+          {checks.every((c) => c.pass) && done && nextLesson && (
+            <button className="primary go-next" onClick={() => onGoNext(nextLesson.id)}>
+              Siguiente lección ▶ {nextLesson.title}
             </button>
           )}
         </div>

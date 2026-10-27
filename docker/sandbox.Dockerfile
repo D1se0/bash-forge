@@ -7,6 +7,7 @@ WORKDIR /opt/bashforge
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates bash curl util-linux procps python3 make g++ \
+      nano vim-tiny shellcheck \
  && rm -rf /var/lib/apt/lists/*
 
 # dependencias (incluye node-pty: hay que compilar módulos nativos)
@@ -24,12 +25,21 @@ RUN npm run build -w apps/sandbox-server
 # lecciones generadas al módulo LESSONS_DIR por defecto
 COPY packages/lessons/lessons /opt/bashforge/lessons
 
+# nanorc de la forja: sintaxis bash coloreada (colores ANSI por nombre) + ajustes globales
+COPY docker/nanorc/ /tmp/nanorc/
+RUN cp /tmp/nanorc/forge-bash.nanorc /usr/share/nano/forge-bash.nanorc \
+ && printf '\n# ===== Bash Forge =====\ninclude "/usr/share/nano/forge-bash.nanorc"\n' >> /etc/nanorc \
+ && cat /tmp/nanorc/nanorc-forge >> /etc/nanorc \
+ && rm -rf /tmp/nanorc
+
 # usuarios de forja pre-creados (los ids que reserva pool.ts)
 RUN for i in $(seq 1 500); do \
       useradd -m -u $((2000 + i)) -s /bin/bash forge_$i 2>/dev/null || true; \
     done
 
-# prompt propio de la forja, en /etc/bash.bashrc, en el skel y en cada home ya creado
+# linter estilo VS Code: forge-lint (shellcheck coloreado) + prompt propio de la forja
+COPY docker/forge-lint.sh /usr/local/bin/forge-lint
+RUN chmod 755 /usr/local/bin/forge-lint
 COPY docker/forge-prompt.sh /tmp/forge-prompt.sh
 RUN for f in /etc/bash.bashrc /etc/skel/.bashrc $(ls /home/forge_*/.bashrc 2>/dev/null); do \
       grep -q PROMPT_BASH_FORGE "$f" 2>/dev/null || cat /tmp/forge-prompt.sh >> "$f"; \
