@@ -17,8 +17,9 @@ validation:
   timeout_seconds: 30
   tasks:
     - name: sin-args
-      message: bash ayudacli.sh imprime la línea Uso
+      message: bash ayudacli.sh imprime la línea Uso y sale 1
       cmd: bash ayudacli.sh
+      expectExit: 1
       expectOutput: "^Uso: ayudacli"
     - name: flag-h
       message: bash ayudacli.sh -h imprime la línea Uso Y sale 0

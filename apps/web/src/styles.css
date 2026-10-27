@@ -414,6 +414,58 @@ button.go-next { width: 100%; margin-top: 10px; }
 .sheet-foot a.on { color: var(--ice-2-text); border-color: var(--ice-3); box-shadow: var(--glow-ice); }
 .sheet-foot-hint { margin-left: auto; color: var(--fg-faint); font-size: 10.5px; font-family: var(--font-mono); }
 
+/* ---------------- popup glass de progreso (export / import / PDF) ---------------- */
+.sheet.pop { width: min(560px, 100%); max-height: min(86vh, 720px); }
+.pop-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  padding: 16px 20px 4px;
+}
+.pop-stats .kpi {
+  display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+  background: color-mix(in srgb, var(--bg-abyss) 65%, transparent);
+  border: 1px solid var(--border-soft); border-radius: 12px; padding: 10px 12px;
+}
+.kpi-v { font-size: 17px; font-weight: 750; color: var(--ice-2-text); font-family: var(--font-mono); }
+.kpi-l { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--fg-faint); }
+.pop-levels { padding: 12px 20px 4px; max-height: 280px; overflow-y: auto; }
+.pop-levels::-webkit-scrollbar { width: 8px; }
+.pop-levels::-webkit-scrollbar-thumb { background: var(--bg-raised); border-radius: 6px; }
+.lvl-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 10px; margin: 5px 0;
+  background: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  border: 1px solid var(--border-soft); border-radius: 10px;
+  font-size: 12.5px;
+}
+.pop-lvl { font-family: var(--font-mono); font-weight: 700; color: var(--ice-2-text); min-width: 26px; }
+.pop-lvl-title { flex: 1; color: var(--fg-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pop-lvl-count { font-family: var(--font-mono); color: var(--fg-faint); font-size: 11.5px; }
+.pop-flash {
+  margin: 10px 20px 0; padding: 8px 12px; border-radius: 10px; font-size: 12.5px;
+  background: color-mix(in srgb, var(--aurora-r) 14%, transparent); color: var(--fg-strong);
+  border: 1px solid color-mix(in srgb, var(--aurora-r) 40%, transparent);
+}
+.pop-flash.ok {
+  background: color-mix(in srgb, var(--aurora-g) 14%, transparent);
+  border-color: color-mix(in srgb, var(--aurora-g) 40%, transparent);
+}
+.pop-actions {
+  display: flex; gap: 8px; padding: 12px 20px 0;
+}
+.pop-actions button {
+  flex: 1; padding: 9px 10px; font: inherit; font-size: 12.3px; font-weight: 650;
+  color: var(--fg-strong); background: var(--bg-raised);
+  border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+}
+.pop-actions button:hover { border-color: var(--ice-3); box-shadow: var(--glow-ice); }
+.pop-actions .primario {
+  background: color-mix(in srgb, var(--ice-4) 80%, var(--ice-2) 20%);
+  border-color: var(--ice-3);
+}
+.pop-hint {
+  margin: 10px 20px 14px; color: var(--fg-faint); font-size: 10.5px; font-family: var(--font-mono);
+}
+
 /* el overlay y el sheet ganan siempre; el modo foco baja su focusbar */
 .app.fullterm .focusbar { z-index: 150; }
 

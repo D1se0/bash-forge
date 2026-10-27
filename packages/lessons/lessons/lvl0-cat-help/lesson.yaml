@@ -18,7 +18,7 @@ validation:
   tasks:
     - name: ayuda-capturada
       message: ayuda.txt contiene la cabecera del man de cat
-      hint: "`man cat | head -12 > ayuda.txt`"
+      hint: "`man cat > ayuda.txt` (el man entero, sin head)"
       cmd: grep -qE "(CAT|Cat|cat)" ayuda.txt && grep -qE "[0-9]{4}" ayuda.txt
     - name: exito-registrado
       message: exito.txt guarda un 0

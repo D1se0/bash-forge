@@ -190,7 +190,9 @@ export class LessonChecker {
         }
       }
       // patrón 'm': ^/$ anclan por línea y con salida multilínea funcionan igual
-      if (task.expectOutput && !new RegExp(task.expectOutput, "m").test(run.stdout)) {
+      // select y algunas herramientas imprimen por stderr: el output esperable
+      // puede vivir en cualquiera de los dos streams (lo que el alumno ve).
+      if (task.expectOutput && !new RegExp(task.expectOutput, "m").test(run.stdout) && !new RegExp(task.expectOutput, "m").test(run.stderr)) {
         problems.push(`la salida no contiene /${task.expectOutput}/`);
       }
       if (task.expectOutputAbsent && new RegExp(task.expectOutputAbsent, "m").test(run.stdout + run.stderr)) {

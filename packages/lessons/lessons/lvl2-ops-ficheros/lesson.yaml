@@ -17,13 +17,13 @@ validation:
   tasks:
     - name: fichero-con-contenido
       message: sobre un fichero con datos imprime 'FICHERO'
-      cmd: bash es-papel.sh saludo.txt &>/dev/null; test -f saludo.txt && bash es-papel.sh vars.sh
+      cmd: mkdir -p .fx && echo dato > .fx/saludo.txt && bash es-papel.sh .fx/saludo.txt
       expectOutput: ^FICHERO$
     - name: directorio
       message: sobre un directorio imprime 'CARPETA'
-      cmd: bash es-papel.sh workspace
+      cmd: mkdir -p .fx/workspace-que-si-existe && bash es-papel.sh .fx/workspace-que-si-existe
       expectOutput: ^CARPETA$
     - name: fantasma
       message: sobre algo inexistente imprime 'FANTASMA'
-      cmd: bash es-papel.sh nada-de-nadie.txt
+      cmd: bash es-papel.sh .fx/nada-de-nadie.txt
       expectOutput: ^FANTASMA$

@@ -16,10 +16,10 @@ validation:
   timeout_seconds: 30
   tasks:
     - name: menu-enviado
-      message: el menú se ve y '3) salir' aparece
-      cmd: printf '3\n' | bash menu.sh
-      expectOutput: 3\) salir
+      message: el menú se ve y '4) salir' aparece
+      cmd: printf '4\n' | bash menu.sh
+      expectOutput: 4\) salir
     - name: eleccion-visa
-      message: eligir 2 imprime 'tomaste tijera'
-      cmd: printf '2\n' | bash menu.sh
+      message: elegir 3 imprime 'tomaste tijera' y luego el 4 sale limpio
+      cmd: printf '3\n4\n' | bash menu.sh
       expectOutput: ^tomaste tijera$

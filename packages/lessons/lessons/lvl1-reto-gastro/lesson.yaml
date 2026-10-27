@@ -28,4 +28,4 @@ validation:
       message: usa read -s (no queda rastro de la clave en la salida)
       expectFileContains:
         path: secreto.sh
-        regex: read[[:space:]]+(-r)?[[:space:]]*-s
+        regex: read\s+-[A-Za-z]*s

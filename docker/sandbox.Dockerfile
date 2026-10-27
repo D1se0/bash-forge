@@ -10,6 +10,15 @@ RUN apt-get update \
       nano vim-tiny shellcheck \
  && rm -rf /var/lib/apt/lists/*
 
+# Lecciones pedagógicas piden man/bc/tree/jq…: la base slim excluye /usr/share/man
+# vía dpkg → quitamos la exclusión, instalamos las herramientas y REINSTALAMOS
+# coreutils/bash para recuperar sus páginas de manual.
+RUN rm -f /etc/dpkg/dpkg.cfg.d/docker \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends man-db manpages manpages-es manpages-dev bc tree jq less \
+ && apt-get install -y --no-install-recommends --reinstall coreutils bash \
+ && rm -rf /var/lib/apt/lists/*
+
 # dependencias (incluye node-pty: hay que compilar módulos nativos)
 COPY package.json package-lock.json ./
 COPY apps/sandbox-server/package.json apps/sandbox-server/package.json

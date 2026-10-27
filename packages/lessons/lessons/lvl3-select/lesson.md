@@ -21,7 +21,8 @@ done
 
 ## Tu reto
 
-Crea `menu.sh` que muestre y procese un menú con select: optiones `piedra papel tijera salir`. El check envía `2\\n` y espera ver el menu destacado con `3) salir` y la línea `tomaste tijera`.
+Crea `menu.sh` que muestre y procese un menú con `select` y opciones `piedra papel tijera salir` (¡en ese orden: `salir` es la opción 4!). Ojo: `select` imprime el menú por stderr.
+El check envía `4\n` (opta por salir: menú visible y exit limpio por break) y `3\n4\n` (toma `tijera` y luego sale).
 
 ## Errores típicos
 

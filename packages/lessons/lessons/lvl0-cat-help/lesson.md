@@ -23,7 +23,7 @@ $ echo $?
 
 ## Tu reto
 
-Guarda en `ayuda.txt` las primeras 12 líneas del man de `cat` (`man cat | head -12 > ayuda.txt`). Luego ejecuta `cat /etc/hostname` a éxito y guarda su `$?` en `exito.txt`.
+Guarda en `ayuda.txt` el man completo de `cat` (`man cat > ayuda.txt`; el pie del man incluye un año con 4 cifras). Luego ejecuta `cat /etc/hostname` a éxito y guarda su `$?` en `exito.txt`.
 
 ## Errores típicos
 

@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { markdownToHtml } from "./markdown";
 import type { CheckDetail, LessonContent, LessonMeta, ProgressSnapshot } from "@bashforge/shared";
 import { BADGES, LESSON_LEVELS } from "@bashforge/shared";
 import type { ForgeWs } from "./wsClient";
-import type { ChangeEvent } from "react";
 import type { LessonLevel, LessonLevelInfo } from "@bashforge/shared";
 import type { LevelGroup } from "./catalog";
 import { isLevelLocked, unlockedLevel } from "./catalog";
+import { ProgressPopup } from "./progress-popup";
 
 /** ------------------------------------------------------------------ */
 /** Barra lateral: árbol de niveles + progreso XP.                      */
@@ -65,49 +65,7 @@ export function Sidebar({ groups, progress, current, onSelect, onImport }: Sideb
     });
   };
 
-  /** Exportar el progreso como fichero JSON descargable (migración entre máquinas). */
-  function exportProgress(): void {
-    const payload = {
-      app: "bashforge",
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      progress,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const el = document.createElement("a");
-    el.href = url;
-    el.download = `bashforge-progreso-${progress.forgeId || "local"}-${new Date().toISOString().slice(0, 10)}.json`;
-    el.click();
-    URL.revokeObjectURL(url);
-  }
-
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  /** Importar un JSON exportado (de esta u otra máquina) con validación mínima. */
-  async function importProgress(e: ChangeEvent<HTMLInputElement>): Promise<void> {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    try {
-      const parsed = JSON.parse(await file.text()) as { progress?: ProgressSnapshot } & Partial<ProgressSnapshot>;
-      const p = parsed.progress ?? parsed;
-      if (!p || typeof p !== "object" || !Array.isArray(p.completed)) {
-        throw new Error("formato no reconocido");
-      }
-      const isStrArr = (a: unknown): a is string[] => Array.isArray(a) && a.every((s) => typeof s === "string");
-      onImport({
-        ...progress,
-        completed: isStrArr(p.completed) ? p.completed : progress.completed,
-        xp: typeof p.xp === "number" ? p.xp : progress.xp,
-        badges: isStrArr(p.badges) ? p.badges : progress.badges,
-        streak: typeof p.streak === "number" ? p.streak : progress.streak,
-        lastActiveDate: typeof p.lastActiveDate === "string" ? p.lastActiveDate : progress.lastActiveDate,
-      });
-    } catch {
-      onImport(null); // fichero inválido: la app lo avisa y no toca nada
-    }
-  }
+  const [popAbierto, setPopAbierto] = useState(false);
 
   return (
     <aside className="sidebar">
@@ -196,14 +154,17 @@ export function Sidebar({ groups, progress, current, onSelect, onImport }: Sideb
         })}      </nav>
 
       <div className="progress-io">
-        <button className="ghost" onClick={exportProgress} title="Descarga tu progreso como JSON para migrarlo a otra máquina">
-          ⇪ Exportar
+        <button
+          className="ghost"
+          onClick={() => setPopAbierto(true)}
+          title="Exportar/importar tu progreso y descargarte el informe en PDF"
+        >
+          ⇪ ⇩ Progreso · PDF
         </button>
-        <button className="ghost" onClick={() => fileRef.current?.click()} title="Sube un JSON exportado desde otra máquina">
-          ⇩ Importar
-        </button>
-        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={importProgress} />
       </div>
+      {popAbierto && (
+        <ProgressPopup groups={groups} progress={progress} onClose={() => setPopAbierto(false)} onImport={onImport} />
+      )}
     </aside>
   );
 }

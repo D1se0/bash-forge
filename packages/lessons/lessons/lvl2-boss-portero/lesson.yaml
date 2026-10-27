@@ -16,14 +16,14 @@ validation:
   timeout_seconds: 30
   tasks:
     - name: boss-fichero
-      message: con vars.sh imprime 'FICHERO'
-      cmd: bash portero.sh check vars.sh
+      message: con un fichero con contenido imprime 'FICHERO'
+      cmd: mkdir -p .fx && echo NOMBRE=forja > .fx/vars.sh && bash portero.sh check .fx/vars.sh
       expectOutput: ^FICHERO$
     - name: boss-dir
-      message: con workspace imprime 'DIR'
-      cmd: bash portero.sh check workspace
+      message: con una carpeta imprime 'DIR'
+      cmd: mkdir -p .fx/workspace && bash portero.sh check .fx/workspace
       expectOutput: ^DIR$
     - name: boss-no
       message: con lo-que-no-hay imprime 'NO'
-      cmd: bash portero.sh check lo-que-no-hay.txt
+      cmd: bash portero.sh check .fx/lo-que-no-hay.txt
       expectOutput: ^NO$

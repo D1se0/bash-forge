@@ -29,4 +29,4 @@ validation:
     - name: saluda
       message: "bash beatriz.sh imprime 'Beatriz saluda: versión 1.0'"
       cmd: bash beatriz.sh
-      expectOutput: "Beatriz saluda: version 1\\.0"
+      expectOutput: "Beatriz saluda: versi.?n 1\\.0"

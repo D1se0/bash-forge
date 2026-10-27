@@ -1,6 +1,6 @@
 Primera pista
 
-`man cat | head -12 > ayuda.txt`
+`man cat > ayuda.txt` (recuerda salir con `q`)
 ---
 Segunda pista
 

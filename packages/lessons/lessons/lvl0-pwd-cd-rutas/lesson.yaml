@@ -22,4 +22,4 @@ validation:
     - name: ruta-absoluta
       message: ruta.txt contiene la ruta absoluta de workspace
       hint: "`cd workspace && pwd > ../ruta.txt && cd ..`"
-      cmd: test "$(cat ruta.txt 2>/dev/null)" = "$HOME/workspace"
+      cmd: test "$(cat ruta.txt 2>/dev/null)" = "$PWD/workspace"

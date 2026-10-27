@@ -287,7 +287,8 @@ lessons:
       done
       ```
     exercise: |
-      Crea `menu.sh` que muestre y procese un menú con select: optiones `piedra papel tijera salir`. El check envía `2\\n` y espera ver el menu destacado con `3) salir` y la línea `tomaste tijera`.
+      Crea `menu.sh` que muestre y procese un menú con `select` y opciones `piedra papel tijera salir` (¡en ese orden: `salir` es la opción 4!). Ojo: `select` imprime el menú por stderr.
+      El check envía `4\n` (opta por salir: menú visible y exit limpio por break) y `3\n4\n` (toma `tijera` y luego sale).
     errors:
       - Sin `PS3`: el prompt por defecto es deliberado tipo `?#)`, algo enredado para testear.
       - No salir: sin `salir`, el while del select puede empeñar en bucle.
@@ -296,12 +297,12 @@ lessons:
       answer: "REPLY abre el número elegido; la variable tomada trae el texto."
     tasks:
       - name: menu-enviado
-        message: "el menú se ve y '3) salir' aparece"
-        cmd: "printf '3\\n' | bash menu.sh"
-        expectOutput: "3\\) salir"
+        message: "el menú se ve y '4) salir' aparece"
+        cmd: "printf '4\\n' | bash menu.sh"
+        expectOutput: "4\\) salir"
       - name: eleccion-visa
-        message: "eligir 2 imprime 'tomaste tijera'"
-        cmd: "printf '2\\n' | bash menu.sh"
+        message: "elegir 3 imprime 'tomaste tijera' y luego el 4 sale limpio"
+        cmd: "printf '3\\n4\\n' | bash menu.sh"
         expectOutput: "^tomaste tijera$"
     hints:
       - "`select opt in \"piedra\" \"papel\" \"tijera\" \"salir\"; do …; done`"
@@ -353,7 +354,7 @@ lessons:
       - name: veces-cinco
         message: imprime time 0..time 4
         cmd: bash cuenta3.sh
-        expectOutput: "^time 0$\\n^time 1$\\n^time 4$"
+        expectOutput: "^time 0$\\n^time 1$\\n^time 2$\\n^time 3$\\n^time 4$"
     hints:
       - "for ((i=0; i<5; i++)) do …"
       - Imprime `time $i` siendo $i la salida.

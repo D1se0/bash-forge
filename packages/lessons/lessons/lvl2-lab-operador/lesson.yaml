@@ -18,13 +18,13 @@ validation:
   tasks:
     - name: lab-f
       message: "bash operador.sh -f vars.sh imprime 'TEST -f: ok'"
-      cmd: bash operador.sh -f vars.sh
+      cmd: mkdir -p .fx && echo NOMBRE=forja > .fx/vars.sh && bash operador.sh -f .fx/vars.sh
       expectOutput: "^TEST -f: ok$"
     - name: lab-d
       message: "bash operador.sh -d workspace imprime 'TEST -d: ok'"
-      cmd: bash operador.sh -d workspace
+      cmd: mkdir -p .fx/workspace && bash operador.sh -d .fx/workspace
       expectOutput: "^TEST -d: ok$"
     - name: lab-desconocido
       message: "bash operador.sh -Z fichero imprime 'TEST -Z: desconocido'"
-      cmd: bash operador.sh -Z workspace
+      cmd: bash operador.sh -Z .fx/workspace
       expectOutput: "^TEST -Z: desconocido$"

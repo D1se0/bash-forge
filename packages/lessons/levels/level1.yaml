@@ -556,7 +556,7 @@ lessons:
         message: usa read -s (no queda rastro de la clave en la salida)
         expectFileContains:
           path: secreto.sh
-          regex: "read[[:space:]]+(-r)?[[:space:]]*-s"
+          regex: "read\\s+-[A-Za-z]*s"
     hints:
       - "Usa read -rsp con un prompt para el PIN; el -r evita sorpresas con backslash."
       - Compara el intento con el PIN del entorno y decide entre conceder o denegar.

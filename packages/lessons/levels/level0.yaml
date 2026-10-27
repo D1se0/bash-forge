@@ -82,7 +82,7 @@ lessons:
         cmd: test -d workspace/proyectos/capitulo1
       - name: ruta-absoluta
         message: ruta.txt contiene la ruta absoluta de workspace
-        cmd: test "$(cat ruta.txt 2>/dev/null)" = "$HOME/workspace"
+        cmd: test "$(cat ruta.txt 2>/dev/null)" = "$PWD/workspace"
         hint: "`cd workspace && pwd > ../ruta.txt && cd ..`"
     hints:
       - "`mkdir -p workspace/proyectos/capitulo1` crea todo el árbol de golpe."
@@ -164,7 +164,7 @@ lessons:
       1     # error
       ```
     exercise: |
-      Guarda en `ayuda.txt` las primeras 12 líneas del man de `cat` (`man cat | head -12 > ayuda.txt`). Luego ejecuta `cat /etc/hostname` a éxito y guarda su `$?` en `exito.txt`.
+      Guarda en `ayuda.txt` el man completo de `cat` (`man cat > ayuda.txt`; el pie del man incluye un año con 4 cifras). Luego ejecuta `cat /etc/hostname` a éxito y guarda su `$?` en `exito.txt`.
     errors:
       - "`echo $?` dos veces seguidas: la segunda ya no vale (otra orden la machaca)."
       - "Salir de `man` con Ctrl+C en vez de `q`: funciona, pero `q` es lo natural."
@@ -175,17 +175,17 @@ lessons:
       - name: ayuda-capturada
         message: ayuda.txt contiene la cabecera del man de cat
         cmd: grep -qE "(CAT|Cat|cat)" ayuda.txt && grep -qE "[0-9]{4}" ayuda.txt
-        hint: "`man cat | head -12 > ayuda.txt`"
+        hint: "`man cat > ayuda.txt` (el man entero, sin head)"
       - name: exito-registrado
         message: exito.txt guarda un 0
         cmd: test "$(cat exito.txt 2>/dev/null | tr -d '[:space:]')" = "0"
         hint: "`cat /etc/hostname >/dev/null; echo $? > exito.txt`"
     hints:
-      - "`man cat | head -12 > ayuda.txt`"
+      - "`man cat > ayuda.txt` (recuerda salir con `q`)"
       - "`cat /etc/hostname >/dev/null; echo $? > exito.txt`"
       - "`cat exito.txt` debe imprimir 0."
     solution: |
-      man cat | head -12 > ayuda.txt
+      man cat > ayuda.txt
       cat /etc/hostname >/dev/null; echo $? > exito.txt
 
   - id: lvl0-nano-primer-fichero

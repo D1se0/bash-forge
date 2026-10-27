@@ -27,4 +27,5 @@ validation:
     - name: divide-cero
       message: bash calc.sh 4 / 0 imprime 'no dividir cero' y sale 1
       cmd: bash calc.sh 4 / 0
+      expectExit: 1
       expectOutput: no dividir cero

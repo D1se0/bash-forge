@@ -19,4 +19,4 @@ validation:
     - name: veces-cinco
       message: imprime time 0..time 4
       cmd: bash cuenta3.sh
-      expectOutput: ^time 0$\n^time 1$\n^time 4$
+      expectOutput: ^time 0$\n^time 1$\n^time 2$\n^time 3$\n^time 4$
