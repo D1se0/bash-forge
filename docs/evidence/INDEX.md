@@ -19,3 +19,5 @@
 | 03 | Toggle dark/light | botón en topbar + localStorage + prefers-color-scheme (initTheme antes del render, sin FOUC) | 0 pageerror / 0 console.error | capturas light + dark revisadas |
 | 03 | Tema claro «Día de Nieve» | captura 1440×900 light | contrast AA (light tokens en tokens.css) | `03-app-nordic/app__1440x900__light__es.png` |
 | 03 | Fix headless colorScheme | chromium headless por defecto es light → captura dark con colorScheme:'dark' | capturas dark correctas | matiz documentado en INDEX |
+| 04 | docs-site nórdico | `node scripts/build.mjs` + `serve-check.mjs` bajo `/bash-forge/` | 200 en html/css + woff2; fuentes cargadas verify con `document.fonts.load()` | `04-docs-site/docs-site__{1440x900,390x844}__dark__es.png` |
+| 04 | Fix font-face relativo | `url('/fonts/…')` absoluto → `url('fonts/…')` relativo (Pages base) | status:loaded ×3, 0 errores de consola | log del shell |
