@@ -3,7 +3,7 @@ services:
     build:
       context: ..
       dockerfile: docker/sandbox.Dockerfile
-    container_name: bashforge-sandbox
+    container_name: ${STACK_PREFIX:-bashforge}-sandbox
     environment:
       PORT: "8010"
       LESSONS_DIR: /opt/bashforge/lessons
@@ -25,7 +25,7 @@ services:
     build:
       context: ..
       dockerfile: docker/web.Dockerfile
-    container_name: bashforge-web
+    container_name: ${STACK_PREFIX:-bashforge}-web
     depends_on:
       - sandbox
     ports:

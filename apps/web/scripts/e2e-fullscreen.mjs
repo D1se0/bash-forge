@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import WebSocket from "ws";
 
 const CHROME = process.env.CHROME_BIN ?? "chromium";
+const APP_URL = process.env.APP_URL ?? "http://localhost:8080/";
 const PORT = 9333;
 const chrome = spawn(CHROME, [
   "--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
@@ -44,7 +45,7 @@ try {
 
   await new Promise((r) => cdp.on("open", r));
   await send("Page.enable");
-  await send("Page.navigate", { url: "http://localhost:8080/" });
+  await send("Page.navigate", { url: APP_URL });
 
   // espera a que la app monte y cargue el catálogo
   let lessons = 0;
