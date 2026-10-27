@@ -114,6 +114,7 @@ export class LessonChecker {
     for (const task of validation.tasks) {
       if (task.seed) this.seedTask(lesson, user, task.seed);
       const r = this.assertTask(user, task);
+      checks.push(r.detail);
       if (!r.pass) pass = false;
     }
     return { pass, checks, tookMs: Date.now() - started };

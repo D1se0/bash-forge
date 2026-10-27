@@ -1,12 +1,12 @@
 # Imagen del sandbox-server: el proceso con node-pty y los usuarios de forja
 FROM node:22-bookworm-slim
 
-ENV NODE_ENV=production
-ARG NODE_OPTIONS=""
+ARG NODE_ENV=development
+ENV NODE_ENV=$NODE_ENV
 WORKDIR /opt/bashforge
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates bash curl util-linux procps \
+ && apt-get install -y --no-install-recommends ca-certificates bash curl util-linux procps python3 make g++ \
  && rm -rf /var/lib/apt/lists/*
 
 # dependencias (incluye node-pty: hay que compilar módulos nativos)
@@ -25,9 +25,13 @@ RUN npm run build -w apps/sandbox-server
 COPY packages/lessons/lessons /opt/bashforge/lessons
 
 # usuarios de forja pre-creados (los ids que reserva pool.ts)
-RUN for i in $(seq 1 40); do \
+RUN for i in $(seq 1 500); do \
       useradd -m -u $((2000 + i)) -s /bin/bash forge_$i 2>/dev/null || true; \
     done
+
+# helper de arranque de PTY: se ejecuta como root y cae al usuario de la sesión
+RUN printf '#!/bin/bash\nUSERX="$1"\ncd "/home/$USERX" 2>/dev/null || cd /\nexec runuser -u "$USERX" -- bash -i\n' > /usr/local/bin/forge-spawn \
+ && chmod 755 /usr/local/bin/forge-spawn
 
 ENV LESSONS_DIR=/opt/bashforge/lessons
 ENV PORT=8010
