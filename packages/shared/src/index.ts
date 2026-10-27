@@ -19,3 +19,4 @@ export const BRAND = {
 
 export * from "./protocol";
 export * from "./lesson";
+export * from "./progress";

@@ -225,6 +225,41 @@ export function isClientMessage(value: unknown): value is ClientMessage {
   }
 }
 
+/** Typeguard del lado servidor: sesión válida al menos con tokens y lista de PTYs. */
+export function isServerMessage(value: unknown): value is ServerMessage {
+  if (typeof value !== "object" || value === null) return false;
+  const rec = value as Record<string, unknown>;
+  if (typeof rec.type !== "string") return false;
+  switch (rec.type) {
+    case "session":
+      return (
+        typeof rec.homeId === "string" &&
+        typeof rec.user === "string" &&
+        typeof rec.sessionToken === "string" &&
+        typeof rec.motd === "string" &&
+        typeof rec.maxSessionSeconds === "number" &&
+        Array.isArray(rec.terms)
+      );
+    case "output":
+    case "term:exit":
+      return typeof rec.termId === "string" && (rec.type === "term:exit" ? typeof rec.exitCode === "number" : typeof rec.data === "string");
+    case "pong":
+      return typeof rec.t === "number" && typeof rec.rttMs === "number";
+    case "exercise:result":
+      return typeof rec.lessonId === "string" && typeof rec.pass === "boolean" && Array.isArray(rec.checks);
+    case "exercise:setup:result":
+      return typeof rec.lessonId === "string" && typeof rec.ok === "boolean";
+    case "progress:load":
+      return typeof rec.snapshot === "string";
+    case "snapshot:data":
+      return typeof rec.name === "string" && typeof rec.data === "string";
+    case "error":
+      return typeof rec.code === "string" && typeof rec.message === "string";
+    default:
+      return false;
+  }
+}
+
 /** Límite de tamaño de un mensaje WS por defecto (1 MiB, salida de paste de ficheros). */
 export const WS_MAX_MESSAGE_BYTES = 1_048_576;
 
