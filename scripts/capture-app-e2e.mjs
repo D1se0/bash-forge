@@ -1,8 +1,10 @@
 /**
  * E2E de la app web (requiere docker compose up):
- * 1. sidebar nueva con «Tu siguiente paso» + numeración
+ * 1. sidebar con «Tu siguiente paso», numeración y CANDADOS por nivel
  * 2. forge-lint en vivo dentro de la terminal
  * 3. modo pantalla completa: entrar y SALIR (Esc + botón)
+ * 4. cheatsheet glass: abre, busca y cierra
+ * 5. bloque «Cómo se valida: por la SALIDA» visible en el panel
  * Captura evidencia a docs/evidence/06-redesign/.
  */
 import pw from "/usr/share/nodejs/playwright/index.js";
@@ -22,6 +24,26 @@ const levelGroups = await a.locator(".level-group").count();
 console.log(`next-card=${nextCard} step-dots=${stepDots} level-groups=${levelGroups}`);
 if (!nextCard || !stepDots || levelGroups < 9) process.exitCode = 1;
 await a.screenshot({ path: `${out}/app__sidebar__1440x900__dark.png` });
+
+// 1b. candados: los niveles > 0 deben tener sus botones deshabilitados y chip 🔒
+const lockedButtons = await a.locator(".lesson-link.locked[disabled]").count();
+const lockChips = await a.locator(".lvl-lock").count();
+console.log(`locked-lessons=${lockedButtons} locked-level-chips=${lockChips}`);
+if (lockedButtons === 0 || lockChips === 0) process.exitCode = 1;
+
+// 1c. el Boss del nivel 0 debe ir AL FINAL (orden pedagógico)
+const firstTitle = await a.locator(".level-group[open] .lesson-title").first().textContent();
+const bossFirst = firstTitle?.includes("Boss") ?? true;
+console.log(`boss-primero=${bossFirst}`);
+if (bossFirst) process.exitCode = 1;
+
+// 1d. panel de lección: bloque de validación por salida (en una lección que valida por stdout)
+await a.locator(".lesson-link", { hasText: "shebang" }).first().click();
+await a.waitForTimeout(700);
+const eo = await a.locator(".expected-outputs").count();
+console.log(`expected-outputs=${eo}`);
+if (!eo) process.exitCode = 1;
+await a.screenshot({ path: `${out}/app__salida-esperada__1440x900__dark.png` });
 
 // 2. terminal: script con errores sintácticos + forge-lint en vivo
 // (T1 ya existe por defecto: foco a la terminal sin crear pestañas nuevas)
@@ -48,8 +70,8 @@ await a.keyboard.press("Enter");
 await a.waitForTimeout(1200);
 await a.screenshot({ path: `${out}/app__forge-lint__1440x900__dark.png` });
 
-// 3. pantalla completa: entrar
-await a.locator("term-actions button, .term-actions button").first().click();
+// 3. pantalla completa: entrar (único botón: «Pantalla completa» de la topbar)
+await a.getByRole("button", { name: /Pantalla completa$/ }).click();
 await a.waitForTimeout(700);
 const fullOn = await a.locator(".app.fullterm").count();
 console.log(`fullterm-on=${fullOn}`);
@@ -64,7 +86,7 @@ if (fullOff) process.exitCode = 1;
 await a.screenshot({ path: `${out}/app__fullterm-off__1440x900__dark.png` });
 
 // reentrar y salir desde el botón flotante de la focusbar
-await a.locator(".term-actions button").first().click();
+await a.getByRole("button", { name: /Pantalla completa$/ }).click();
 await a.waitForTimeout(600);
 const exitBtn = a.locator(".focusbar button");
 if (await exitBtn.count()) {
@@ -77,6 +99,24 @@ if (await exitBtn.count()) {
   console.log("focusbar no visible");
   process.exitCode = 1;
 }
+
+// 4. cheatsheet glass: abrir, buscar y cerrar
+await a.getByRole("button", { name: /Cheatsheet/ }).click();
+await a.waitForTimeout(600);
+const sheetOpen = await a.locator(".sheet-overlay").count();
+const entryCount = await a.locator(".entry").count();
+console.log(`cheatsheet-open=${sheetOpen} entradas=${entryCount}`);
+await a.screenshot({ path: `${out}/app__cheatsheet__1440x900__dark.png` });
+await a.locator(".sheet-search input").fill("expansión");
+await a.waitForTimeout(400);
+const filtered = await a.locator(".entry").count();
+console.log(`cheatsheet-filtrado=${filtered}`);
+if (!sheetOpen || entryCount < 80 || filtered === 0 || filtered >= entryCount) process.exitCode = 1;
+await a.locator(".sheet-head button").click();
+await a.waitForTimeout(300);
+const sheetClosed = (await a.locator(".sheet-overlay").count()) === 0;
+console.log(`cheatsheet-cerrado=${sheetClosed}`);
+if (!sheetClosed) process.exitCode = 1;
 
 await b.close();
 console.log("OK");

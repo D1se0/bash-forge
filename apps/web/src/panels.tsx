@@ -3,7 +3,9 @@ import { markdownToHtml } from "./markdown";
 import type { CheckDetail, LessonContent, LessonMeta, ProgressSnapshot } from "@bashforge/shared";
 import { BADGES, LESSON_LEVELS } from "@bashforge/shared";
 import type { ForgeWs } from "./wsClient";
+import type { LessonLevel, LessonLevelInfo } from "@bashforge/shared";
 import type { LevelGroup } from "./catalog";
+import { isLevelLocked, unlockedLevel } from "./catalog";
 
 /** ------------------------------------------------------------------ */
 /** Barra lateral: árbol de niveles + progreso XP.                      */
@@ -23,11 +25,15 @@ export function flatOrder(groups: LevelGroup[]): LessonMeta[] {
 
 export function Sidebar({ groups, progress, current, onSelect }: SidebarProps) {
   const route = useMemo(() => flatOrder(groups), [groups]);
-  const next = route.find((l) => !progress.completed.includes(l.id)) ?? null;
-  const doneCount = route.filter((l) => progress.completed.includes(l.id)).length;
+  const completed = progress.completed;
+  const next = route.find((l) => !completed.includes(l.id)) ?? null;
+  const doneCount = route.filter((l) => completed.includes(l.id)).length;
   const pct = route.length ? Math.round((doneCount / route.length) * 100) : 0;
 
-  // niveles abiertos: todo lo anterior y el del siguiente paso (controlado, para no pelear con <details>)
+  // desbloqueo progresivo: el nivel N se abre al completar TODAS las del N-1
+  const unlocked = useMemo(() => unlockedLevel(progress.completed, groups), [progress.completed, groups]);
+
+  // niveles abiertos: los desbloqueados hasta el del siguiente paso (controlado, para no pelear con <details>)
   const [openLevels, setOpenLevels] = useState<Set<number>>(() => {
     const limit = next?.level ?? 0;
     return new Set(LESSON_LEVELS.filter((l) => l.level <= limit).map((l) => l.level));
@@ -82,34 +88,38 @@ export function Sidebar({ groups, progress, current, onSelect }: SidebarProps) {
       <div className="tree-title">El camino de la forja</div>
       <nav className="lesson-tree">
         {groups.map((g) => {
-          const done = g.lessons.filter((l) => progress.completed.includes(l.id)).length;
+          const done = g.lessons.filter((l) => completed.includes(l.id)).length;
+          const locked = isLevelLocked(g.info.level, unlocked);
+          const allDone = done === g.lessons.length;
           return (
             <details
               key={g.info.level}
-              className="level-group"
-              open={openLevels.has(g.info.level)}
+              className={`level-group${locked ? " locked" : ""}`}
+              open={!locked && openLevels.has(g.info.level)}
               onToggle={(e) => toggleLevel(g.info.level, (e.target as HTMLDetailsElement).open)}
             >
               <summary>
                 <span className="lvl-badge">L{g.info.level}</span>
                 <span className="lvl-name">{g.info.title}</span>
-                <span className="lvl-progress" data-full={done === g.lessons.length ? "yes" : "no"}>
+                {locked ? <span className="lvl-lock">🔒 desbloquea con L{g.info.level - 1}</span> : null}
+                <span className="lvl-progress" data-full={allDone ? "yes" : "no"}>
                   {done}/{g.lessons.length}
                 </span>
               </summary>
               <ul>
                 {g.lessons.map((l, i) => {
-                  const done = progress.completed.includes(l.id);
+                  const done = completed.includes(l.id);
                   const isNext = next?.id === l.id;
                   return (
                     <li key={l.id}>
                       <button
-                        className={`lesson-link${current === l.id ? " current" : ""}${done ? " done" : ""}${isNext ? " next" : ""}`}
+                        className={`lesson-link${current === l.id ? " current" : ""}${done ? " done" : ""}${isNext ? " next" : ""}${locked ? " locked" : ""}`}
                         onClick={() => onSelect(l.id)}
-                        title={l.objective}
+                        title={locked ? `Completa el nivel ${g.info.level - 1} para desbloquear` : l.objective}
+                        disabled={locked}
                       >
-                        <span className={`step-dot${done ? " done" : ""}${isNext ? " now" : ""}`}>
-                          {done ? "✓" : String(i + 1)}
+                        <span className={`step-dot${done ? " done" : ""}${isNext ? " now" : ""}${locked ? " lockdot" : ""}`}>
+                          {locked ? "🔒" : done ? "✓" : String(i + 1)}
                         </span>
                         <span className="lesson-title">{l.title}</span>
                         {l.kind === "boss" && <span className="kind-chip boss">Boss</span>}
@@ -165,6 +175,9 @@ export function LessonPanel({ lesson, ws, done, onCompleted, checks, busy, curre
   const lvlInfo = LESSON_LEVELS.find((l) => l.level === lesson.level);
   const shownHints = lesson.hints.slice(0, hintLevel);
 
+  // validación por salida: aserciones que comparan el stdout del script del alumno
+  const outputTasks = (lesson.validation?.tasks ?? []).filter((t) => t.expectOutput).slice(0, 4);
+
   const runSetup = () => ws.send({ type: "exercise:setup", lessonId: lesson.id });
   const runCheck = () => ws.send({ type: "exercise:check", lessonId: lesson.id });
 
@@ -185,6 +198,22 @@ export function LessonPanel({ lesson, ws, done, onCompleted, checks, busy, curre
           {done && <span className="done-tag">✅ completada</span>}
         </div>
         <p className="objective">{lesson.objective}</p>
+        {outputTasks.length > 0 && (
+          <div className="expected-outputs">
+            <div className="eo-title">🎯 Cómo se valida: por la SALIDA de tu script</div>
+            <p className="eo-note">
+              Aquí no importa CÓMO lo programes (hay infinitas formas correctas): el validador ejecuta
+              tu script y compara lo que imprime con esto. Escribelo a tu manera y haz que la salida coincida.
+            </p>
+            {outputTasks.map((t) => (
+              <div key={t.name} className="eo-task">
+                <span className="eo-msg">{t.message}</span>
+                <pre className="eo-code">$ {t.cmd}\n{String(t.expectOutput)}</pre>
+              </div>
+            ))}
+            <p className="eo-hint">(^ … $ ancla la línea · \\n separa líneas: cada fragmento es una línea impresa por tu script)</p>
+          </div>
+        )}
       </header>
 
       <article className="lesson-md" dangerouslySetInnerHTML={{ __html: html }} />

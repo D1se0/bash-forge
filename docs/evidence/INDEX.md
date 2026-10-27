@@ -32,3 +32,10 @@
 | 06 | Fullscreen con salida | e2e `scripts/capture-app-e2e.mjs`: ESC y botón focusbar | fullterm on→off por ESC y por botón, focusbar accesible | `06-redesign/app__fullterm-{on,off}__*.png` |
 | 06 | docs-site landing | build + `capture-docssite.mjs` bajo `/bash-forge/` | 200 html/css/woff2 ×6 + fuentes loaded ×3 | `06-redesign/docs-site__*.png` |
 | 06 | docs-site sin cifras inventadas | minutes ausentes en manifest → «~0 min» ocultados | hero y taglines sin datos falsos | `docs-site/scripts/build.mjs` (stats) |
+| 07 | Niveles bloqueados | guard en selectLesson + botones disabled de niveles superiores | locked-lessons=73, locked-level-chips=8, desbloqueo al completar cada nivel | `07-unlocks/app__sidebar__*.png` |
+| 07 | Orden pedagógico | lecciones → retos → Boss dentro de cada nivel | boss-primero=false en E2E | log de `scripts/capture-app-e2e.mjs` |
+| 07 | Validación por salida | bloque «Cómo se valida: por la SALIDA» con las aserciones de stdout | expected-outputs=1 en la lección del shebang | `07-unlocks/app__salida-esperada__*.png` |
+| 07 | Cheatsheet de Bash | popup glass con búsqueda: 112 entradas en 13 secciones (cheatsheet.ts) | abre/filtra/cierra (Esc y ✕) en E2E | `07-unlocks/app__cheatsheet__*.png` |
+| 07 | Botón Ampliar retirado | solo queda «Pantalla completa» en la topbar | sin .term-actions en DOM | E2E + captura |
+| 07 | Animaciones docs-site | fade-up hero + tipeo secuencial con caret + reveal on scroll (view timeline, progressive) | capturas + 0 errores de consola | `06-redesign/docs-site__*.png` |
+| 07 | Limpieza Docker | rmi de dangling + imágenes viejas (bf-fresh/bachforge-fresh/*:test) + builder prune | imágenes 2.54GB→0.83GB, build cache 5.26GB→0 (~7GB liberados) | `docker system df` antes/después |

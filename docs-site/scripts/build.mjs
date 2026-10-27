@@ -154,6 +154,47 @@ ${favicon}
 <style>
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
+
+  /* ---------- animaciones (respetan prefers-reduced-motion) ---------- */
+  @keyframes fade-up { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  @keyframes rune-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 rgb(136 192 208 / 0); }
+    50% { box-shadow: 0 0 18px color-mix(in srgb, var(--ice-3) 55%, transparent); }
+  }
+  .hero > div { animation: fade-up .7s ease both; }
+  .hero .term-card { animation: fade-up .7s ease .15s both; }
+  .mundo-rune { animation: rune-float 5s ease-in-out infinite; }
+  .btn-primary { animation: glow-pulse 3.4s ease-in-out 1.2s infinite; }
+  /* demo de terminal: líneas que aparecen una a una + cursor con parpadeo */
+  .term-body > div { opacity: 0; animation: fade-in .32s ease both; }
+  .term-body > div:nth-child(1) { animation-delay: .3s; }
+  .term-body > div:nth-child(2) { animation-delay: .7s; }
+  .term-body > div:nth-child(3) { animation-delay: 1.1s; }
+  .term-body > div:nth-child(4) { animation-delay: 1.5s; }
+  .term-body > div:nth-child(5) { animation-delay: 1.9s; }
+  .term-body > div:nth-child(6) { animation-delay: 2.3s; }
+  .term-body > div:nth-child(7) { animation-delay: 2.7s; }
+  .term-caret {
+    display: inline-block; width: 8px; height: 1.05em; vertical-align: text-bottom;
+    background: var(--ice-2); animation: blink 1.1s step-end infinite;
+  }
+  /* reveal on scroll sin JS (progressive enhancement; si el navegador no lo
+     entiende, las secciones quedan visibles igualmente) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .feat, .mundo, .quick, .step, li {
+        animation: fade-up .55s ease both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 42%;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero > div, .hero .term-card, .term-body > div { animation: none !important; opacity: 1 !important; }
+  }
   body {
     margin: 0; background: var(--bg-abyss); color: var(--fg);
     font-family: var(--font-sans); line-height: var(--ui-lh);
@@ -317,6 +358,7 @@ ${favicon}
           <div><span class="t-prompt">herrero@forja</span> <span class="t-cmd">./saludo.sh</span></div>
           <div><span class="t-out">Hola, herrero</span></div>
           <div><span class="t-xp">🏆 +15 XP · Nivel 0 completado</span></div>
+          <div><span class="t-prompt">herrero@forja</span> <span class="t-cmd">…</span><span class="term-caret"></span></div>
         </div>
       </div>
     </section>

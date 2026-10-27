@@ -3,8 +3,9 @@ import type { CheckDetail, LessonContent, LessonMeta, ServerSessionMsg } from "@
 import { ForgeWs, fetchLesson, fetchLessonList } from "./wsClient";
 import { dispatchOutput, TermPane } from "./Terminal";
 import { LessonPanel, Sidebar, flatOrder } from "./panels";
+import { Cheatsheet } from "./cheatsheet-popup";
 import type { LevelGroup } from "./catalog";
-import { groupByLevel } from "./catalog";
+import { groupByLevel, isLevelLocked, unlockedLevel } from "./catalog";
 import { currentTheme, toggleTheme } from "./theme";
 import {
   bumpStreak,
@@ -39,8 +40,12 @@ export function App() {
   const [checks, setChecks] = useState<CheckDetail[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressSnapshot | null>(null);
+  // ref para leer el progreso fresco dentro de callbacks con deps cortas
+  const progressRef = useRef<ProgressSnapshot | null>(null);
+  progressRef.current = progress;
   const [notice, setNotice] = useState<string | null>(null);
   const [fullterm, setFullterm] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [theme, setThemeState] = useState<string>(currentTheme());
 
   const ws = wsRef.current;
@@ -163,6 +168,13 @@ export function App() {
 
   const selectLesson = useCallback(
     async (id: string) => {
+      // candado por nivel: no se puede abrir una lección de un nivel bloqueado
+      const completed = progressRef.current?.completed ?? [];
+      const lvl = catalog.find((m) => m.id === id)?.level ?? loaded.get(id)?.level;
+      if (lvl != null && isLevelLocked(lvl, unlockedLevel(completed, groupsRef.current))) {
+        flash(`🔒 Ese nivel sigue sellado: termina todas las lecciones del nivel ${lvl - 1} y se desbloqueará solo.`);
+        return;
+      }
       setCurrent(id);
       setChecks(null);
       try {
@@ -228,6 +240,9 @@ export function App() {
     return [...seen].map((id) => loaded.get(id) ?? metas.find((m) => m.id === id) ?? null).filter(Boolean) as LessonContent[];
   }, [catalog, loaded]);
   const groups: LevelGroup[] = useMemo(() => groupByLevel(unified), [unified]);
+  // ref para que el guard de selectLesson vea los grupos sin re-crear el callback
+  const groupsRef = useRef<LevelGroup[]>(groups);
+  groupsRef.current = groups;
 
   const currentLesson = current ? loaded.get(current) ?? null : null;
   // siguiente paso del camino (ruta canónica): energiza «Continuar» en la sidebar y el panel
@@ -246,6 +261,9 @@ export function App() {
         </span>
         {session && <span className="session-info">🏠 {session.homeId}</span>}
         <button className="ghost" onClick={createTerm} title="Nueva terminal">＋ Terminal</button>
+        <button className="ghost" onClick={() => setSheetOpen(true)} title="Referencia completa de Bash (cheatsheet)">
+          ᛜ Cheatsheet
+        </button>
         <button
           className="ghost"
           onClick={() => setThemeState(toggleTheme())}
@@ -298,15 +316,6 @@ export function App() {
               </div>
             ))}
           </div>
-          <div className="term-actions">
-            <button
-              className="ghost"
-              onClick={() => setFullterm((f) => !f)}
-              title={fullterm ? "Volver al layout normal (Ctrl+Alt+F)" : "Modo foco: terminal a pantalla completa (Ctrl+Alt+F)"}
-            >
-              {fullterm ? "⤡ Volver" : "⛶ Ampliar"}
-            </button>
-          </div>
           <div
             className="term-host"
             id="term-host"
@@ -339,6 +348,8 @@ export function App() {
       </div>
 
       {notice && <div className="notice">{notice}</div>}
+
+      {sheetOpen && <Cheatsheet onClose={() => setSheetOpen(false)} />}
 
       {fullterm && (
         <div className="focusbar" role="toolbar" aria-label="Modo foco">
