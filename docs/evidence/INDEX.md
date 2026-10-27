@@ -21,3 +21,6 @@
 | 03 | Fix headless colorScheme | chromium headless por defecto es light → captura dark con colorScheme:'dark' | capturas dark correctas | matiz documentado en INDEX |
 | 04 | docs-site nórdico | `node scripts/build.mjs` + `serve-check.mjs` bajo `/bash-forge/` | 200 en html/css + woff2; fuentes cargadas verify con `document.fonts.load()` | `04-docs-site/docs-site__{1440x900,390x844}__dark__es.png` |
 | 04 | Fix font-face relativo | `url('/fonts/…')` absoluto → `url('fonts/…')` relativo (Pages base) | status:loaded ×3, 0 errores de consola | log del shell |
+| 05 | Escaparate README | `node scripts/render-readme.mjs` + render en chromium real | banner según tema (picture/dark), 0 imágenes rotas, móvil OK | `05-escaparate/readme__*.png` |
+| 05 | Banner SVG nórdico | `docs/assets/banner-{dark,light}.svg` (aurora + yunque + kenaz, sin fuentes personalizadas) | revisado visualmente claro/oscuro | `05-escaparate/*.png` |
+| 05 | WebP optimizados | `convert` PNG→WebP de evidencias reales (29–68 KB) | capturas reales de las fases 02–04 | `docs/assets/*.webp` |
