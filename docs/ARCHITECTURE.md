@@ -1,105 +1,55 @@
-# Arquitectura de Bash Forge
+# Arquitectura — Bash Forge v2
 
-> Documento índice de la arquitectura. Cada decisión ambigua está registrada en
-> `docs/DECISIONS.md`.
+```mermaid
+flowchart LR
+    subgraph Browser["Navegador (React + xterm.js)"]
+        UI[SPA forja]
+        LS[(localStorage progreso)]
+    end
+    subgraph Web["nginx (único puerto publicado)"]
+        Nginx["SPA estática + /ws + /api"]
+    end
+    subgraph Sandbox["Ubuntu 24.04 (red internal)"]
+        Srv["sandbox-server (Node)"]
+        PTYs[node-pty · bash -l]
+        Homes["/home/forge_* aislados"]
+        Data[(volumen forge_data)]
+    end
+    UI -- HTTP/WebSocket --> Nginx --> Srv --> PTYs --> Homes
+    Srv --> Data
+```
 
-## 1. Visión general
+## Componentes
 
-Bash Forge es una plataforma web donde el alumno escribe scripts Bash en una terminal
-real actuando sobre un Ubuntu 24.04 en contenedores. Los componentes:
-
-| Componente | Tecnología | Función |
+| Pieza | Stack | Responsabilidad |
 |---|---|---|
-| `apps/web` | React + Vite + TS + Tailwind + Zustand + xterm.js | SPA, terminal, paneles de lecciones, i18n es/en, temas |
-| `apps/sandbox-server` | Node 22 (TS) + `ws` + `node-pty` + `express` | Servidor de sesiones: PTY por sesión, usuarios efímeros, ejecutor de checks |
-| `packages/shared` | TypeScript puro | Protocolo WS tipado, tipos de lección, contrato `LessonManifest` |
-| `packages/lessons` | YAML + Markdown + Bash | Currículum: `lesson.yaml`, `lesson.md`, `setup.sh`, `check.sh`, `solution.sh`, `hints.md` |
-| `docs-site` | React + Vite (SSG estático) | Documentación desplegada en GitHub Pages |
-| `docker/` | Dockerfiles + nginx | Imágenes `web` y `sandbox` |
+| `apps/web` | React + Vite + TS estricto + Tailwind-tokens + Zustand + xterm.js | SPA de la forja (mapa, terminal, pergamino, ajustes) |
+| `apps/sandbox-server` | Node + ws + node-pty | secundario dentro del sandbox: sesiones, checks, lint, progreso |
+| `packages/ui` | React + CSS tokens | sistema de diseño nórdico (tokens, runas, componentes) |
+| `packages/lessons` | YAML + bash | currículum por mundos con validadores y soluciones |
+| `packages/shared` | TS + Zod | contrato WS versionado y tipos del progreso |
+| `docs-site` | React + Vite (SSG) | web de documentación en Pages con base `/bash-forge/` |
+| `bashforge` + Makefile | Bash (ShellCheck limpio) | ciclo de vida local: install/up/doctor/backup/test/lint |
 
-```
-Navegador (React + xterm.js)
-        │  HTTP + WebSocket
-        ▼
-[ web ]  nginx: sirve la SPA y hace proxy de /ws y /api
-        │  red Docker interna "sandbox" (internal: true → sin Internet)
-        ▼
-[sandbox]  Ubuntu 24.04 + servidor Node (ws + node-pty + API de lecciones/validación)
-        └─ un usuario Linux sin privilegios POR SESIÓN, con su home aislado
-```
+## Decisiones de red y seguridad
 
-## 2. Flujo de una sesión
+- **Solo `web` publica puerto** (`.env`); el sandbox vive en una red Docker `internal` sin salida a Internet.
+- **Un usuario Linux por sesión** (`forge_*`, UID altos, `hidepid` cuando lo soporte el kernel): ni `docker.sock`, ni rootfs escribible fuera de `/tmp` y `/home`.
+- Límites por sesión: `pids_limit`, `mem_limit`, `cpus`, `ulimit` de procesos/ficheros/CPU; TTL de sesiones inactivas.
+- Verificación del alumno (9) ejecutada como usuario checker, nunca como el alumno.
 
-1. El navegador abre un WebSocket a `/ws` (proxy de nginx → `sandbox-server`).
-2. El servidor valida conexión (límite de sesiones concurrentes + rate limit de mensajes).
-3. Se asigna un usuario Linux pre-creado `forge_<NNN>` (0–499, creados en build time,
-   ver D-07), con home en el volumen persistente `/home/forge_<NNN>`.
-4. El servidor lanza una PTY por pestaña: `su - forge_<NNN>` → `bash -l` con `.bashrc`
-   plantilla personalizada (prompt con código de salida, alias útiles, cd al workspace).
-5. Los mensajes WS son JSON tipados (ver `packages/shared/src/protocol.ts`):
-   `input`, `output`, `resize`, `ping/pong`, `session`, `exercise:check`,
-   `exercise:result`, `error`, `term:new`, `term:close`.
-6. Reconexión: el cliente reintenta con backoff exponencial; la sesión (usuario + home +
-   sesiones de terminal) sobrevive a recargas del navegador. Un `session:attach` restaura
-   las PTYs vivas y sigue el scroll hacia atrás de cada terminal.
+## Protocolo WS (v2)
 
-## 3. Aislamiento (resumen; modelo completo en SECURITY.md)
+- JSON tipado con Zod, campo `v` obligatorio: `input`, `output`, `resize`, `ping/pong`, `session`, `exercise:check/result`, `lint:run/result`, `export:zip`, `error`.
+- Reconexión con backoff exponencial + jitter y **restauración de sesión** por `sessionToken`; buffer de terminal de respaldo en el servidor.
+- Detalle completo con ejemplos: `docs/PROTOCOL.md`.
 
-- El contenedor sandbox **no monta** `/var/run/docker.sock` y está en una red `internal`
-  (sin gateway ni salida a Internet).
-- Rootfs de solo lectura: `tmpfs` para `/tmp` y volumen `forge_data` para `/home`.
-- `cap_drop: [ALL]` + `cap_add` mínimas para cambiar de usuario (CHOWN, FOWNER, SETGID,
-  SETUID, KILL, SETFCAP, DAC_OVERRIDE).
-- `no-new-privileges`, `pids_limit`, `mem_limit`, `cpus`, ulimits (`nproc`, `fsize`,
-  `cpu`) por sesión vía `prlimit` al arrancar la PTY.
-- Límites por sesión en el servidor de sandbox: nº máx de sesiones concurrentes, nº máx
-  de terminales por conexión, tasa de mensajes, tamaño máximo de payload WS por mensaje,
-  TTL de inactividad y duración máxima de sesión.
-- Validación de ejercicios (`check.sh`) ejecutada por el servidor como root leyendo el
-  home del alumno, pero con los ficheros de check en `/opt/bashforge/checks` con
-  permisos `0700` (el alumno no puede leer ni modificar los checks).
-- Anti-fork-bomb: `pids_limit` del contenedor + `ulimit -u` por sesión + test automatizado.
+## Datos y migraciones
 
-## 4. Validación de ejercicios
+- Progreso: servidor (volumen `forge_data`) + espejo en `localStorage`; resolución de conflictos «gana el más reciente, nunca se pierde XP».
+- Formato versionado `ProgressSnapshot.v2`; migraciones accesorias versionadas y testadas.
 
-1. El cliente envía `exercise:check` con `lessonId`.
-2. El servidor localiza `check.sh` de la lección (montado como imagen, no como bind mount
-   de código del repo: las lecciones van embebidas en la imagen `sandbox`).
-3. Ejecuta, si existe, `setup.sh` (prepara el entorno del ejercicio) y después `check.sh`
-   con `timeout` (30 s por fase); captura `stdout/stderr/exit`.
-4. Compara con las aserciones declaradas en `lesson.yaml` (`validation.*`) y produce un
-   informe estructurado: qué falló, qué se esperaba, qué se obtuvo, pista contextual.
-5. Devuelve `exercise:result` al cliente; el cliente sincroniza XP/insignias con el
-   `progressStore` (localStorage + volumen).
+## Riesgos conocidos heredados
 
-Los checks son **caja negra**: ejecutan `solution.sh` de referencia y el script del
-alumno con las mismas entradas generadas y comparan comportamiento (salida, código de
-salida, efectos en ficheros), no texto literal. `check.sh` de ejemplo:
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-# $1 = cifrado de sesión (directorio del alumno), el resto: argumentos del test
-```
-
-Anti-trampa: el runner genera entradas pseudoaleatorias por lección (`inputs/`,
-deterministas por semilla) y compara la salida del alumno contra la de `solution.sh` +
-aserciones explícitas. Un `echo` fijo no pasa cuando la entrada varía.
-
-## 5. Datos y persistencia
-
-- **Volumen Docker `forge_data`** (`/home`): homes de sesión y estado de progreso global
-  (`/home/.progress/<forgeId>.json`). Configurable con `FORGE_DATA_VOLUME` en `.env`.
-- **localStorage del navegador**: espejo del progreso para UI instantánea y fallback tras
-  `purge`.
-- **Backup/restore**: `bashforge backup` hace tarball del volumen; `restore` lo recupera.
-
-## 6. Notas de implementación
-
-- Monorepo por workspaces npm con TypeScript estricto (`strict: true`, `noUncheckedIndexedAccess`,
-  `exactOptionalPropertyTypes` en los paquetes de código).
-- `apps/web` y `docs-site` comparten paleta y tokens de diseño mediante el paquete
-  `packages/shared`.
-- Los checks de CI: lint (shellcheck/hadolint/eslint/prettier), unitarios (vitest),
-  e2e (Playwright), imagen Docker + trivy, despliegue de Pages y tests de lecciones
-  (cada `solution.sh` debe pasar su propio check y el estado inicial debe fallarlo).
+- `node-pty` obliga a compilar dentro de la imagen del sandbox (paso herramientas de build — verificado).
+- CentOS/kernels viejos sin `hidepid`: el plan B es ACL por grupo checker.

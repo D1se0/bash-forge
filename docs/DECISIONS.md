@@ -1,88 +1,16 @@
-# Decisiones de diseño (ADR ligero)
+# Decisiones (`docs/DECISIONS.md`)
 
-Registro de decisiones tomadas cuando el enunciado dejaba margen. Formato: contexto →
-decisión → por qué.
+Formato: contexto → decisión → alternativas descartadas. Una fila por decisión no trivial.
 
-## D-01 — Usuarios de sesión pre-creados en la imagen (forge_000 … forge_499)
-
-**Contexto.** El rootfs del sandbox es de solo lectura y añadir usuarios al vuelo exigiría
-escribir en `/etc/passwd`. **Decisión.** Crear 500 usuarios `forge_NNN` (uid `2NNN`,
-capa `kali? no`, `bash` shell, home `/home/forge_NNN` sobre el volumen) en el build de la
-imagen; en runtime solo se asigna uno libre. **Why.** Es compatible con `read_only: true`
-(sin escrituras en `/etc/passwd`) y elimina una ventana de creación de usuarios en el
-camino caliente. Límite: 500 sesiones-alumno históricas; al agotarse el pool se limpian
-los homes huérfanos y se reutilizan los inactivos (TTL).
-
-## D-02 — Cambio de usuario con `su -` dentro de una PTY única
-
-**Contexto.** `node-pty` no soporta `uid` al hacer spawn. **Decisión.** Cada terminal se
-lanza como `su - forge_NNN` (root → usuario) mediante `node-pty` + `prlimit` en el
-proceso padre para ulimits por sesión. **Why.** Es la vía más simple, robusta y sin
-afecciones de kernel (sin `-u` hacks ni SUID bins propietarios).
-
-## D-03 — Validación de ejercicios ejecutada por el proceso del sandbox (root), con los
-checks en `/opt/bashforge/checks` (`0700`)
-
-**Contexto.** El alumno no debe leer los checks. **Decisión.** Los ficheros de check viven
-en el sandbox con permisos `root:rwx,otros:---`; el runner los lanza con `cwd` = home del
-alumno. **Why.** Root ya ejecuta el servidor; añadir un usuario sudo añade superficie de
-ataque sin beneficio (el check solo se dispara a petición del cliente vía WS firmado por
-el lado servidor — no se acepta `check.sh` arbitrario del cliente).
-
-## D-04 — Progreso del alumno en el volumen, federado por `forgeId` de navegador
-
-**Contexto.** Recargar la página debe conservar progreso. **Decisión.** Un `forgeId`
-UUID persiste en `localStorage`; el progreso (XP, lecciones superadas, insignias) se
-guarda en `/home/.progress/<forgeId>.json` vía WS (`progress:save` / `progress:load`)
-además de en localStorage. **Why.** Sobrevive a recargas, a `down`/`up` y a cambios de
-sesión de terminal, sin base de datos.
-
-## D-05 — Currículum como paquete, no como base de datos
-
-**Decisión.** Las lecciones viven en `packages/lessons` (markdown + yaml + bash) y se
-instalan dentro de la imagen `sandbox` (`COPY packages/lessons bashforge`), expuestas vía
-`GET /api/lessons` y `GET /api/lessons/:id`. **Why.** La web de docs puede leer el mismo
-manifest JSON vía CI; los checks viajan con la imagen; añadir lecciones comunitarias es
-solo otra carpeta (`community-lessons/`), sin recompilar código.
-
-## D-06 — Tema visual de terminal: 7 présats + selector en vivo
-
-Cada tema (Dracula, Tokyo Night, Catppuccin, Solarized, Gruvbox, Matrix, Amber CRT) es
-una paleta ANSI para xterm.js. La conmutación es cliente y solo cambia la capa visual:
-el sandbox no lo nota.
-
-## D-07 — Red `internal: true` para `web` y `sandbox` + red de publicación aparte
-
-**Contexto.** Solo `web` publica puerto (comportamiento en `.env`). **Decisión.** Dos
-redes: `edge` (solo `web` conectada al backend publicado) y `sandbox` (internal: web +
-sandbox, sin salida a Internet). **Why.** La capa del sandbox no puede llamar a casa, ni
-escanear otros servicios del host.
-
-## D-08 — Vite base para Pages
-
-`docs-site` usa `base: '/bash-forge/'` dado el URL final `https://d1se0.github.io/bash-forge/`
-(sitio de proyecto, no de usuario).
-
-## D-09 — Métricas de sesión: latencia y estado de conexión en la barra superior
-
-El WS manda `ping`/`pong` cada 10 s; el cliente muestra la latencia redondeada. El estado
-(`conectado`, `reconectando…`, `offline`) se pinta en el chip del header con color
-semántico.
-
-## D-10 — Limpieza de sesión: TTL → reutilización de pool de usuarios
-
-Al arrancar y cada 60 s el sandbox-server recorre `/home/forge_*` buscando usuarios sin
-PTY viva activa hace más de `SESSION_TTL_MIN` (default 60) y los marca disponibles; los
-homes de usuarios sin conexión hace `SESSION_PURGE_DAYS` (default 3) se policían
-(`rm -rf` del home, reset a plantilla). Los ficheros de la plantilla `.bashrc` viven en
-`/etc/skel.bashforge`.
-
-## D-11 — Trivy + hadolint en CI, no en runtime
-
-El scan de vulnerabilidades se hace en CI (falla si un `CRITICAL` sin fix aparece). En
-runtime no se ejecutan escáneres para no penalizar la interactividad.
-
-## D-12 — Español por defecto
-
-La UI i18n carga español como idioma base (`es`) e inglés como alternativa. La detección
-por navegador solo se aplica si el usuario aún no ha elegido idioma.
+| # | Contexto | Decisión | Descartadas |
+|---|---|---|---|
+| D1 | Auditoría 4/10 identidad visual; tokens sueltos en `styles.css` | **Reescribir** la capa visual como workspace `packages/ui` con tokens CSS + Tailwind preset; la app consume Julio. Se conserva la estructura de 3 paneles que ya funciona | Rehacer todo `apps/web` de cero; parchear `styles.css` (no arrivaria a runas/temas) |
+| D2 | e2e vacía, único script CDP ad-hoc | Introducir **Playwright** como suite oficial (funcional + visual + ofensiva); el CDP script se conserva como smoke rápido documentado | qawolf/ Puppeteer directo |
+| D3 | Lecciones sólidas (8/10) con validadores OK | **Conservar** contenido y checks; migrar metadatos (`world`, `rune`, textos EN) con linter extendido — sin reescribir teoría válida | Reescribir desde cero (perdería 82 lecciones verificadas) |
+| D4 | docs-site plano sin base | Reescribir en React+Vite SSG con `base: '/bash-forge/'` y build en CI reusando tokens de `packages/ui` | Jekyll/A really (rompe identidad React compartida) |
+| D5 |(Funciones de contraste) | Script propio `scripts/contrast-check.ts` en CI en vez de plugin Tailwind | axe runtime únicamente (no tapa par texto/fondo adyacente) |
+| D6 | Compatibilidad de datos | `ProgressSnapshot` gana campo `v`; migración v1→v2 con tests;(OpCodes localStorage «gana el más reciente», XP nunca baja) | drop de datos antiguos (violates 0.3) |
+| D7 | Deploy key no puede tocar settings del repo | `docs/GITHUB_SETUP.md` con instrucciones para el dueño (social preview, topics, descripción) | fingir capas no existentes |
+| D8 | Sin Playwright en nodo del sandbox ni dependencias del campus | e2e corre en el **host** con Playwright + Chromium (ya instalado chromium), no dentro del contenedor | Playwright dentro de la imagen sandbox (blows size 10×) |
+| D9 | Fullscreen no puede validarse 100 % en headless | Documentar la limitación; pruebas CDP-playwright para el modo «foco» CSS y verificación del fullscreen DOM API con emulación | declarar «probado» sin evidencia (ley 8) |
+| D10 | Plan de impacto (AUDIT §6) | Orden: F1 design system → F2 app nórdica → F3 docs-site → F4 escaparate → F5 seguridad/CLI → F6 editor/nano/depurador | Empezar por lecciones o seguridad (el propietario pide lo visual primero) |
