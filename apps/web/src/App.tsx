@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { CheckDetail, LessonContent, ServerSessionMsg } from "@bashforge/shared";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CheckDetail, LessonContent, LessonMeta, ServerSessionMsg } from "@bashforge/shared";
 import { ForgeWs, fetchLesson, fetchLessonList } from "./wsClient";
 import { dispatchOutput, TermPane } from "./Terminal";
 import { LessonPanel, Sidebar } from "./panels";
@@ -32,13 +32,14 @@ export function App() {
   const [activeTerm, setActiveTerm] = useState<string | null>(null);
   const [session, setSession] = useState<ServerSessionMsg | null>(null);
   const [connected, setConnected] = useState(false);
-  const [catalog, setCatalog] = useState<LessonContent[]>([]);
+  const [catalog, setCatalog] = useState<LessonMeta[]>([]);
   const [loaded, setLoaded] = useState<Map<string, LessonContent>>(new Map());
   const [current, setCurrent] = useState<string | null>(null);
   const [checks, setChecks] = useState<CheckDetail[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressSnapshot | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [fullterm, setFullterm] = useState(false);
 
   const ws = wsRef.current;
 
@@ -55,34 +56,21 @@ export function App() {
   /** ------------- catálogo ------------- */
   useEffect(() => {
     fetchLessonList()
-      .then(async (ids) => {
-        setCatalog(
-          ids.map((id) => stubMeta(id)).filter(Boolean) as LessonContent[],
-        );
+      .then((metas) => {
+        if (!Array.isArray(metas) || metas.length === 0) {
+          setNotice("El servidor no expone lecciones; ejecuta `bashforge lessons`.");
+          return;
+        }
+        setCatalog(metas);
+        // precarga la primera lección del nivel 0 para que se vea contenido al abrir
+        // abrimos la primera lección pedagógica real (no el boss ni un intermedio)
+        const first = metas.find((m) => m.id === "lvl0-que-es-un-shell")
+          ?? metas.find((m) => m.level === 0 && m.kind === "lesson")
+          ?? metas[0];
+        void selectLessonRef.current(first.id);
       })
       .catch(() => setNotice("No pude cargar el catálogo: ¿servidor caído?"));
-    //IDER: solo metadatos básicos por id; el detalle se trae al hacer clic
   }, []);
-
-  /** stub mínimo para renderizar la barra antes de traer detalle */
-  function stubMeta(id: string): LessonContent {
-    const m = /^lvl(\d+)-/.exec(id);
-    const level = (m ? Number(m[1]) : 0) as LessonLevel;
-    return {
-      id,
-      title: id.replace(/^lvl\d+-/, "").replaceAll("-", " "),
-      level,
-      kind: id.includes("-boss-") ? "boss" : id.includes("-reto-") ? "challenge" : "lesson",
-      xp: 10,
-      estimatedMinutes: 8,
-      prerequisites: [],
-      tags: [],
-      objective: "",
-      md: "",
-      hints: [],
-      validation: { mode: "declarative", timeoutSeconds: 10, tasks: [] },
-    };
-  }
 
   /** ------------- WS ------------- */
   useEffect(() => {
@@ -143,6 +131,18 @@ export function App() {
   }, []);
 
   /** ------------- selección de lección ------------- */
+  // ref estable para que el efecto del catálogo pueda abrir la primera lección
+  const selectLessonRef = useRef<(id: string) => void | Promise<void>>(async () => {});
+
+  // pantalla completa de la terminal: la tecla ESC vuelve al layout normal
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullterm(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const selectLesson = useCallback(
     async (id: string) => {
       setCurrent(id);
@@ -157,6 +157,7 @@ export function App() {
     },
     [loaded],
   );
+  selectLessonRef.current = selectLesson;
 
   function createTerm() {
     // el servidor crea la PTY y responde con un `session` que contiene el termId
@@ -202,22 +203,32 @@ export function App() {
     });
   }
 
-  const groups: LevelGroup[] = groupByLevel(loaded.size > 0 ? [...loaded.values()] : [...stubbedCatalog()]);
-  function stubbedCatalog(): LessonContent[] {
-    return catalog;
-  }
+  // la barra lateral se alimenta del catálogo (metas); la lección abierta usa el detalle cargado
+  const unified = useMemo<LessonContent[]>(() => {
+    const metas = catalog as unknown as LessonContent[]; // LessonMeta llega de la API; el detalle es opcional
+    const seen = new Set<string>([...loaded.keys(), ...metas.map((m) => m.id)]);
+    return [...seen].map((id) => loaded.get(id) ?? metas.find((m) => m.id === id) ?? null).filter(Boolean) as LessonContent[];
+  }, [catalog, loaded]);
+  const groups: LevelGroup[] = useMemo(() => groupByLevel(unified), [unified]);
 
   const currentLesson = current ? loaded.get(current) ?? null : null;
 
   return (
-    <div className="app">
+    <div className={`app${fullterm ? " fullterm" : ""}`}>
       <header className="topbar">
         <span className="logo">🔥 Bash Forge</span>
         <span className="conn dot" data-ok={connected ? "yes" : "no"}>
           {connected ? "conectado" : "reconectando…"}
         </span>
         {session && <span className="session-info">🏠 {session.homeId}</span>}
-        <button className="ghost" onClick={createTerm}>＋ Terminal</button>
+        <button className="ghost" onClick={createTerm} title="Nueva terminal">＋ Terminal</button>
+        <button
+          className="ghost"
+          onClick={() => setFullterm((f) => !f)}
+          title={fullterm ? "Volver al layout (ESC)" : "Terminal a pantalla completa"}
+        >
+          {fullterm ? "⤡ Volver" : "⛶ Pantalla completa"}
+        </button>
         <button
           className="ghost"
           onClick={() => {
@@ -255,6 +266,15 @@ export function App() {
                 </button>
               </div>
             ))}
+          </div>
+          <div className="term-actions">
+            <button
+              className="ghost"
+              onClick={() => setFullterm((f) => !f)}
+              title={fullterm ? "Salir de pantalla completa (ESC)" : "Pantalla completa"}
+            >
+              {fullterm ? "⤢" : "⛶"}
+            </button>
           </div>
           <div className="term-host" id="term-host">
             {tab.map((t) => (

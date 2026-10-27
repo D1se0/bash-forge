@@ -29,11 +29,19 @@ RUN for i in $(seq 1 500); do \
       useradd -m -u $((2000 + i)) -s /bin/bash forge_$i 2>/dev/null || true; \
     done
 
+# prompt propio de la forja, en /etc/bash.bashrc, en el skel y en cada home ya creado
+COPY docker/forge-prompt.sh /tmp/forge-prompt.sh
+RUN for f in /etc/bash.bashrc /etc/skel/.bashrc $(ls /home/forge_*/.bashrc 2>/dev/null); do \
+      grep -q PROMPT_BASH_FORGE "$f" 2>/dev/null || cat /tmp/forge-prompt.sh >> "$f"; \
+    done && rm /tmp/forge-prompt.sh
+
 # helper de arranque de PTY: se ejecuta como root y cae al usuario de la sesión
 RUN printf '#!/bin/bash\nUSERX="$1"\ncd "/home/$USERX" 2>/dev/null || cd /\nexec runuser -u "$USERX" -- bash -i\n' > /usr/local/bin/forge-spawn \
  && chmod 755 /usr/local/bin/forge-spawn
 
 ENV LESSONS_DIR=/opt/bashforge/lessons
 ENV PORT=8010
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 EXPOSE 8010
 CMD ["node", "apps/sandbox-server/dist/server.cjs"]

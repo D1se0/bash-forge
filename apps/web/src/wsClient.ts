@@ -3,6 +3,7 @@ import type {
   ServerMessage,
   ServerSessionMsg,
   CheckDetail,
+  LessonMeta,
 } from "@bashforge/shared";
 
 /** URL del WS: misma origin que la página (nginx proxifies /ws). */
@@ -124,11 +125,11 @@ function saveToken(t: string): void {
   localStorage.setItem("bf.sessionToken", t);
 }
 
-/** API HTTP de lecciones (nginx → sandbox-server). */
-export async function fetchLessonList(): Promise<string[]> {
+/** API HTTP de lecciones (nginx → sandbox-server). Flask devuelve LessonMeta[] completos. */
+export async function fetchLessonList(): Promise<LessonMeta[]> {
   const r = await fetch("/api/lessons");
   if (!r.ok) throw new Error("no lessons");
-  const j = (await r.json()) as string[];
+  const j = (await r.json()) as LessonMeta[];
   return j;
 }
 

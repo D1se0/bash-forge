@@ -1,18 +1,15 @@
-import type { LessonContent } from "@bashforge/shared";
-
-/** Una lección cargada en la UI, agrupada con su nivel. */
-export interface LoadedLesson extends LessonContent {}
+import type { LessonMeta } from "@bashforge/shared";
 
 import { LESSON_LEVELS } from "@bashforge/shared";
 import type { LessonLevel, LessonLevelInfo } from "@bashforge/shared";
 
 export interface LevelGroup {
   info: LessonLevelInfo;
-  lessons: LoadedLesson[];
+  lessons: LessonMeta[];
 }
 
-export function groupByLevel(lessons: LoadedLesson[]): LevelGroup[] {
-  const by = new Map<LessonLevel, LoadedLesson[]>();
+export function groupByLevel(lessons: LessonMeta[]): LevelGroup[] {
+  const by = new Map<LessonLevel, LessonMeta[]>();
   for (const l of lessons) {
     const arr = by.get(l.level) ?? [];
     arr.push(l);
