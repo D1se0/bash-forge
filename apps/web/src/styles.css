@@ -225,6 +225,26 @@ button.ghost:hover:not(:disabled) { background: var(--bg-surface); }
 .term-host { flex: 1; position: relative; min-height: 0; padding: 8px; background: var(--bg-abyss); }
 .term-pane { position: absolute; inset: 8px; }
 .term-pane .xterm { height: 100%; }
+/* ---------------- lateral plegado ---------------- */
+.app.plegado .main { grid-template-columns: 0 minmax(0,1fr) 400px; }
+.app.plegado .sidebar { overflow: hidden; visibility: hidden; }
+.side-tab {
+  position: fixed; left: 6px; top: 50%; transform: translateY(-50%); z-index: 60;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  padding: 16px 5px; border-radius: 0 var(--r-md) var(--r-md) 0; border-left: 0;
+  background: var(--bg-raised); color: var(--ice-2-text);
+  font: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: 1.5px;
+  cursor: pointer; box-shadow: var(--glow-ice), var(--shadow-blue);
+}
+.side-tab:hover { background: var(--bg-surface); }
+
+/* ---------------- export/import progreso ---------------- */
+.progress-io {
+  display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--border-soft);
+  background: var(--bg-base);
+}
+.progress-io button { flex: 1; padding: 6px 8px; font-size: 11.5px; }
+
 .app.fullterm .term-host { position: fixed; inset: 0; z-index: 90; padding: 10px; }
 .app.fullterm .term-pane { inset: 52px 12px 12px; }
 .app.fullterm .tabs { display: none; }
@@ -414,6 +434,7 @@ button.go-next { width: 100%; margin-top: 10px; }
 
 @media (max-width: 1180px) {
   .main { grid-template-columns: 232px minmax(0,1fr) 320px; }
+  .app.plegado .main { grid-template-columns: 0 minmax(0,1fr) 320px; }
 }
 @media (max-width: 900px) {
   .main { grid-template-columns: 1fr; grid-template-rows: minmax(0,26vh) minmax(40vh,1fr); overflow: auto; }
@@ -421,4 +442,6 @@ button.go-next { width: 100%; margin-top: 10px; }
   .sidebar { max-height: 26vh; border-right: 0; border-bottom: 1px solid var(--border-soft); }
   .lesson-panel { border-left: 0; border-top: 1px solid var(--border-soft); }
   .app.fullterm .sidebar { max-height: 0; border: 0; }
+  .app.plegado .sidebar { display: none; }
+  .app.plegado .main { grid-template-columns: 1fr; }
 }

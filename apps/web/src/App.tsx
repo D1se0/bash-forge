@@ -47,8 +47,27 @@ export function App() {
   const [fullterm, setFullterm] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [theme, setThemeState] = useState<string>(currentTheme());
+  // lateral plegado/desplegado: persistido para no pelear con el usuario en cada recarga
+  const [collapsed, setCollapsedState] = useState(() => {
+    try {
+      return localStorage.getItem("bf.sidebarCollapsed") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const setCollapsed = (v: boolean) => {
+    setCollapsedState(v);
+    try {
+      localStorage.setItem("bf.sidebarCollapsed", v ? "1" : "0");
+    } catch {
+      /* modo privado: sin persistencia */
+    }
+  };
 
   const ws = wsRef.current;
+  // workspace por nivel: al abrir una lección la terminal salta a $HOME/forja/nivel-N
+  const cdLevelRef = useRef<number | null>(null);
+  const pendingCdRef = useRef<string | null>(null);
 
   /** --------- modo foco: salir con Ctrl+Alt+F y desde el botón flotante --------- */
   const exitFocusRef = useRef(() => setFullterm(false));
@@ -87,7 +106,11 @@ export function App() {
         setCatalog(metas);
         // precarga la primera lección del nivel 0 para que se vea contenido al abrir
         // abrimos la primera lección pedagógica real (no el boss ni un intermedio)
-        const first = metas.find((m) => m.id === "lvl0-que-es-un-shell")
+        // si la recarga es una REVISITA, retomamos la lección donde el alumno quedó
+        const stored = localStorage.getItem("bf.currentLesson");
+        const remembered = stored ? metas.find((m) => m.id === stored) : null;
+        const first = remembered
+          ?? metas.find((m) => m.id === "lvl0-que-es-un-shell")
           ?? metas.find((m) => m.level === 0 && m.kind === "lesson")
           ?? metas[0];
         void selectLessonRef.current(first.id);
@@ -106,6 +129,12 @@ export function App() {
       onClose: () => setConnected(false),
       onSession: (s) => {
         setSession(s);
+        // terminal nueva: aplica el cd pendiente del workspace del nivel activo
+        if (pendingCdRef.current && s.terms.length) {
+          const tid = s.terms[s.terms.length - 1];
+          forgeWs.send({ type: "input", termId: tid, data: pendingCdRef.current });
+          pendingCdRef.current = null;
+        }
         // crecer/encoger con la verdad del servidor (cada term:new resurgence aquí)
         setTabs((ts) => {
           const known = new Map(ts.map((t) => [t.id, t]));
@@ -157,6 +186,22 @@ export function App() {
   // ref estable para que el efecto del catálogo pueda abrir la primera lección
   const selectLessonRef = useRef<(id: string) => void | Promise<void>>(async () => {});
 
+  /** Importar un progreso exportado desde otra máquina: mismo local snapshot. */
+  const importSnapshot = useCallback(
+    (p: ProgressSnapshot | null) => {
+      if (!p) {
+        flash("⇩ Ese fichero no parece un progreso de Bash Forge (JSON con «completed»). Nada tocado.");
+        return;
+      }
+      const forgeId = progressRef.current?.forgeId ?? p.forgeId;
+      setProgress({ ...p, forgeId });
+      ws.send({ type: "progress:save", snapshot: JSON.stringify({ ...p, forgeId }) });
+      flash(`⇩ Progreso importado: ${p.completed.length} lecciones · ${p.xp} XP`);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   // pantalla completa de la terminal: la tecla ESC vuelve al layout normal
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -180,6 +225,21 @@ export function App() {
       try {
         const full = loaded.has(id) ? loaded.get(id)! : await fetchLesson<LessonContent>(id);
         setLoaded((m) => new Map(m).set(id, full));
+        // recordar la lección al recargar la página
+        try {
+          localStorage.setItem("bf.currentLesson", id);
+        } catch {
+          /* modo privado */
+        }
+        // workspace por nivel: el shell salta a $HOME/forja/nivel-N al CAMBIAR de nivel;
+        // el servidor ejecuta setup/check en ese mismo workspace, así todo queda en la carpeta del nivel
+        if (typeof full.level === "number" && cdLevelRef.current !== full.level) {
+          cdLevelRef.current = full.level;
+          const cmd = `mkdir -p "$HOME/forja/nivel-${full.level}" && cd "$HOME/forja/nivel-${full.level}"\n`;
+          const tid = activeTermRef.current;
+          if (tid) ws.send({ type: "input", termId: tid, data: cmd });
+          else pendingCdRef.current = cmd; // se aplica al crear la terminal nueva
+        }
       } catch {
         flash(`No pude cargar la lección ${id}`);
       }
@@ -253,7 +313,7 @@ export function App() {
   }, [groups, progress]);
 
   return (
-    <div className={`app${fullterm ? " fullterm" : ""}`}>
+    <div className={`app${fullterm ? " fullterm" : ""}${collapsed ? " plegado" : ""}`}>
       <header className="topbar">
         <span className="logo">🔥 Bash Forge</span>
         <span className="conn dot" data-ok={connected ? "yes" : "no"}>
@@ -261,6 +321,13 @@ export function App() {
         </span>
         {session && <span className="session-info">🏠 {session.homeId}</span>}
         <button className="ghost" onClick={createTerm} title="Nueva terminal">＋ Terminal</button>
+        <button
+          className="ghost"
+          onClick={() => setCollapsed(!collapsed)}
+          title={collapsed ? "Desplegar el panel de niveles de nuevo" : "Plegar el panel de niveles (lateral izquierdo)"}
+        >
+          {collapsed ? "❯ Forja" : "❮ Plegar lateral"}
+        </button>
         <button className="ghost" onClick={() => setSheetOpen(true)} title="Referencia completa de Bash (cheatsheet)">
           ᛜ Cheatsheet
         </button>
@@ -297,6 +364,7 @@ export function App() {
           progress={progress ?? { forgeId: "", completed: [], xp: 0, badges: [], lastActiveDate: null, streak: 0, theme: "dark", lang: "es" }}
           current={current}
           onSelect={selectLesson}
+          onImport={importSnapshot}
         />
 
         <div className="center">
@@ -348,6 +416,12 @@ export function App() {
       </div>
 
       {notice && <div className="notice">{notice}</div>}
+
+      {collapsed && (
+        <button className="side-tab" onClick={() => setCollapsed(false)} title="Desplegar el panel de la forja">
+          ◀ Forja
+        </button>
+      )}
 
       {sheetOpen && <Cheatsheet onClose={() => setSheetOpen(false)} />}
 

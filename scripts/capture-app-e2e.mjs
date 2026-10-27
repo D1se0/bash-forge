@@ -4,7 +4,9 @@
  * 2. forge-lint en vivo dentro de la terminal
  * 3. modo pantalla completa: entrar y SALIR (Esc + botón)
  * 4. cheatsheet glass: abre, busca y cierra
- * 5. bloque «Cómo se valida: por la SALIDA» visible en el panel
+ * 5. bloque «Cómo se valida: por la SALIDA» visible en el panel + workspace por nivel
+ * 6. lateral plegable: plegar y desplegar el árbol de niveles
+ * 7. export/import de progreso: botones y descarga JSON
  * Captura evidencia a docs/evidence/06-redesign/.
  */
 import pw from "/usr/share/nodejs/playwright/index.js";
@@ -45,10 +47,19 @@ console.log(`expected-outputs=${eo}`);
 if (!eo) process.exitCode = 1;
 await a.screenshot({ path: `${out}/app__salida-esperada__1440x900__dark.png` });
 
-// 2. terminal: script con errores sintácticos + forge-lint en vivo
+// 2. terminal: workspace por nivel + script con errores sintácticos + forge-lint en vivo
 // (T1 ya existe por defecto: foco a la terminal sin crear pestañas nuevas)
 await a.locator(".term-pane").first().click();
 await a.waitForTimeout(500);
+
+// 1e. workspace por nivel: al abrir la lección (nivel 0) la terminal salta a forja/nivel-0
+await a.keyboard.type("pwd", { delay: 6 });
+await a.keyboard.press("Enter");
+await a.waitForTimeout(600);
+const rowsText = await a.locator(".xterm-rows").first().textContent().catch(() => "");
+const autoCd = rowsText.includes("forja/nivel-");
+console.log(`auto-cd=${rowsText ? autoCd : "no-leible (pwd no visible)"}`);
+if (rowsText && !autoCd) process.exitCode = 1;
 const bad = [
   "#!/usr/bin/env bash",
   "nombre = \"kali\"",
@@ -117,6 +128,30 @@ await a.waitForTimeout(300);
 const sheetClosed = (await a.locator(".sheet-overlay").count()) === 0;
 console.log(`cheatsheet-cerrado=${sheetClosed}`);
 if (!sheetClosed) process.exitCode = 1;
+
+// 6. lateral plegable: ocultar el árbol de niveles y desplegarlo de nuevo
+await a.getByRole("button", { name: /Plegar lateral/ }).click();
+await a.waitForTimeout(400);
+const plegada = await a.locator(".app.plegado").count();
+const sidebarOculta = await a.locator(".sidebar").first().isHidden();
+console.log(`sidebar-plegada=${plegada} sidebar-oculta=${sidebarOculta}`);
+if (!plegada || !sidebarOculta) process.exitCode = 1;
+await a.screenshot({ path: `${out}/app__sidebar-plegada__1440x900__dark.png` });
+await a.locator(".side-tab").click();
+await a.waitForTimeout(400);
+const siguePlegada = await a.locator(".app.plegado").count();
+console.log(`sidebar-re-desplegada=${siguePlegada === 0}`);
+if (siguePlegada) process.exitCode = 1;
+
+// 7. export/import de progreso: botones presentes y descarga real al exportar
+const ioButtons = await a.locator(".progress-io button").count();
+console.log(`progress-io=${ioButtons}`);
+if (ioButtons < 2) process.exitCode = 1;
+const dlPromise = a.waitForEvent("download", { timeout: 6000 }).catch(() => null);
+await a.locator(".progress-io button").first().click();
+const dl = await dlPromise;
+console.log(`progreso-export=${dl ? dl.suggestedFilename() : "sin-descarga"}`);
+if (!dl) process.exitCode = 1;
 
 await b.close();
 console.log("OK");

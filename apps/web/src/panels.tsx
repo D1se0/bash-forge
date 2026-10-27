@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { markdownToHtml } from "./markdown";
 import type { CheckDetail, LessonContent, LessonMeta, ProgressSnapshot } from "@bashforge/shared";
 import { BADGES, LESSON_LEVELS } from "@bashforge/shared";
 import type { ForgeWs } from "./wsClient";
+import type { ChangeEvent } from "react";
 import type { LessonLevel, LessonLevelInfo } from "@bashforge/shared";
 import type { LevelGroup } from "./catalog";
 import { isLevelLocked, unlockedLevel } from "./catalog";
@@ -16,6 +17,8 @@ export interface SidebarProps {
   progress: ProgressSnapshot;
   current: string | null;
   onSelect: (id: string) => void;
+  /** Importar un snapshot de progreso exportado desde otra máquina (null = fichero inválido). */
+  onImport: (p: ProgressSnapshot | null) => void;
 }
 
 /** Orden canónico del currículum (nivel asc, luego id): la ruta de la forja. */
@@ -23,7 +26,7 @@ export function flatOrder(groups: LevelGroup[]): LessonMeta[] {
   return groups.flatMap((g) => g.lessons);
 }
 
-export function Sidebar({ groups, progress, current, onSelect }: SidebarProps) {
+export function Sidebar({ groups, progress, current, onSelect, onImport }: SidebarProps) {
   const route = useMemo(() => flatOrder(groups), [groups]);
   const completed = progress.completed;
   const next = route.find((l) => !completed.includes(l.id)) ?? null;
@@ -34,7 +37,17 @@ export function Sidebar({ groups, progress, current, onSelect }: SidebarProps) {
   const unlocked = useMemo(() => unlockedLevel(progress.completed, groups), [progress.completed, groups]);
 
   // niveles abiertos: los desbloqueados hasta el del siguiente paso (controlado, para no pelear con <details>)
+  // persistidos: al recargar, la forja retoma EN la sección donde estabas
   const [openLevels, setOpenLevels] = useState<Set<number>>(() => {
+    const saved = localStorage.getItem("bf.openLevels");
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved) as number[];
+        if (Array.isArray(arr) && arr.length) return new Set(arr);
+      } catch {
+        /* guarda corrupta: recalcula */
+      }
+    }
     const limit = next?.level ?? 0;
     return new Set(LESSON_LEVELS.filter((l) => l.level <= limit).map((l) => l.level));
   });
@@ -43,9 +56,58 @@ export function Sidebar({ groups, progress, current, onSelect }: SidebarProps) {
       const s = new Set(prev);
       if (open) s.add(level);
       else s.delete(level);
+      try {
+        localStorage.setItem("bf.openLevels", JSON.stringify([...s]));
+      } catch {
+        /* modo privado */
+      }
       return s;
     });
   };
+
+  /** Exportar el progreso como fichero JSON descargable (migración entre máquinas). */
+  function exportProgress(): void {
+    const payload = {
+      app: "bashforge",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      progress,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const el = document.createElement("a");
+    el.href = url;
+    el.download = `bashforge-progreso-${progress.forgeId || "local"}-${new Date().toISOString().slice(0, 10)}.json`;
+    el.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  /** Importar un JSON exportado (de esta u otra máquina) con validación mínima. */
+  async function importProgress(e: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text()) as { progress?: ProgressSnapshot } & Partial<ProgressSnapshot>;
+      const p = parsed.progress ?? parsed;
+      if (!p || typeof p !== "object" || !Array.isArray(p.completed)) {
+        throw new Error("formato no reconocido");
+      }
+      const isStrArr = (a: unknown): a is string[] => Array.isArray(a) && a.every((s) => typeof s === "string");
+      onImport({
+        ...progress,
+        completed: isStrArr(p.completed) ? p.completed : progress.completed,
+        xp: typeof p.xp === "number" ? p.xp : progress.xp,
+        badges: isStrArr(p.badges) ? p.badges : progress.badges,
+        streak: typeof p.streak === "number" ? p.streak : progress.streak,
+        lastActiveDate: typeof p.lastActiveDate === "string" ? p.lastActiveDate : progress.lastActiveDate,
+      });
+    } catch {
+      onImport(null); // fichero inválido: la app lo avisa y no toca nada
+    }
+  }
 
   return (
     <aside className="sidebar">
@@ -131,8 +193,17 @@ export function Sidebar({ groups, progress, current, onSelect }: SidebarProps) {
               </ul>
             </details>
           );
-        })}
-      </nav>
+        })}      </nav>
+
+      <div className="progress-io">
+        <button className="ghost" onClick={exportProgress} title="Descarga tu progreso como JSON para migrarlo a otra máquina">
+          ⇪ Exportar
+        </button>
+        <button className="ghost" onClick={() => fileRef.current?.click()} title="Sube un JSON exportado desde otra máquina">
+          ⇩ Importar
+        </button>
+        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={importProgress} />
+      </div>
     </aside>
   );
 }

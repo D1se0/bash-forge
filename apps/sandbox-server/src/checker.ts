@@ -9,7 +9,16 @@ import { LessonStore } from "./lessons";
  * root; las tareas corren como el usuario de sesión vía `su` con el script
  * entregado por stdin (el alumno no puede leer los checks: van 0700 root en
  * CHECKS_DIR y el `su` no les da lectura).
+ *
+ * Workspace por nivel: setup, seeds, checks y aserciones de ficheros trabajan
+ * en `forja/nivel-N` dentro del home del alumno (la SPA cd-ifica la terminal
+ * al mismo sitio al abrir una lección de ese nivel).
  */
+
+/** Directorio de trabajo de un nivel, relativo al home del alumno. */
+export function levelWorkdir(level: number | undefined): string {
+  return `forja/nivel-${level ?? 0}`;
+}
 
 export interface CheckRunResult {
   pass: boolean;
@@ -62,7 +71,7 @@ export class LessonChecker {
   runSetup(lesson: LessonContent, user: string): { passed: boolean; stderr: string } {
     const raw = this.store.readRaw(lesson.id, "setup.sh");
     if (!raw) return { passed: true, stderr: "" };
-    const out = runAsUser(this.wrapCd(raw, user), user, Math.min(this.timeoutMs, 60_000));
+    const out = runAsUser(this.wrapCd(raw, user, levelWorkdir(lesson.level)), user, Math.min(this.timeoutMs, 60_000));
     return { passed: out.exit === 0, stderr: out.stderr };
   }
 
@@ -89,7 +98,7 @@ export class LessonChecker {
           ],
         };
       }
-      const out = runAsUser(this.wrapCd(script, user), user, this.timeoutMs);
+      const out = runAsUser(this.wrapCd(script, user, levelWorkdir(lesson.level)), user, this.timeoutMs);
       const pass = out.exit === 0;
       return {
         pass,
@@ -113,7 +122,7 @@ export class LessonChecker {
     let pass = true;
     for (const task of validation.tasks) {
       if (task.seed) this.seedTask(lesson, user, task.seed);
-      const r = this.assertTask(user, task);
+      const r = this.assertTask(user, task, levelWorkdir(lesson.level));
       checks.push(r.detail);
       if (!r.pass) pass = false;
     }
@@ -123,7 +132,7 @@ export class LessonChecker {
   private seedTask(lesson: LessonContent, user: string, seed: string): void {
     const raw = this.store.readRaw(lesson.id, `seeds/${seed}`);
     if (!raw) return;
-    runAsUser(this.wrapCd(raw, user), user, Math.min(this.timeoutMs, 30_000));
+    runAsUser(this.wrapCd(raw, user, levelWorkdir(lesson.level)), user, Math.min(this.timeoutMs, 30_000));
   }
 
   confirmUserCanRead(home: string, file: string): boolean {
@@ -132,8 +141,8 @@ export class LessonChecker {
   }
 
   /** Una aserción declarativa: cmd + expect* contra el home del usuario. */
-  private assertTask(user: string, task: ExpectedTask): { pass: boolean; detail: CheckDetail } {
-    const home = `/home/${user}`;
+  private assertTask(user: string, task: ExpectedTask, workdir?: string): { pass: boolean; detail: CheckDetail } {
+    const home = workdir ? path.join(`/home/${user}`, workdir) : `/home/${user}`;
     const problems: string[] = [];
 
     if (task.expectFile) {
@@ -170,7 +179,7 @@ export class LessonChecker {
     // Las tareas solo-lectura de ficheros (expectFile*/expect*) no ejecutan nada.
     let run = { exit: 0 as number, stdout: "", stderr: "", timedOut: false };
     if (task.cmd && task.cmd.trim()) {
-      run = runAsUser(this.wrapCd(task.cmd, user), user, this.timeoutMs);
+      run = runAsUser(this.wrapCd(task.cmd, user, workdir), user, this.timeoutMs);
       if (run.timedOut && run.exit === -1) {
         problems.push("la tarea agotó su tiempo (¿bucle infinito? ¿falta input?)");
       }
@@ -203,7 +212,13 @@ export class LessonChecker {
     return { pass, detail };
   }
 
-  private wrapCd(script: string, user: string): string {
-    return `cd /home/${user} 2>/dev/null || cd "$HOME"\n${script}`;
+  /**
+   * Ejecuta el script del alumno desde SU workspace de nivel (forja/nivel-N),
+   * creándolo si todavía no existe tras un reset.
+   */
+  private wrapCd(script: string, user: string, workdir?: string): string {
+    const home = `cd /home/${user} 2>/dev/null || cd "$HOME"`;
+    if (!workdir) return `${home}\n${script}`;
+    return `${home}\nmkdir -p '${workdir}' 2>/dev/null\ncd '${workdir}' 2>/dev/null || cd "$HOME"\n${script}`;
   }
 }

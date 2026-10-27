@@ -39,3 +39,8 @@
 | 07 | Botón Ampliar retirado | solo queda «Pantalla completa» en la topbar | sin .term-actions en DOM | E2E + captura |
 | 07 | Animaciones docs-site | fade-up hero + tipeo secuencial con caret + reveal on scroll (view timeline, progressive) | capturas + 0 errores de consola | `06-redesign/docs-site__*.png` |
 | 07 | Limpieza Docker | rmi de dangling + imágenes viejas (bf-fresh/bachforge-fresh/*:test) + builder prune | imágenes 2.54GB→0.83GB, build cache 5.26GB→0 (~7GB liberados) | `docker system df` antes/después |
+| 08 | Lateral plegable | botón «Plegar lateral» en topbar + pestaña «◀ Forja» flotante + persistencia en localStorage | sidebar-plegada=1, sidebar-oculta=true, re-despliegue por pestaña OK | `06-redesign/app__sidebar-plegada__*.png` |
+| 08 | Workspace por nivel | la terminal cd-ifica a `$HOME/forja/nivel-N` al abrir una lección; el checker/setup/seeds ejecutan en ese mismo dir (checker.ts) | auto-cd=true (pwd muestra forja/nivel-0) + verificación manual `su` en el sandbox | log E2E + captura `app__sidebar-plegada` |
+| 08 | Recordar la sesión | `bf.currentLesson` + `bf.openLevels` en localStorage: al recargar, retoma la lección y la sección | restauración verificada en restauración de página | `apps/web/src/App.tsx` (catalog effect) |
+| 08 | Progreso portable | «Exportar» descarga JSON con snapshot; «Importar» valida y aplica, conservando el forgeId local | progress-io=2, descarga real `bashforge-progreso-forge_*.json` en E2E | log E2E |
+| 08 | Cheatsheet: operadores de test | sección nueva «Operadores de test ([ ] y [[ ]])» con -f/-d/-s/-r/-w/-x/-b/-c/-p/-S/-L/-O/-G/-N/-k/-t/-nt/-ef/=~/-z/-n/-a | 135 entradas en 14 secciones | `app__cheatsheet__*.png` |
