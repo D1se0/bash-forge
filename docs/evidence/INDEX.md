@@ -7,3 +7,11 @@
 | 00 | Línea base app escritorio | `chromium --headless --screenshot` 1440×900 | captura + revisión 4.3 | `00-baseline/app__1440x900__nord-dark__es.png` |
 | 00 | Línea base app móvil | idem 390×844 | captura con overflow documentado | `00-baseline/app__390x844__nord-dark__es.png` |
 | 00 | Línea base docs-site | servidor estático :8877 + chromium 1440×900 y 390×844 | capturas de la web plana actual | `00-baseline/docs-site__*.png` |
+| 02 | Sistema de diseño nórdico | build web + docker compose up web | `/styleguide` renderiza sin errores de consola | `02-design-system/styleguide__1440x900__{dark,light}__es.png` |
+| 02 | Styleguide móvil | Playwright 390×844 DSC2 fullpage | paleta/tipos/runas/logo sin overflow | `02-design-system/styleguide__390x844__{dark,light}__es.png` |
+| 02 | Regresión app con tokens | Playwright 1440×900 y 390×844 | 0 pageerror / 0 console.error | `02-design-system/app__*` |
+| 02 | Contraste AA | `scripts/contrast-check.mjs` | ✔ AA completo en ambos temas | stdout de `scripts/lint.sh` |
+| 02 | Lint completo | `./scripts/lint.sh` | verde: contrast + typecheck ×3 | log del shell |
+| 02 | Tests unitarios | `npm test --workspaces` | 9 passed, 1 skipped | log del shell |
+| 02 | E2E fullscreen | `node apps/web/scripts/e2e-fullscreen.mjs` | ✔ E2E completo en verde | log del shell |
+| 02 | Fix runtime JSX | `React is not defined` → createElement explícito en packages/ui | styleguide recapturada sin errores | commits + capturas 02 |

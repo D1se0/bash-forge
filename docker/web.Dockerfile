@@ -4,9 +4,11 @@ WORKDIR /src
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/shared/package.json packages/shared/package.json
-RUN npm ci -w apps/web -w packages/shared --include-workspace-root --no-audit --no-fund
+COPY packages/ui/package.json packages/ui/package.json
+RUN npm ci -w apps/web -w packages/shared -w packages/ui --include-workspace-root --no-audit --no-fund
 COPY apps/web apps/web
 COPY packages/shared packages/shared
+COPY packages/ui packages/ui
 RUN npm run build -w apps/web
 
 FROM nginx:1.27-alpine

@@ -1,0 +1,117 @@
+/* ================================================================
+   Bash Forge · Nidavellir — Noche de Fiordo
+   Tokens: paleta Nord exacta del diseño (abyss/base/surface/raised)
+   + hielo (acción), brasa (único acento cálido de forja), aurora.
+   Regla: ningún componente usa colores literales; solo estos tokens.
+   ================================================================ */
+:root {
+  color-scheme: dark;
+
+  /* fondos */
+  --bg-abyss: #1e222a;
+  --bg-base: #2e3440;
+  --bg-surface: #3b4252;
+  --bg-raised: #434c5e;
+  --border: #4c566a;
+  --border-soft: #4c566a55;
+
+  /* texto */
+  --fg-strong: #eceff4;
+  --fg: #e5e9f0;
+  --fg-muted: #d8dee9;
+  --fg-faint: #a9b4c6; /* afinado: pasa AA 4.5 sobre base/surface */
+
+  /* hielo — acción principal y enlaces */
+  --ice-1: #8fbcbb;
+  --ice-2: #88c0d0;
+  --ice-2-text: #8ac4d4; /* AA para texto pequeño sobre bases oscuras */
+  --ice-3: #81a1c1;
+  --ice-4: #5e81ac;
+
+  /* brasa — acento único de forja (usar con moderación) */
+  --ember: #d08770;
+  --ember-text: #d38a73; /* brasa AA como texto pequeño */
+  --ember-contrast: #14161c; /* texto sobre botón brasa (dark) */
+  --ember-glow: #ebcb8b;
+
+  /* aurora — estados y gamificación */
+  --aurora-g: #a3be8c; /* éxito */
+  --aurora-g-text: #aecd9f; /* AA del verde para texto */
+  --aurora-v: #b48ead; /* logros/XP */
+  --aurora-v-text: #b690af; /* variante AA del violeta para texto */
+  --aurora-r: #bf616a; /* error (decorativa/grande) */
+  --aurora-r-text: #df818a; /* error legible en texto pequeño (AA) */
+  --aurora-y: #ebcb8b; /* aviso */
+  --aurora-gradient: linear-gradient(120deg, #8fbcbb, #81a1c1 35%, #b48ead 70%, #a3be8c);
+
+  /* superficies y profundidad */
+  --shadow-blue: 0 6px 24px #10131a66;
+  --shadow-raised: 0 3px 14px #0d1017aa;
+  --glow-ice: 0 0 18px #88c0d033;
+  --glow-ember: 0 0 16px #d0877044;
+
+  /* forma */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+
+  /* tipografía */
+  --font-sans: "Inter Tight", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --fs-1: 13px;  /* base  */
+  --fs-2: 16px;  /* 1.25↑ */
+  --fs-3: 20px;
+  --fs-4: 25px;
+  --fs-5: 31px;
+  --fs-6: 39px;
+  --fs-7: 49px;
+  --prose-lh: 1.6;
+  --ui-lh: 1.4;
+}
+
+/* Tema claro «Día de Nieve» — acentos oscurecidos hasta AA sobre blanco */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg-abyss: #d8dee9;
+  --bg-base: #eceff4;
+  --bg-surface: #e5e9f0;
+  --bg-raised: #d8dee9;
+  --border: #b9c2d0;
+  --border-soft: #b9c2d088;
+
+  --fg-strong: #2e3440;
+  --fg: #2e3440;
+  --fg-muted: #3b4252;
+  --fg-faint: #4c566a;
+
+  --ice-1: #2f7f7d;   /* obscura de #8fbcbb         */
+  --ice-2: #20778f;   /* obscura de #88c0d0 (AA ok) */
+  --ice-2-text: #1f768e; /* AA como texto pequeño sobre claros */
+  --ice-3: #3a6ea5;   /* obscura de #81a1c1         */
+  --ice-4: #345e8c;
+
+  --ember: #b45a3c;
+  --ember-text: #ac5234; /* AA sobre claros */
+  --ember-contrast: #ffffff; /* texto sobre botón brasa (light) */
+  --ember-glow: #a3701e;
+
+  --aurora-g: #4a7c2e;
+  --aurora-g-text: #47792b; /* AA sobre claros */
+  --aurora-v: #87429c;
+  --aurora-v-text: #87429c; /* AA por defecto en claro */
+  --aurora-r: #b3404c;
+  --aurora-r-text: #b3404c; /* AA por defecto en claro */
+  --aurora-y: #946c00;
+
+  --shadow-blue: 0 6px 22px #93a0b455;
+  --shadow-raised: 0 3px 12px #93a0b466;
+  --glow-ice: 0 0 14px #88c0d055;
+  --glow-ember: 0 0 12px #d0877055;
+}
+
+/* Playa de runas: color por defecto del trazo de runa = heredado (currentColor) */

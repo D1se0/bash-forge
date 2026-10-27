@@ -6,10 +6,11 @@
   "description": "Bash Forge SPA: terminal real (xterm.js) + lecciones validadas",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.tsx --bundle --format=esm --target=es2022 --outfile=dist/app.js --loader:.woff2=empty --entry-names=[name] && cp public/index.html dist/ && cp src/styles.css dist/",
+    "build": "esbuild src/main.tsx --bundle --format=esm --target=es2022 --outfile=dist/app.js --loader:.woff2=empty --entry-names=[name] && cp public/index.html dist/ && cp src/styles.css dist/ && mkdir -p dist/fonts && cp -r public/fonts/. dist/fonts/",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "dev": "node scripts/dev-server.mjs",
-    "lint": "echo ok"
+    "lint": "echo ok",
+    "postbuild": "node -e \"require('fs').copyFileSync('../../packages/ui/src/fonts.css','dist/fonts.css')\""
   },
   "dependencies": {
     "@bashforge/shared": "*",

@@ -14,6 +14,9 @@ fi
 echo "· lint-lessons"
 (cd packages/lessons && node tools/lint-lessons.mjs) || fail=1
 
+echo "· contraste AA de tokens"
+node scripts/contrast-check.mjs || fail=1
+
 for ws in packages/shared apps/sandbox-server apps/web; do
   echo "· typecheck $ws"
   (cd "$ws" && npx tsc --noEmit -p tsconfig.json) || fail=1
