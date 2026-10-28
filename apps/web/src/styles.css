@@ -113,6 +113,16 @@ button.ghost:hover:not(:disabled) { background: var(--bg-surface); }
 .next-title { font-size: 13.5px; font-weight: 700; color: var(--fg-strong); line-height: 1.3; }
 .next-meta { font-size: 11.5px; color: var(--fg-muted); font-family: var(--font-mono); }
 
+.unlock-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 16px 8px; flex-wrap: wrap;
+}
+.unlock-btn { flex: 0 1 auto; padding: 6px 10px; font-size: 11.5px; }
+.unlock-btn.on { color: var(--aurora-y-text); border-color: var(--aurora-y); }
+.unlock-hint {
+  font-size: 10px; letter-spacing: .4px; color: var(--fg-faint); font-family: var(--font-mono);
+}
+
 .tree-title {
   padding: 2px 16px 6px; font-size: 10.5px; letter-spacing: 1.3px;
   text-transform: uppercase; color: var(--fg-faint); font-weight: 700;

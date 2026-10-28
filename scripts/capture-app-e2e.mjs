@@ -157,5 +157,29 @@ console.log(`progreso-export=${dl ? dl.suggestedFilename() : "sin-descarga"}`);
 if (!dl) process.exitCode = 1;
 await a.keyboard.press("Escape"); // cierra el popup
 
+// 8. modo avanzado: desbloquear todo, abrir una lección de nivel 9 y volver a bloquear
+const lockedAntes = await a.locator(".lesson-link.locked[disabled]").count();
+await a.locator(".unlock-btn").click();
+await a.waitForTimeout(400);
+const lockedDespues = await a.locator(".lesson-link.locked[disabled]").count();
+const chipsDespues = await a.locator(".lvl-lock").count();
+console.log(`unlock-all: locked ${lockedAntes} -> ${lockedDespues} chips=${chipsDespues}`);
+if (lockedDespues !== 0 || chipsDespues !== 0) process.exitCode = 1;
+const lvl9 = await a.locator(".level-group .lvl-badge", { hasText: "L9" }).count();
+if (!lvl9) process.exitCode = 1;
+// abrir una lección avanzada de nivel 9 (debe CARGAR, sin flash de 🔒)
+await a.locator(".level-group .lvl-badge", { hasText: "L9" }).click();
+await a.waitForTimeout(500);
+await a.locator(".level-group[open] .lesson-link", { hasText: "Guardian de Bucles" }).first().click();
+await a.waitForTimeout(900);
+const bossL9 = await a.locator(".lesson-panel h1, .lesson-pane h1, main h1").first().textContent().catch(() => "");
+console.log(`leccion-l9=${bossL9 ? "abierta" : "no-hallada"}`);
+// y al volver a bloquear, SOLO los niveles que el progreso tenía sellados vuelven a candado
+await a.locator(".unlock-btn").click();
+await a.waitForTimeout(400);
+const lockedFinal = await a.locator(".lesson-link.locked[disabled]").count();
+console.log(`re-lock: locked=${lockedFinal} (antes=${lockedAntes})`);
+if (lockedFinal !== lockedAntes) process.exitCode = 1;
+
 await b.close();
 console.log("OK");

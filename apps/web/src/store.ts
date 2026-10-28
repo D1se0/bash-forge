@@ -2,6 +2,24 @@ import type { ProgressSnapshot } from "@bashforge/shared";
 import { BADGES, LESSON_LEVELS, type LessonLevel } from "@bashforge/shared";
 
 const KEY = "bf.progress.v1";
+const UNLOCK_KEY = "bf.unlockAll";
+
+/** Modo avanzado: «Desbloquear todo» ignora los candados progresivos (repaso libre). */
+export function isUnlockAll(): boolean {
+  try {
+    return localStorage.getItem(UNLOCK_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setUnlockAll(on: boolean): void {
+  try {
+    localStorage.setItem(UNLOCK_KEY, on ? "1" : "0");
+  } catch {
+    /* modo privado */
+  }
+}
 
 export function blankProgress(forgeId: string): ProgressSnapshot {
   return {

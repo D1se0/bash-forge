@@ -6,6 +6,7 @@ import { LessonPanel, Sidebar, flatOrder } from "./panels";
 import { Cheatsheet } from "./cheatsheet-popup";
 import type { LevelGroup } from "./catalog";
 import { groupByLevel, isLevelLocked, unlockedLevel } from "./catalog";
+import { isUnlockAll } from "./store";
 import { currentTheme, toggleTheme } from "./theme";
 import {
   bumpStreak,
@@ -214,9 +215,10 @@ export function App() {
   const selectLesson = useCallback(
     async (id: string) => {
       // candado por nivel: no se puede abrir una lección de un nivel bloqueado
+      // (el modo avanzado «Desbloquear todo» lo ignora)
       const completed = progressRef.current?.completed ?? [];
       const lvl = catalog.find((m) => m.id === id)?.level ?? loaded.get(id)?.level;
-      if (lvl != null && isLevelLocked(lvl, unlockedLevel(completed, groupsRef.current))) {
+      if (!isUnlockAll() && lvl != null && isLevelLocked(lvl, unlockedLevel(completed, groupsRef.current))) {
         flash(`🔒 Ese nivel sigue sellado: termina todas las lecciones del nivel ${lvl - 1} y se desbloqueará solo.`);
         return;
       }

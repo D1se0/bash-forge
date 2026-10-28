@@ -6,6 +6,7 @@ import type { ForgeWs } from "./wsClient";
 import type { LessonLevel, LessonLevelInfo } from "@bashforge/shared";
 import type { LevelGroup } from "./catalog";
 import { isLevelLocked, unlockedLevel } from "./catalog";
+import { isUnlockAll, setUnlockAll } from "./store";
 import { ProgressPopup } from "./progress-popup";
 
 /** ------------------------------------------------------------------ */
@@ -34,7 +35,19 @@ export function Sidebar({ groups, progress, current, onSelect, onImport }: Sideb
   const pct = route.length ? Math.round((doneCount / route.length) * 100) : 0;
 
   // desbloqueo progresivo: el nivel N se abre al completar TODAS las del N-1
-  const unlocked = useMemo(() => unlockedLevel(progress.completed, groups), [progress.completed, groups]);
+  // modo avanzado: con «Desbloquear todo» activo, ningún nivel queda sellado
+  const [todoDesbloqueado, setTodoDesbloqueado] = useState(isUnlockAll);
+  const unlocked = useMemo(
+    () => (todoDesbloqueado ? 9 : unlockedLevel(progress.completed, groups)) as LessonLevel,
+    [progress.completed, groups, todoDesbloqueado],
+  );
+  const toggleDesbloqueo = () => {
+    setTodoDesbloqueado((v) => {
+      const nv = !v;
+      setUnlockAll(nv);
+      return nv;
+    });
+  };
 
   // niveles abiertos: los desbloqueados hasta el del siguiente paso (controlado, para no pelear con <details>)
   // persistidos: al recargar, la forja retoma EN la sección donde estabas
@@ -104,6 +117,21 @@ export function Sidebar({ groups, progress, current, onSelect, onImport }: Sideb
           <span className="next-meta">Repasa lo que quieras</span>
         </div>
       )}
+
+      <div className="unlock-row">
+        <button
+          className={`ghost unlock-btn${todoDesbloqueado ? " on" : ""}`}
+          onClick={toggleDesbloqueo}
+          title={
+            todoDesbloqueado
+              ? "Restaura los candados: se vuelven a sellar solo los niveles que estaban bloqueados por tu progreso"
+              : "Usuario avanzado: abre todos los niveles para practicar cualquiera"
+          }
+        >
+          {todoDesbloqueado ? "🔒 Volver a bloquear" : "🔓 Desbloquear todo"}
+        </button>
+        {todoDesbloqueado && <span className="unlock-hint">modo avanzado · niveles libres</span>}
+      </div>
 
       <div className="tree-title">El camino de la forja</div>
       <nav className="lesson-tree">
