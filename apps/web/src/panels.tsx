@@ -270,7 +270,13 @@ export function Sidebar({ groups, practice, progress, current, onSelect, onImpor
         </button>
       </div>
       {popAbierto && (
-        <ProgressPopup groups={groups} progress={progress} onClose={() => setPopAbierto(false)} onImport={onImport} />
+        <ProgressPopup
+          groups={groups}
+          practice={practice}
+          progress={progress}
+          onClose={() => setPopAbierto(false)}
+          onImport={onImport}
+        />
       )}
     </aside>
   );

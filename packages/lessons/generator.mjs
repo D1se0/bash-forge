@@ -162,6 +162,8 @@ function main() {
     if (!spec.track) throw new Error(`Lección de práctica sin track: ${spec.id}`);
     buildLesson(spec);
     practiceIds.add(spec.id);
+    // entra en el log (con track) para que docs-site pueda pintar la sección de práctica
+    log.push({ id: spec.id, level: spec.level, kind: spec.kind ?? "lesson", xp: spec.xp ?? 10, title: spec.title, track: spec.track });
   }
 
   fs.writeFileSync(
@@ -171,7 +173,7 @@ function main() {
         version: 1,
         counts: {
           total: log.length,
-          lesson: log.filter((l) => l.kind === "lesson").length,
+          lesson: log.filter((l) => l.kind === "lesson" && !l.track).length,
           challenge: log.filter((l) => l.kind === "challenge").length,
           boss: log.filter((l) => l.kind === "boss").length,
           practice: practiceIds.size,
@@ -182,8 +184,15 @@ function main() {
       2,
     ),
   );
-  const counts = log.reduce((acc, l) => ((acc[l.kind] = (acc[l.kind] ?? 0) + 1), acc), {});
-  console.log(`✔ ${log.length} lecciones del camino + ${practiceIds.size} de práctica generadas:`, counts);
+  const counts = log.reduce((acc, l) => {
+    if (l.track) return acc;
+    acc[l.kind] = (acc[l.kind] ?? 0) + 1;
+    return acc;
+  }, {});
+  console.log(
+    `✔ ${log.filter((l) => !l.track).length} lecciones del camino + ${practiceIds.size} de práctica generadas:`,
+    counts,
+  );
 }
 
 main();

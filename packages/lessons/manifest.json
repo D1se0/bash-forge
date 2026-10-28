@@ -1,7 +1,7 @@
 {
   "version": 1,
   "counts": {
-    "total": 90,
+    "total": 102,
     "lesson": 76,
     "challenge": 8,
     "boss": 6,
@@ -637,6 +637,102 @@
       "kind": "boss",
       "xp": 90,
       "title": "Boss Fight · El Guardian de Bucles"
+    },
+    {
+      "id": "pra-if-fichero",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "IF: ¿existe el fichero?",
+      "track": "IF"
+    },
+    {
+      "id": "pra-if-elif",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "IF: cadena if / elif / else",
+      "track": "IF"
+    },
+    {
+      "id": "pra-if-doble",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "IF: dos condiciones a la vez (&& y -a)",
+      "track": "IF"
+    },
+    {
+      "id": "pra-for-lista",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "FOR: recorrer una lista",
+      "track": "FOR"
+    },
+    {
+      "id": "pra-for-args",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "FOR: recorrer los argumentos",
+      "track": "FOR"
+    },
+    {
+      "id": "pra-for-aritmetico",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "FOR estilo C: for ((i=0; i<N; i++))",
+      "track": "FOR"
+    },
+    {
+      "id": "pra-while-read",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "WHILE: leer un fichero línea a línea",
+      "track": "WHILE"
+    },
+    {
+      "id": "pra-while-contador",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "WHILE: bucle con condición",
+      "track": "WHILE"
+    },
+    {
+      "id": "pra-until",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "UNTIL: repetir hasta que pase algo",
+      "track": "WHILE"
+    },
+    {
+      "id": "pra-case-simple",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "CASE: clasificar un valor",
+      "track": "CASE"
+    },
+    {
+      "id": "pra-case-glob",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 12,
+      "title": "CASE: patrones con comodines",
+      "track": "CASE"
+    },
+    {
+      "id": "pra-case-menu",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 14,
+      "title": "CASE: menú en bucle (case dentro de while)",
+      "track": "CASE"
     }
   ]
 }

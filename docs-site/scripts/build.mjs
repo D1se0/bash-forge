@@ -37,10 +37,28 @@ const kindLabel = { lesson: "lección", challenge: "reto", boss: "Boss", playgro
 
 const byLevel = new Map();
 for (const l of lessonList) {
+  // la práctica dirigida (con track) va fuera del camino: su propia sección
+  if (l.track) continue;
   const lvl = l.level ?? 0;
   if (!byLevel.has(lvl)) byLevel.set(lvl, []);
   byLevel.get(lvl).push(l);
 }
+
+/* ---------- práctica dirigida (IF, FOR, WHILE, CASE…) ---------- */
+const TRACK_TITLES = {
+  IF: "Condicionales if",
+  FOR: "Bucles for",
+  WHILE: "while y until",
+  CASE: "case y menús",
+};
+const practiceList = lessonList.filter((l) => l.track);
+const byTrack = new Map();
+for (const l of practiceList) {
+  const t = l.track;
+  if (!byTrack.has(t)) byTrack.set(t, []);
+  byTrack.get(t).push(l);
+}
+const TRACK_ORDER = [...Object.keys(TRACK_TITLES), ...[...byTrack.keys()].filter((t) => !(t in TRACK_TITLES))];
 
 // los nueve mundos de Yggdrasil
 const MUNDOS = [
@@ -112,10 +130,45 @@ const sections = [...byLevel.entries()]
   })
   .join("\n");
 
+/* ---------- sección de práctica dirigida ---------- */
+const practiceSection = byTrack.size
+  ? `
+    <section id="practica" class="mundo practica">
+      <div class="mundo-head">
+        ${runeSvg("berkana", 18)}
+        <div>
+          <h2>Práctica dirigida <span class="rank">tracks · ${practiceList.length} lecciones</span></h2>
+          <p class="tagline">Entrena un solo tema al salto: sin candados y fuera del camino L0→L9.</p>
+        </div>
+      </div>
+      ${TRACK_ORDER.filter((t) => byTrack.has(t))
+        .map(
+          (t) => `
+      <div class="track-block">
+        <h3><span class="track-chip">${esc(t)}</span> ${esc(TRACK_TITLES[t] ?? t)}</h3>
+        <ul>
+          ${(byTrack.get(t) ?? [])
+            .map(
+              (l) => `<li class="${esc(l.kind ?? "lesson")}">
+            <span class="kind">${kindIcon[l.kind] ?? "ᚱ"} ${kindLabel[l.kind] ?? "lección"}</span>
+            <strong>${esc(l.title)}</strong>
+            <span class="xp">★ ${l.xp} XP</span>
+          </li>`,
+            )
+            .join("\n")}
+        </ul>
+      </div>`,
+        )
+        .join("\n")}
+    </section>`
+  : "";
+
 /* ---------- nav de mundos ---------- */
-const toc = [...byLevel.keys()].sort((a, b) => a - b)
-  .map((lvl) => `<a href="#nivel-${lvl}">${MUNDOS[lvl]?.[0] ?? `L${lvl}`}</a>`)
-  .join("");
+const toc =
+  [...byLevel.keys()]
+    .sort((a, b) => a - b)
+    .map((lvl) => `<a href="#nivel-${lvl}">${MUNDOS[lvl]?.[0] ?? `L${lvl}`}</a>`)
+    .join("") + (byTrack.size ? `<a href="#practica">Práctica</a>` : "");
 
 /* ---------- tarjetas de características ---------- */
 const features = [
@@ -286,6 +339,11 @@ ${favicon}
     border: 1px solid var(--border-soft); border-radius: 999px; padding: 5px 13px; background: var(--bg-surface); }
   nav.worlds a:hover { border-color: var(--ice-3); box-shadow: var(--glow-ice); }
   .mundo { margin: 30px 0; }
+  .mundo.practica { border-top: 1px dashed var(--border-soft); padding-top: 8px; }
+  .track-block { margin: 18px 0 6px; }
+  .track-block h3 { margin: 0 0 4px; font-family: var(--font-sans); font-size: 14.5px; color: var(--fg-strong); display: flex; align-items: center; gap: 8px; }
+  .track-chip { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .8px;
+    color: var(--ice-2-text); border: 1px solid var(--ice-3); border-radius: 6px; padding: 1px 7px; }
   .mundo-head { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
   .mundo-rune { color: var(--ice-2); flex: none; }
   .mundo-head h2 { margin: 0; font-family: var(--font-serif); font-weight: 560; font-size: var(--fs-4); color: var(--fg-strong); }
@@ -382,6 +440,7 @@ ${favicon}
       <h2 class="sec-title">El camino: 9 mundos, un rango por conquista</h2>
       <nav class="worlds">${toc}</nav>
       ${sections}
+      ${practiceSection}
     </section>
 
     <footer>
@@ -398,4 +457,6 @@ ${favicon}
 fs.writeFileSync(path.join(out, "index.html"), html);
 // 404 para Pages
 fs.copyFileSync(path.join(out, "index.html"), path.join(out, "404.html"));
-console.log(`✔ docs-site/dist/index.html (${lessonList.length} lecciones, ${byLevel.size} mundos, landing bash-arena-style + catálogo)`);
+console.log(
+  `✔ docs-site/dist/index.html (${lessonList.length} lecciones · ${byLevel.size} mundos + ${byTrack.size} tracks de práctica, landing bash-arena-style + catálogo)`,
+);

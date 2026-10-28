@@ -467,6 +467,12 @@ button.go-next { width: 100%; margin-top: 10px; }
 .pop-lvl { font-family: var(--font-mono); font-weight: 700; color: var(--ice-2-text); min-width: 26px; }
 .pop-lvl-title { flex: 1; color: var(--fg-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pop-lvl-count { font-family: var(--font-mono); color: var(--fg-faint); font-size: 11.5px; }
+.pop-lvl.pra {
+  min-width: 44px; font-size: 10.5px; text-align: center;
+  color: var(--aurora-g-text); border: 1px solid var(--border-soft);
+  border-radius: 8px; padding: 1px 6px;
+}
+.lvl-row.pra { border-color: rgba(163, 226, 205, .25); }
 .pop-flash {
   margin: 10px 20px 0; padding: 8px 12px; border-radius: 10px; font-size: 12.5px;
   background: color-mix(in srgb, var(--aurora-r) 14%, transparent); color: var(--fg-strong);

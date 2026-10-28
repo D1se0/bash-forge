@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BADGES, LESSON_LEVELS } from "@bashforge/shared";
 import type { LessonLevel, ProgressSnapshot } from "@bashforge/shared";
-import type { LevelGroup } from "./catalog";
+import type { LevelGroup, TrackGroup } from "./catalog";
 import { ChangeEvent } from "react";
 
 /**
@@ -12,13 +12,15 @@ import { ChangeEvent } from "react";
  */
 export interface ProgressPopupProps {
   groups: LevelGroup[];
+  /** Pista de práctica dirigida (IF, FOR, …): se informa en stats, popup y PDF. */
+  practice: TrackGroup[];
   progress: ProgressSnapshot;
   onClose: () => void;
   /** Importar un snapshot validado (App lo persiste y avisa); null = fichero inválido. */
   onImport: (p: ProgressSnapshot | null) => void;
 }
 
-export function ProgressPopup({ groups, progress, onClose, onImport }: ProgressPopupProps) {
+export function ProgressPopup({ groups, practice, progress, onClose, onImport }: ProgressPopupProps) {
   const [flash, setFlash] = useState<{ ok: boolean; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -41,8 +43,25 @@ export function ProgressPopup({ groups, progress, onClose, onImport }: ProgressP
       const done = g.lessons.filter((l) => completed.includes(l.id)).length;
       return { level: g.info.level, title: g.info.title, done, total: g.lessons.length };
     });
-    return { total, perLevel, pct: total ? Math.round((completed.length / total) * 100) : 0 };
-  }, [groups, progress.completed]);
+    // práctica dirigida: progresión propia, fuera del % del camino
+    const perTrack = practice.map((t) => ({
+      track: t.track,
+      title: t.title,
+      done: t.lessons.filter((l) => completed.includes(l.id)).length,
+      total: t.lessons.length,
+    }));
+    const donePath = perLevel.reduce((n, l) => n + l.done, 0);
+    const donePract = perTrack.reduce((n, l) => n + l.done, 0);
+    return {
+      total,
+      perLevel,
+      perTrack,
+      pct: total ? Math.round((donePath / total) * 100) : 0,
+      donePath,
+      donePract,
+      totalPract: practice.reduce((n, t) => n + t.lessons.length, 0),
+    };
+  }, [groups, practice, progress.completed]);
 
   /** Exporta el progreso como JSON descargable (mismo formato que siempre). */
   function exportJson(): void {
@@ -112,7 +131,25 @@ export function ProgressPopup({ groups, progress, onClose, onImport }: ProgressP
       .join("");
     const badgeTags = badges.length
       ? badges.map((b) => `<span class="chip">${b.icon} ${esc(b.title)}</span>`).join(" ")
-      : `<span class="chip vacio">— aún sin insignias: completa lecciones para encenderlas</span>`;
+      : `<span class="chip vacio">— aún sin insignias: Completa lecciones para encenderlas</span>`;
+    const praRows = stats.perTrack
+      .map(
+        (t) => `
+        <div class="lvl-row">
+          <span class="lvl-n pra-n">${esc(t.track)}</span>
+          <span class="lvl-t">${esc(t.title)}</span>
+          <div class="lvl-bar"><div class="lvl-fill pra" style="width:${t.total ? Math.round((t.done / t.total) * 100) : 0}%"></div></div>
+          <span class="lvl-c">${t.done}/${t.total}</span>
+        </div>`,
+      )
+      .join("");
+    const praSec = stats.totalPract
+      ? `
+        <div class="sec">
+          <h2>Práctica dirigida</h2>
+          ${praRows}
+        </div>`
+      : "";
     const ruta = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Bash Forge · informe de progreso</title><style>
         @page { margin: 0; }
         * { box-sizing: border-box; }
@@ -134,6 +171,8 @@ export function ProgressPopup({ groups, progress, onClose, onImport }: ProgressP
         .lvl-t { flex: 1; font-size: 13.5px; color: #dce6f5; }
         .lvl-bar { width: 180px; height: 7px; background: #0b1220; border-radius: 4px; overflow: hidden; border: 1px solid rgba(126,180,236,.25); }
         .lvl-fill { height: 100%; background: linear-gradient(90deg, #7ea4ec, #9cc2f5); }
+        .lvl-fill.pra { background: linear-gradient(90deg, #8fbcbb, #a3be8c); }
+        .lvl-n.pra-n { color: #a3e2cd; border: 1px solid rgba(163,226,205,.4); border-radius: 8px; padding: 1px 8px; font-size: 10.5px; text-align: center; }
         .lvl-c { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #8ea3c0; min-width: 44px; text-align: right; }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .chip { background: #101a2e; border: 1px solid rgba(126,180,236,.3); color: #dce6f5; border-radius: 999px; padding: 5px 14px; font-size: 12.5px; }
@@ -155,7 +194,7 @@ export function ProgressPopup({ groups, progress, onClose, onImport }: ProgressP
         <div class="sec">
           <h2>El camino nivel a nivel</h2>
           ${niveles}
-        </div>
+        </div>${praSec}
         <div class="sec">
           <h2>Insignias conquistadas</h2>
           <div class="chips">${badgeTags}</div>
@@ -199,6 +238,15 @@ export function ProgressPopup({ groups, progress, onClose, onImport }: ProgressP
               <span className="pop-lvl-title">{l.title}</span>
               <span className="pop-lvl-count">
                 {l.done}/{l.total}
+              </span>
+            </div>
+          ))}
+          {stats.perTrack.map((t) => (
+            <div className="lvl-row pra" key={t.track}>
+              <span className="pop-lvl pra">{t.track}</span>
+              <span className="pop-lvl-title">{t.title}</span>
+              <span className="pop-lvl-count">
+                {t.done}/{t.total}
               </span>
             </div>
           ))}

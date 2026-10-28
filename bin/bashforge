@@ -2,7 +2,41 @@
 # bashforge — CLI del proyecto: levanta el stack, genera lecciones y comprueba el entorno.
 set -euo pipefail
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Localiza la raíz del repo aunque el CLI esté instalado en ~/.local/bin:
+# 1) symlink → el fichero real  2) BASHFORGE_HOME  3) subir desde $PWD hasta el marcador
+locate_root() {
+  local src="${BASH_SOURCE[0]}"
+  if command -v readlink >/dev/null 2>&1 && [[ -L "$src" ]]; then
+    src="$(readlink -f "$src")"
+  fi
+  local d
+  d="$(cd "$(dirname "$src")/.." && pwd)"
+  if [[ -f "$d/docker/docker-compose.yml" ]]; then
+    printf '%s\n' "$d"
+    return 0
+  fi
+  if [[ -n "${BASHFORGE_HOME:-}" && -f "$BASHFORGE_HOME/docker/docker-compose.yml" ]]; then
+    printf '%s\n' "$BASHFORGE_HOME"
+    return 0
+  fi
+  local cur="$PWD"
+  while [[ "$cur" != "/" ]]; do
+    if [[ -f "$cur/docker/docker-compose.yml" && -f "$cur/bin/bashforge" ]]; then
+      printf '%s\n' "$cur"
+      return 0
+    fi
+    cur="$(dirname "$cur")"
+  done
+  return 1
+}
+
+if ! DIR="$(locate_root)"; then
+  echo "✕ bashforge: no encuentro la raíz del repo bash-forge." >&2
+  echo "  Si lo instalaste copiando el script a ~/.local/bin, usa un symlink en su lugar:" >&2
+  echo "    ln -sf '<ruta>/bash-forge/bin/bashforge' ~/.local/bin/bashforge" >&2
+  echo "  O ejecuta el CLI desde la raíz del repo, o exporta BASHFORGE_HOME='<ruta>/bash-forge'." >&2
+  exit 1
+fi
 WEB_PORT="${WEB_PORT:-8080}"
 SANDBOX_PORT="${SANDBOX_PORT:-8010}"
 COMPOSE=(docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env")
@@ -38,7 +72,7 @@ lessons_count() {
   if have_node; then
     node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{console.log(JSON.parse(d).length)}catch{console.log(0)}})' <<< "$(curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" 2>/dev/null)"
   else
-    curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" 2>/dev/null | grep -o '"id":"lvl[^"]*"' | wc -l
+    curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" 2>/dev/null | grep -o '"id":"[a-z][a-z0-9-]*"' | wc -l
   fi
 }
 
@@ -179,9 +213,9 @@ cmd_list() {
   json=$(curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons") || { echo "✕ sandbox sin respuesta en :$SANDBOX_PORT"; exit 1; }
   if have_node; then
     # shellcheck disable=SC2016  # las ${} van dentro del nodo, sin expandir en bash
-    node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{const ls=JSON.parse(d);for(const l of ls)console.log(`l${l.level}  ${l.id.padEnd(28)} ${l.title}`);console.log(`\n${ls.length} lecciones`)})' <<< "$json"
+    node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{const ls=JSON.parse(d);const pra=ls.filter(l=>l.track).length;for(const l of ls)console.log(`${l.track?`[${l.track}]`.padEnd(9):`l${l.level}`.padEnd(9)}  ${l.id.padEnd(24)} ${l.title}`);console.log(`\n${ls.length} lecciones (${ls.length-pra} del camino + ${pra} de práctica dirigida)`)})' <<< "$json"
   else
-    echo "$json" | grep -o '"id":"lvl[^"]*"' | sed 's/"id":"//;s/"//'
+    echo "$json" | grep -o '"id":"[a-z][a-z0-9-]*"' | sed 's/"id":"//;s/"//' | sort
   fi
 }
 
@@ -189,7 +223,7 @@ cmd_verify() {
   local id="${1:-}"
   [[ -z "$id" ]] && {
     echo "falta id de lección. Ejemplos:"
-    curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" | grep -o '"id":"lvl[^"]*"' | sed 's/"id":"//;s/"//' | head -20 || true
+    curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" 2>/dev/null | grep -o '"id":"[a-z][a-z0-9-]*"' | sed 's/"id":"//;s/"//' | head -20 || true
     echo
     exit 1
   }

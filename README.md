@@ -22,7 +22,8 @@ en un Ubuntu real dentro de Docker, desde una terminal web con acabado nórdico.
 
 Bash Forge es una plataforma open source donde aprendes Bash escribiendo y ejecutando
 scripts reales. Un servidor de terminales (PTY) dentro de un sandbox Ubuntu aislado,
-82 lecciones + 7 retos + 5 Boss Fights con validación automática, y una estética
+10 niveles (90 lecciones + 8 retos + 6 Boss Fights) + 12 lecciones de práctica dirigida
+(IF · FOR · WHILE · CASE, sin candados) con validación automática, y una estética
 inspirada en la calma nórdica: *hielo frío, brasa cálida, cero humo*.
 
 | | |
@@ -31,6 +32,7 @@ inspirada en la calma nórdica: *hielo frío, brasa cálida, cero humo*.
 | ᛞ **Validación automática** | Cada lección se comprueba ejecutando tu script en el sandbox (caja negra, con casos de prueba generados) y te devuelve un informe didáctico. |
 | ᚸ **Aislamiento seguro** | Un usuario Linux sin privilegios por sesión, red interna sin salida a Internet, sin docker.sock montado. Verde/aurora cuando aciertas; brasa cuando fallas. |
 | ᛈ **Progresión** | XP, rangos de forja (Aprendiz → Maestro Forjador), racha diaria, Boss Fights cronometrados y persistencia en volumen + localStorage. |
+| ᛒ **Práctica dirigida** | Además del camino L0→L9, pistas por tema (IF, FOR, WHILE, CASE) para fijar un concepto concreto sin candados; entra directo y entrena lo que te falte. |
 | ᛊ **Diseño vivo** | Sistema de diseño propio con tokens, 24 runas del Futhark y guía `/styleguide` en la propia app. |
 
 <p align="center">
@@ -49,11 +51,12 @@ Requisitos: Docker + Compose v2 (Linux, macOS o WSL2).
 ```bash
 git clone https://github.com/D1se0/bash-forge.git
 cd bash-forge
-./bashforge install   # construye las imágenes
-./bashforge up        # levanta y abre http://localhost:8080
+./bashforge dev       # construye las imágenes, levanta el stack y espera la salud del sandbox
+# → http://localhost:8080
 ```
 
-> `./bashforge --help` lista todo: `status`, `logs`, `shell`, `backup`, `purge`… y `purge --yes` deja tu sistema sin rastro del proyecto.
+> `./bashforge help` lista todo: `down`, `status`, `list`, `verify`, `lessons`, `check`, `purge`… y `purge s` (o `--yes`) deja tu sistema sin rastro del proyecto.
+> Para tener el CLI en el PATH: `ln -sf "$(pwd)/bin/bashforge" ~/.local/bin/bashforge` (si lo COPIAS en vez de enlazar, exporta `BASHFORGE_HOME` con la ruta del repo).
 
 <details>
 <summary>ᛁ Arquitectura (clic para desplegar)</summary>
