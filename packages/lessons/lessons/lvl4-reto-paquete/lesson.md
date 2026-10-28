@@ -15,7 +15,7 @@ Crea `instalador.sh` que:
 
 ## Errores típicos
 
-- [object Object]
+- Sobrescribir el fichero cada vez: no es idempotente (cambias mtime).
 - Usar mkdir sin -p y morir al corromper segundo.
 
 ## Mini-quiz

@@ -12,7 +12,7 @@ Crea `explora.sh` que reciba una carpeta e imprima los ficheros `.txt` dentro de
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar -maxdepth 1: find baja recursivo por defecto, te devuelve CUALQUIER cosa en subcarpetas.
 
 ---
 

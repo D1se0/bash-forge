@@ -8,4 +8,4 @@ Segunda pista
 ---
 Tercera pista
 
-[object Object]
+Verifica con `cat saludo.txt`: debe imprimir exactamente la frase.

@@ -1,0 +1,26 @@
+id: pra-if-doble
+title: "IF: dos condiciones a la vez (&& y -a)"
+level: 9
+kind: lesson
+xp: 12
+track: IF
+estimated_minutes: 5
+prerequisites: []
+tags:
+  - if
+  - tests
+objective: Combinar-tests en un único if con && y !.
+files_to_create:
+  - acceso.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: ok
+      message: /bin/ls es ejecutable y legible → 'ok'
+      cmd: bash acceso.sh /bin/ls
+      expectOutput: ^ok$
+    - name: no-ok
+      message: /etc/hostname es legible pero no ejecutable → 'no ok'
+      cmd: bash acceso.sh /etc/hostname
+      expectOutput: ^no ok$

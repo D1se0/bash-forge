@@ -42,6 +42,7 @@ export class LessonStore {
           title: metaRaw.title ?? entry,
           level: metaRaw.level ?? 0,
           kind: metaRaw.kind ?? "lesson",
+          track: metaRaw.track,
           xp: metaRaw.xp ?? 10,
           estimatedMinutes: metaRaw.estimatedMinutes ?? 10,
           prerequisites: metaRaw.prerequisites ?? [], // se usa en cliente; aqui canonizamos
@@ -68,6 +69,7 @@ export class LessonStore {
       title: l.title,
       level: l.level,
       kind: l.kind,
+      track: l.track,
       xp: l.xp,
       estimatedMinutes: l.estimatedMinutes,
       prerequisites: l.prerequisites,

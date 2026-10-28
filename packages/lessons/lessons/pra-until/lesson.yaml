@@ -1,0 +1,26 @@
+id: pra-until
+title: "UNTIL: repetir hasta que pase algo"
+level: 9
+kind: lesson
+xp: 12
+track: WHILE
+estimated_minutes: 6
+prerequisites: []
+tags:
+  - until
+  - aritmetica
+objective: until como contrario de while (repite hasta acertar).
+files_to_create:
+  - adivina.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: intentos
+      message: imprime 'intento 1' y 'intento 2'
+      cmd: bash adivina.sh
+      expectOutput: ^intento 1\nintento 2$
+    - name: acierto
+      message: imprime 'acertado en 3' al final
+      cmd: bash adivina.sh
+      expectOutput: acertado en 3$

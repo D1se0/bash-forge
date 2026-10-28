@@ -35,8 +35,8 @@ de ronda (1, 2, 3…). Órdenes desconocidas: `ronda N: ???`.
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Seguir procesando tras «parar»: falta break (o es exit, que mata todo).
+- Contar la ronda solo en las conocidas: si N es CORRECTO también con desconocidas, no está subiendo.
 
 ## Mini-quiz
 

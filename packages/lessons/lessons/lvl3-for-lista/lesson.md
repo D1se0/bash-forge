@@ -29,7 +29,7 @@ Crea `listado.sh` que reciba 3 argumentos e imprima por cada uno `piezas N: <arg
 ## Errores típicos
 
 - Usar `{{` llaves de otros lenguajes; en Bash el bloque son `done`…
-- [object Object]
+- Iterar `$@` sin comillas: los espacios dentro de los args rompen la lista.
 
 ## Mini-quiz
 

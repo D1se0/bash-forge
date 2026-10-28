@@ -15,7 +15,7 @@ Se creó `entrada.csv` de formato nombre,puntos. Crea `procesa.sh <cmd>` con:
 
 ## Errores típicos
 
-- [object Object]
+- Cargar todo el fichero a un array con $(cat ...) pierde las líneas: usa mapfile o while read.
 
 ---
 

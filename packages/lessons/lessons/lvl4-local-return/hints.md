@@ -8,4 +8,4 @@ Archivo: `total=$(cuenta "$1"); echo "total: $total"`. Capturas POR STDOUT.
 ---
 Tercera pista
 
-[object Object]
+Ojo: seq está disponible en coreutils.

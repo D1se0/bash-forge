@@ -1,0 +1,34 @@
+id: pra-case-glob
+title: "CASE: patrones con comodines"
+level: 9
+kind: lesson
+xp: 12
+track: CASE
+estimated_minutes: 6
+prerequisites: []
+tags:
+  - case
+  - glob
+objective: case con *.ext, rangos y alternancias de patrones.
+files_to_create:
+  - extension.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: sh
+      message: script.sh → 'guion'
+      cmd: bash extension.sh script.sh
+      expectOutput: ^guion$
+    - name: txt
+      message: notas.txt → 'texto'
+      cmd: bash extension.sh notas.txt
+      expectOutput: ^texto$
+    - name: png
+      message: foto.png → 'imagen'
+      cmd: bash extension.sh foto.png
+      expectOutput: ^imagen$
+    - name: otro
+      message: datos.csv → 'otro'
+      cmd: bash extension.sh datos.csv
+      expectOutput: ^otro$

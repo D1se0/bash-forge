@@ -36,8 +36,8 @@ adelante) y termina. Comprueba con N=6.
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- break solo corta el bucle INTERIOR: el exterior seguiría con d4, d5…
+- Imprimir con espacios raros entre dN y x: el check pega `dN x hM` literal.
 
 ## Mini-quiz
 

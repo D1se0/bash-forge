@@ -1,11 +1,11 @@
 Primera pista
 
-[object Object]
+Tareas.txt: tres líneas con los textos exactos.
 ---
 Segunda pista
 
-[object Object]
+motor.sh: el while IFS= read -r que ya dominas.
 ---
 Tercera pista
 
-[object Object]
+Antes de cada línea: comprueba si empieza por

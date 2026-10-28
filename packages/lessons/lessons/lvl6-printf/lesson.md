@@ -12,8 +12,8 @@ Crea `formato.sh` que reciba $1 e imprima `x=` con separadores: `printf "%-6s]\n
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Olvidar saltos de línea \n: printf NO los agrega solos como echo.
+- Usar %d con cadenas: no, eso es para números.
 
 ---
 

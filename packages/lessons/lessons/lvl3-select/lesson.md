@@ -26,8 +26,8 @@ El check envía `4\n` (opta por salir: menú visible y exit limpio por break) y 
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Sin `PS3`: el prompt por defecto es deliberado tipo `?#)`, algo enredado para testear.
+- No salir: sin `salir`, el while del select puede empeñar en bucle.
 
 ## Mini-quiz
 

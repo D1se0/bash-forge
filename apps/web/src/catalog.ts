@@ -33,6 +33,63 @@ export function groupByLevel(lessons: LessonMeta[]): LevelGroup[] {
   }));
 }
 
+/** ------------------------------------------------------------------ */
+/** Práctica dirigida: pista paralela al camino (IF, FOR, WHILE, CASE). */
+/** ------------------------------------------------------------------ */
+
+export interface TrackGroup {
+  track: string;
+  title: string;
+  lessons: LessonMeta[];
+}
+
+export interface SplitCatalog {
+  /** Lecciones del camino L0→L9 (sin práctica). */
+  path: LessonMeta[];
+  /** Lecciones con `track`, fuera del camino. */
+  practice: LessonMeta[];
+}
+
+/** Separa el catálogo entre camino principal y práctica dirigida. */
+export function splitPractice(lessons: LessonMeta[]): SplitCatalog {
+  const path: LessonMeta[] = [];
+  const practice: LessonMeta[] = [];
+  for (const l of lessons) {
+    if (l.track) practice.push(l);
+    else path.push(l);
+  }
+  return { path, practice };
+}
+
+/** Los temas de la pista de práctica, con su etiqueta visible. */
+export const TRACKS: { id: string; title: string }[] = [
+  { id: "IF", title: "Condicionales if" },
+  { id: "FOR", title: "Bucles for" },
+  { id: "WHILE", title: "while y until" },
+  { id: "CASE", title: "case y menús" },
+];
+
+/** Agrupa las lecciones de práctica por su tema (IF, FOR, …), en el orden de TRACKS. */
+export function groupByTrack(practice: LessonMeta[]): TrackGroup[] {
+  const byTrack = new Map<string, LessonMeta[]>();
+  for (const l of practice) {
+    const t = l.track as string;
+    const arr = byTrack.get(t) ?? [];
+    arr.push(l);
+    byTrack.set(t, arr);
+  }
+  // los temas definidos en TRACKS primero; cualquier pista futura detrás
+  const known = TRACKS.filter((t) => byTrack.has(t.id));
+  const unknown = [...byTrack.keys()].filter((t) => !TRACKS.some((i) => i.id === t));
+  return [...known.map((t) => t.id), ...unknown].map((track) => ({
+    track,
+    title: TRACKS.find((t) => t.id === track)?.title ?? track,
+    lessons: (byTrack.get(track) ?? []).sort(
+      (a, b) => pedagogyPos(a) - pedagogyPos(b) || a.id.localeCompare(b.id),
+    ),
+  }));
+}
+
 /**
  * Nivel mínimo desbloqueado: la forja se avanza nivel a nivel. Un nivel está
  * desbloqueado si todos los del anterior están completados (el 0 siempre).

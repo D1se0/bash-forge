@@ -12,7 +12,7 @@ Crea `lista.sh` que declare un array con 3 frutas y recorra imprimiendo `fruta: 
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar comillas en "${arr[@]}": las palabras múltiples se rompen por espacio.
 - Usar corchetes vacíos creyendo que es como el último índice: en bash moderno es ${arr[@]: -1}.
 
 ---

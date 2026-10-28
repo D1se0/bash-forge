@@ -12,7 +12,7 @@ Crea `estricto.sh` que arranque con set -euo pipefail, declare `x=1`, imprima `o
 
 ## Errores típicos
 
-- [object Object]
+- Con set -u cualquier var sin declarar MATA el script: usa ${VAR:-pordefecto} para defecto.
 
 ---
 

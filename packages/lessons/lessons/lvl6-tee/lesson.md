@@ -12,7 +12,7 @@ Crea `guarda.sh` que imprima `hola tee` y lo deje además en demo.txt.
 
 ## Errores típicos
 
-- [object Object]
+- Confundir | con ;: este sí que pasa por la tubería, este no.
 
 ---
 

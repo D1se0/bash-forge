@@ -12,7 +12,7 @@ Se creó `datos.csv` con formato nombre,edad,ciudad. Crea `columna.sh` que impri
 
 ## Errores típicos
 
-- [object Object]
+- Confundir -d con el delimitador por defecto (tabulación): SIEMPRE especifíca -d en CSVs.
 
 ---
 

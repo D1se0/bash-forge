@@ -12,8 +12,8 @@ Se creó `stock.csv` con formato articulo,cantidad. Crea `inventario.sh` que rec
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Olvidar -d',' en cut: te va a separar por tab por defecto.
+- No quitar las cabeceras (headlines): chequear que el CSV tiene cabecera y filtrarla.
 
 ---
 

@@ -15,7 +15,7 @@ Crea `rename.sh <dir> <buscar> <cambiar>` que:
 
 ## Errores típicos
 
-- [object Object]
+- No coger las rutas con espacios: for sobre *"$(find ...)"* los rompe.
 
 ---
 

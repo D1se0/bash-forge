@@ -12,7 +12,7 @@ Crea `atrapa.sh` que registre un trap EXIT que imprima `limpieza al final`.
 
 ## Errores típicos
 
-- [object Object]
+- Pon todas las Señales con el mismo trap y ver como el Ctrl+C se queda colado: usa si es necesario SEÑAL por SEÑAL.
 
 ---
 

@@ -7,6 +7,9 @@
  * 5. bloque «Cómo se valida: por la SALIDA» visible en el panel + workspace por nivel
  * 6. lateral plegable: plegar y desplegar el árbol de niveles
  * 7. export/import de progreso: botones y descarga JSON
+ * 8. modo avanzado: desbloquear todo, abrir L9, volver a bloquear
+ * 9. práctica dirigida: sección IF/FOR/WHILE/CASE sin candados + workdir propio
+ * 10. resolver una práctica en vivo: check en su workdir + XP reclamado
  * Captura evidencia a docs/evidence/06-redesign/.
  */
 import pw from "/usr/share/nodejs/playwright/index.js";
@@ -180,6 +183,66 @@ await a.waitForTimeout(400);
 const lockedFinal = await a.locator(".lesson-link.locked[disabled]").count();
 console.log(`re-lock: locked=${lockedFinal} (antes=${lockedAntes})`);
 if (lockedFinal !== lockedAntes) process.exitCode = 1;
+
+// 9. práctica dirigida: sección propia bajo los niveles, sin candados y con workdir propio
+const praTitle = await a.locator(".practice-title").count();
+const trackGroups = await a.locator(".track-group").count();
+const praLocked = await a.locator(".track-group .lesson-link.locked[disabled]").count();
+console.log(`practica: titulo=${praTitle} tracks=${trackGroups} candados=${praLocked}`);
+if (!praTitle || trackGroups < 4 || praLocked !== 0) process.exitCode = 1;
+// abrir la primera de IF: el workdir de la terminal es forja/practica/if
+await a.locator(".track-group .lvl-badge", { hasText: "IF" }).click();
+await a.waitForTimeout(400);
+await a.locator(".track-group[open] .lesson-link").first().click();
+await a.waitForTimeout(900);
+const praPanel = await a.locator(".lesson-panel h1, .lesson-pane h1, main h1").first().textContent().catch(() => "");
+console.log(`practica-lesson=${praPanel ? praPanel.trim().slice(0, 40) : "no-hallada"}`);
+if (!praPanel || !/if/i.test(praPanel)) process.exitCode = 1;
+await a.locator(".term-pane").first().click();
+await a.waitForTimeout(400);
+await a.keyboard.type("pwd", { delay: 6 });
+await a.keyboard.press("Enter");
+await a.waitForTimeout(600);
+const rowsPra = await a.locator(".xterm-rows").first().textContent().catch(() => "");
+const autoCdPra = rowsPra.includes("forja/practica/");
+console.log(`practica-cd=${rowsPra ? autoCdPra : "no-leible"}`);
+if (rowsPra && !autoCdPra) process.exitCode = 1;
+await a.screenshot({ path: `${out}/app__practica-dirigida__1440x900__dark.png` });
+
+// 10. resolver una práctica de punta a punta: pra-if-fichero → check en su workdir → XP
+await a.locator(".track-group[open] .lesson-link", { hasText: "¿existe el fichero?" }).first().click();
+await a.waitForTimeout(900);
+await a.locator(".term-pane").first().click();
+await a.waitForTimeout(400);
+await a.keyboard.type("cat > checa.sh <<'EOF'", { delay: 6 });
+await a.keyboard.press("Enter");
+for (const line of ["#!/usr/bin/env bash", 'if [ -f "$1" ]; then', "  echo existe", "else", "  echo 'no existe'", "fi"]) {
+  await a.keyboard.type(line, { delay: 3 });
+  await a.keyboard.press("Enter");
+}
+await a.keyboard.type("EOF", { delay: 6 });
+await a.keyboard.press("Enter");
+await a.waitForTimeout(300);
+const xpAntes = await a.locator(".xp-value").textContent();
+await a.locator(".lesson-actions button.primary").click();
+await a.waitForSelector(".check-report", { timeout: 20000 });
+const checkOk = await a.locator(".check-report.pass").count();
+console.log(`practica-check: pass=${checkOk}`);
+if (!checkOk) {
+  const ko = await a.locator(".check-report .ko-detail").allTextContents();
+  console.log("fallos:", JSON.stringify(ko.slice(0, 3)));
+  process.exitCode = 1;
+}
+const claim = a.locator(".check-report button.primary", { hasText: "Reclamar" });
+await a.waitForTimeout(300);
+const xpCheck = await a.locator(".xp-value").textContent();
+await claim.click();
+await a.waitForTimeout(700);
+const xpDespues = await a.locator(".xp-value").textContent();
+const praDone = await a.locator(".track-group .lesson-link.done").count();
+console.log(`practica-xp: ${xpAntes} -> (check ${xpCheck}) -> ${xpDespues} · done=${praDone}`);
+if (praDone < 1) process.exitCode = 1;
+await a.screenshot({ path: `${out}/app__practica-check__1440x900__dark.png` });
 
 await b.close();
 console.log("OK");

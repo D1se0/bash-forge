@@ -213,6 +213,23 @@ button.ghost:hover:not(:disabled) { background: var(--bg-surface); }
 .kind-chip.boss { color: var(--aurora-r-text); }
 .kind-icon { flex: none; font-size: 13px; }
 
+/* ---------------- práctica dirigida (IF, FOR, WHILE, CASE) ---------------- */
+.practice-title { padding-top: 14px; border-top: 1px solid var(--border-soft); margin-top: 6px; }
+.practice-hint {
+  padding: 0 16px 6px; font-size: 10.5px; color: var(--fg-faint);
+  font-family: var(--font-mono); letter-spacing: .2px;
+}
+.track-badge {
+  min-width: 44px; font-size: 10px;
+  background: var(--ice-4); color: var(--fg-strong);
+}
+.track-group summary { font-weight: 650; }
+.level-group.track-group[open] .track-badge { box-shadow: var(--glow-ice); }
+.step-dot.free {
+  border-style: dashed;
+  background: var(--bg-surface); color: var(--fg-muted);
+}
+
 /* ---------------- centro: pestañas + terminal ---------------- */
 .center { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-left: 1px solid var(--border-soft); border-right: 1px solid var(--border-soft); background: var(--bg-abyss); }
 .tabs {

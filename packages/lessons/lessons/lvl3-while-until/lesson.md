@@ -25,7 +25,7 @@ Crea `cuenta.sh` con while que cuente desde 3 a 1 (imprima `3`, `2`, `1`) y al f
 
 ## Errores típicos
 
-- [object Object]
+- Bucle for que NUNCA cambia la condición: la CPU lo agradece… mal.
 - ((n--)) como comando suelto: cuando n llega a 0 el exit code es ≠0 (y un set -e moriría, más a nivel 7).
 
 ## Mini-quiz

@@ -1,0 +1,30 @@
+id: pra-if-fichero
+title: "IF: ¿existe el fichero?"
+level: 9
+kind: lesson
+xp: 12
+track: IF
+estimated_minutes: 5
+prerequisites: []
+tags:
+  - if
+  - tests
+objective: Escribir un `if` con `[ -f ]` y su rama `else`.
+files_to_create:
+  - checa.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: existe
+      message: con /etc/hostname imprime 'existe'
+      cmd: bash checa.sh /etc/hostname
+      expectOutput: ^existe$
+    - name: no-existe
+      message: con una ruta inexistente imprime 'no existe'
+      cmd: bash checa.sh /no/existe
+      expectOutput: ^no existe$
+    - name: directorio-no-es-fichero
+      message: "'/tmp' es directorio, no fichero regular → 'no existe'"
+      cmd: bash checa.sh /tmp
+      expectOutput: ^no existe$

@@ -12,7 +12,7 @@ Crea `menor.sh` con $1 y $2 (enteros): imprime `menor: N` con el menor. Si son i
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar el caso igual: compara sólo < y > y te quedas sin else.
 - Usar cadenas con <... ¡sin comillas dentro de [[ ]] funciona pero -lt NO!
 
 ## Mini-quiz

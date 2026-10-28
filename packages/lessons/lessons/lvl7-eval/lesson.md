@@ -12,7 +12,7 @@ Crea `señal.sh` que construya el texto `echo ejecutado por eval` y luego lo eje
 
 ## Errores típicos
 
-- [object Object]
+- eval con input del usuario: el código puede inyectar lo que sea. Solo usa eval sobre texto de confianza.
 
 ---
 

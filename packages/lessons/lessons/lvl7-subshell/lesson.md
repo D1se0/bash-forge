@@ -12,7 +12,7 @@ Crea `ambito.sh` que ponga `x=interior` dentro de un `( )` y despues muestre `$x
 
 ## Errores típicos
 
-- [object Object]
+- Usar ( ) pensando que es como {}: cambia vreta al shell exterior.
 
 ---
 

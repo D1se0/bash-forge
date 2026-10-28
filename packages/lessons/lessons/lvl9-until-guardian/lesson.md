@@ -30,7 +30,7 @@ imprime ninguna caja y sale 0.
 
 ## Errores típicos
 
-- [object Object]
+- Confundir la condición: en until el bucle corre mientras la condición es FALSA.
 - `((n++))` con set -e: cuando n era 0 antes de incrementar, exit 1 mata el script.
 
 ## Mini-quiz

@@ -1,0 +1,22 @@
+id: pra-for-aritmetico
+title: "FOR estilo C: for ((i=0; i<N; i++))"
+level: 9
+kind: lesson
+xp: 12
+track: FOR
+estimated_minutes: 6
+prerequisites: []
+tags:
+  - for
+  - aritmetica
+objective: Contar iteraciones fijas con for (( )).
+files_to_create:
+  - tabla.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: vueltas
+      message: imprime tabla-note 1, 2 y 3
+      cmd: bash tabla.sh
+      expectOutput: ^tabla-note 1\ntabla-note 2\ntabla-note 3$

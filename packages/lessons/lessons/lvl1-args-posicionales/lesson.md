@@ -22,7 +22,7 @@ Crea `params.sh` que diga `Recibidas N piezas` ($#) e imprima `Pieza 1 → <valo
 ## Errores típicos
 
 - Usar `$10` para el décimo: Bash lo lee como `$1` concatenado con "0".
-- [object Object]
+- Generar el último arg con `$$#`: inventado y roto.
 
 ## Mini-quiz
 

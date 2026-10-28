@@ -33,7 +33,7 @@ con cualquier `numeros.txt` similar.
 ## Errores típicos
 
 - `cat numeros.txt | while …` total=0 después: la pipe crea subshell y borra el total.
-- [object Object]
+- Sumar con `$n` sin validar: si el fichero trae líneas vacías, $(( )) rompe o traga basura.
 
 ## Mini-quiz
 

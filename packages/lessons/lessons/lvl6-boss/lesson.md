@@ -14,7 +14,7 @@ Se creó `log.txt` con líneas del tipo `nivel: mensaje`. Crea `inspector.sh <ni
 
 ## Errores típicos
 
-- [object Object]
+- El nivel con espacios a su alrededor: usa grep -E para el patrón exacto.
 
 ---
 

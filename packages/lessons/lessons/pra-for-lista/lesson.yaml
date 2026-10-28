@@ -1,0 +1,25 @@
+id: pra-for-lista
+title: "FOR: recorrer una lista"
+level: 9
+kind: lesson
+xp: 12
+track: FOR
+estimated_minutes: 5
+prerequisites: []
+tags:
+  - for
+objective: Recorrer una lista literal con comillas intactas.
+files_to_create:
+  - saluda.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: saludos
+      message: imprime 'hola ana', 'hola bel' y 'hola chucho'
+      cmd: bash saluda.sh
+      expectOutput: ^hola ana\nhola bel\nhola chucho$
+    - name: contador
+      message: "imprime 'saludos: 3' al final"
+      cmd: bash saluda.sh
+      expectOutput: "saludos: 3$"

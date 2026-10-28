@@ -12,7 +12,7 @@ Crea `recorrido.sh` que reciba un número N y encadene N líneas `paso i` para i
 
 ## Errores típicos
 
-- [object Object]
+- Usar for i in $(seq 1 N) si N NO llega, o está vacío: explota. Comprueba antes.
 - Olvidar el ; después de la lista: `for i in $(seq 1 10) do` NO compila.
 
 ---

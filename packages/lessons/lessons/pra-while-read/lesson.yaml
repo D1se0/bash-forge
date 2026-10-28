@@ -1,0 +1,26 @@
+id: pra-while-read
+title: "WHILE: leer un fichero línea a línea"
+level: 9
+kind: lesson
+xp: 12
+track: WHILE
+estimated_minutes: 6
+prerequisites: []
+tags:
+  - while
+  - read
+objective: while IFS= read -r con contador de líneas.
+files_to_create:
+  - cuenta-lineas.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: fichero
+      message: notas.txt existe con 3 líneas
+      cmd: bash cuenta-lineas.sh notas.txt
+      expectOutput: "^líneas: 3$"
+    - name: cuenta
+      message: "imprime 'líneas: 3'"
+      cmd: bash cuenta-lineas.sh notas.txt
+      expectOutput: "^líneas: 3$"

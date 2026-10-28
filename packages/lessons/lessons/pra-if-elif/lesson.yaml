@@ -1,0 +1,34 @@
+id: pra-if-elif
+title: "IF: cadena if / elif / else"
+level: 9
+kind: lesson
+xp: 12
+track: IF
+estimated_minutes: 6
+prerequisites: []
+tags:
+  - if
+  - aritmetica
+objective: Encadenar condiciones con elif y cubrir todos los rangos.
+files_to_create:
+  - rango.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: bajo
+      message: con 5 imprime 'bajo'
+      cmd: bash rango.sh 5
+      expectOutput: ^bajo$
+    - name: frontera-10
+      message: con 10 imprime 'medio' (el límite inferior cae aquí)
+      cmd: bash rango.sh 10
+      expectOutput: ^medio$
+    - name: frontera-100
+      message: con 100 imprime 'alto'
+      cmd: bash rango.sh 100
+      expectOutput: ^alto$
+    - name: alto
+      message: con 999 imprime 'alto'
+      cmd: bash rango.sh 999
+      expectOutput: ^alto$

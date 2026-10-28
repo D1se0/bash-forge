@@ -4,8 +4,8 @@ import { ForgeWs, fetchLesson, fetchLessonList } from "./wsClient";
 import { dispatchOutput, TermPane } from "./Terminal";
 import { LessonPanel, Sidebar, flatOrder } from "./panels";
 import { Cheatsheet } from "./cheatsheet-popup";
-import type { LevelGroup } from "./catalog";
-import { groupByLevel, isLevelLocked, unlockedLevel } from "./catalog";
+import type { LevelGroup, TrackGroup } from "./catalog";
+import { groupByLevel, groupByTrack, isLevelLocked, splitPractice, unlockedLevel } from "./catalog";
 import { isUnlockAll } from "./store";
 import { currentTheme, toggleTheme } from "./theme";
 import {
@@ -66,8 +66,8 @@ export function App() {
   };
 
   const ws = wsRef.current;
-  // workspace por nivel: al abrir una lección la terminal salta a $HOME/forja/nivel-N
-  const cdLevelRef = useRef<number | null>(null);
+  // workspace por pista: nivel → $HOME/forja/nivel-N, práctica → $HOME/forja/practica/<tema>
+  const cdLevelRef = useRef<string | null>(null);
   const pendingCdRef = useRef<string | null>(null);
 
   /** --------- modo foco: salir con Ctrl+Alt+F y desde el botón flotante --------- */
@@ -215,10 +215,12 @@ export function App() {
   const selectLesson = useCallback(
     async (id: string) => {
       // candado por nivel: no se puede abrir una lección de un nivel bloqueado
-      // (el modo avanzado «Desbloquear todo» lo ignora)
+      // (el modo avanzado «Desbloquear todo» lo ignora, y la práctica dirigida
+      // no lleva candados: puedes entrar a cualquier tema directamente)
       const completed = progressRef.current?.completed ?? [];
-      const lvl = catalog.find((m) => m.id === id)?.level ?? loaded.get(id)?.level;
-      if (!isUnlockAll() && lvl != null && isLevelLocked(lvl, unlockedLevel(completed, groupsRef.current))) {
+      const meta = catalog.find((m) => m.id === id);
+      const lvl = meta?.level ?? loaded.get(id)?.level;
+      if (!isUnlockAll() && !meta?.track && lvl != null && isLevelLocked(lvl, unlockedLevel(completed, groupsRef.current))) {
         flash(`🔒 Ese nivel sigue sellado: termina todas las lecciones del nivel ${lvl - 1} y se desbloqueará solo.`);
         return;
       }
@@ -233,11 +235,14 @@ export function App() {
         } catch {
           /* modo privado */
         }
-        // workspace por nivel: el shell salta a $HOME/forja/nivel-N al CAMBIAR de nivel;
-        // el servidor ejecuta setup/check en ese mismo workspace, así todo queda en la carpeta del nivel
-        if (typeof full.level === "number" && cdLevelRef.current !== full.level) {
-          cdLevelRef.current = full.level;
-          const cmd = `mkdir -p "$HOME/forja/nivel-${full.level}" && cd "$HOME/forja/nivel-${full.level}"\n`;
+        // workspace por pista: el shell salta a su carpeta al CAMBIAR de pista;
+        // el servidor ejecuta setup/check en ese mismo workspace, así todo queda en la carpeta
+        const level = typeof full.level === "number" ? full.level : 0;
+        const track = (full as LessonContent & { track?: string }).track;
+        const workdir = track ? `forja/practica/${track.toLowerCase()}` : `forja/nivel-${level}`;
+        if (cdLevelRef.current !== workdir) {
+          cdLevelRef.current = workdir;
+          const cmd = `mkdir -p "$HOME/${workdir}" && cd "$HOME/${workdir}"\n`;
           const tid = activeTermRef.current;
           if (tid) ws.send({ type: "input", termId: tid, data: cmd });
           else pendingCdRef.current = cmd; // se aplica al crear la terminal nueva
@@ -301,7 +306,10 @@ export function App() {
     const seen = new Set<string>([...loaded.keys(), ...metas.map((m) => m.id)]);
     return [...seen].map((id) => loaded.get(id) ?? metas.find((m) => m.id === id) ?? null).filter(Boolean) as LessonContent[];
   }, [catalog, loaded]);
-  const groups: LevelGroup[] = useMemo(() => groupByLevel(unified), [unified]);
+  // la práctica dirigida vive fuera del camino: no se agrupa en niveles ni cuenta para el %
+  const { path: pathLessons, practice } = useMemo(() => splitPractice(unified), [unified]);
+  const groups: LevelGroup[] = useMemo(() => groupByLevel(pathLessons), [pathLessons]);
+  const practiceGroups: TrackGroup[] = useMemo(() => groupByTrack(practice), [practice]);
   // ref para que el guard de selectLesson vea los grupos sin re-crear el callback
   const groupsRef = useRef<LevelGroup[]>(groups);
   groupsRef.current = groups;
@@ -363,6 +371,7 @@ export function App() {
       <div className="main">
         <Sidebar
           groups={groups}
+          practice={practiceGroups}
           progress={progress ?? { forgeId: "", completed: [], xp: 0, badges: [], lastActiveDate: null, streak: 0, theme: "dark", lang: "es" }}
           current={current}
           onSelect={selectLesson}

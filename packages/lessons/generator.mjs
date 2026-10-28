@@ -35,7 +35,11 @@ function lessonMarkdown(spec) {
   if (spec.example) parts.push(`## Ejemplo guiado\n\n${spec.example.trim()}\n`);
   parts.push(`## Tu reto\n\n${spec.exercise.trim()}\n`);
   if (spec.errors?.length) {
-    parts.push(`## Errores típicos\n\n${spec.errors.map((e) => `- ${e}`).join("\n")}\n`);
+    // un ítem sin comillas con «: » llega del YAML como Mapa {clave: resto}:
+    // lo recuperamos a su texto «clave: resto» (evita el [object Object] en el panel)
+    const asText = (e) =>
+      typeof e === "string" ? e : Object.entries(e).map(([k, v]) => `${k}: ${String(v).trim()}`).join(": ");
+    parts.push(`## Errores típicos\n\n${spec.errors.map((e) => `- ${asText(e)}`).join("\n")}\n`);
   }
   if (spec.quiz) {
     parts.push(
@@ -50,9 +54,12 @@ function lessonMarkdown(spec) {
 }
 
 function hintsMarkdown(hints) {
+  // mismo rescate que en errores: un ítem sin comillas con «: » llega como Mapa
+  const asText = (h) =>
+    typeof h === "string" ? h.trim() : Object.entries(h).map(([k, v]) => `${k}: ${String(v).trim()}`).join(": ");
   const labels = ["Primera pista", "Segunda pista", "Tercera pista"];
   return hints
-    .map((h, i) => `${labels[i] ?? `Pista ${i + 1}`}\n\n${String(h ?? "").trim()}`)
+    .map((h, i) => `${labels[i] ?? `Pista ${i + 1}`}\n\n${asText(h ?? "")}`)
     .join("\n---\n");
 }
 
@@ -84,6 +91,7 @@ function buildLesson(spec) {
     level: spec.level,
     kind: spec.kind ?? "lesson",
     xp: spec.xp ?? 10,
+    ...(spec.track ? { track: spec.track } : {}),
     estimated_minutes: spec.minutes ?? 7,
     prerequisites: spec.prereq ?? [],
     tags: spec.tags ?? [],
@@ -114,6 +122,9 @@ function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const levelFiles = fs.readdirSync(LEVELS_DIR).filter((f) => f.endsWith(".yaml")).sort();
+  // el pack de práctica va también en levels/ pero no es un nivel: el web lo separa por track
+  const practiceFile = levelFiles.indexOf("practice.yaml");
+  if (practiceFile >= 0) levelFiles.splice(practiceFile, 1);
   const byLevel = new Map(); // level → []
   for (const file of levelFiles) {
     const doc = yamlParse(fs.readFileSync(path.join(LEVELS_DIR, file), "utf8"));
@@ -143,6 +154,16 @@ function main() {
     if (!ids.has(pr)) throw new Error(`Prerequisito inexistente ${pr} (en ${p.id})`);
   }
 
+  // pista de práctica dirigida: compilar al margen, sin prereqs automáticos,
+  // fuera del manifest (sólo el camino L0→L9 lo alimenta)
+  const practiceDoc = yamlParse(fs.readFileSync(path.join(LEVELS_DIR, "practice.yaml"), "utf8"));
+  const practiceIds = new Set();
+  for (const spec of practiceDoc.lessons ?? []) {
+    if (!spec.track) throw new Error(`Lección de práctica sin track: ${spec.id}`);
+    buildLesson(spec);
+    practiceIds.add(spec.id);
+  }
+
   fs.writeFileSync(
     path.join(__dirname, "manifest.json"),
     JSON.stringify(
@@ -153,6 +174,7 @@ function main() {
           lesson: log.filter((l) => l.kind === "lesson").length,
           challenge: log.filter((l) => l.kind === "challenge").length,
           boss: log.filter((l) => l.kind === "boss").length,
+          practice: practiceIds.size,
         },
         lessons: log,
       },
@@ -161,7 +183,7 @@ function main() {
     ),
   );
   const counts = log.reduce((acc, l) => ((acc[l.kind] = (acc[l.kind] ?? 0) + 1), acc), {});
-  console.log(`✔ ${log.length} lecciones generadas:`, counts);
+  console.log(`✔ ${log.length} lecciones del camino + ${practiceIds.size} de práctica generadas:`, counts);
 }
 
 main();

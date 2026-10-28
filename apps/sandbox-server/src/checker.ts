@@ -20,6 +20,13 @@ export function levelWorkdir(level: number | undefined): string {
   return `forja/nivel-${level ?? 0}`;
 }
 
+/** Workdir de una lección: la práctica dirigida vive en su propia pista. */
+export function lessonWorkdir(lesson: LessonContent): string {
+  const track = (lesson as LessonContent & { track?: string }).track;
+  if (track) return `forja/practica/${track.toLowerCase()}`;
+  return levelWorkdir(lesson.level);
+}
+
 export interface CheckRunResult {
   pass: boolean;
   checks: CheckDetail[];
@@ -71,7 +78,7 @@ export class LessonChecker {
   runSetup(lesson: LessonContent, user: string): { passed: boolean; stderr: string } {
     const raw = this.store.readRaw(lesson.id, "setup.sh");
     if (!raw) return { passed: true, stderr: "" };
-    const out = runAsUser(this.wrapCd(raw, user, levelWorkdir(lesson.level)), user, Math.min(this.timeoutMs, 60_000));
+    const out = runAsUser(this.wrapCd(raw, user, lessonWorkdir(lesson)), user, Math.min(this.timeoutMs, 60_000));
     return { passed: out.exit === 0, stderr: out.stderr };
   }
 
@@ -98,7 +105,7 @@ export class LessonChecker {
           ],
         };
       }
-      const out = runAsUser(this.wrapCd(script, user, levelWorkdir(lesson.level)), user, this.timeoutMs);
+      const out = runAsUser(this.wrapCd(script, user, lessonWorkdir(lesson)), user, this.timeoutMs);
       const pass = out.exit === 0;
       return {
         pass,
@@ -122,7 +129,7 @@ export class LessonChecker {
     let pass = true;
     for (const task of validation.tasks) {
       if (task.seed) this.seedTask(lesson, user, task.seed);
-      const r = this.assertTask(user, task, levelWorkdir(lesson.level));
+      const r = this.assertTask(user, task, lessonWorkdir(lesson));
       checks.push(r.detail);
       if (!r.pass) pass = false;
     }
@@ -132,7 +139,7 @@ export class LessonChecker {
   private seedTask(lesson: LessonContent, user: string, seed: string): void {
     const raw = this.store.readRaw(lesson.id, `seeds/${seed}`);
     if (!raw) return;
-    runAsUser(this.wrapCd(raw, user, levelWorkdir(lesson.level)), user, Math.min(this.timeoutMs, 30_000));
+    runAsUser(this.wrapCd(raw, user, lessonWorkdir(lesson)), user, Math.min(this.timeoutMs, 30_000));
   }
 
   confirmUserCanRead(home: string, file: string): boolean {

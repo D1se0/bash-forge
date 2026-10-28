@@ -22,7 +22,7 @@ Y crea `motor.sh` que las lea línea a línea, saltando cualquier línea que emp
 ## Errores típicos
 
 - Ignorar el fichero de datos: la prueba requiere el while-read con archivo.
-- [object Object]
+- Reemplazar while-read con for sobre contenido: los espacios part File estarían rompiendo líneas."
 
 ---
 

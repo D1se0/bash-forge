@@ -1,0 +1,26 @@
+id: pra-while-contador
+title: "WHILE: bucle con condición"
+level: 9
+kind: lesson
+xp: 12
+track: WHILE
+estimated_minutes: 5
+prerequisites: []
+tags:
+  - while
+  - aritmetica
+objective: while con condición aritmética y actualización manual.
+files_to_create:
+  - cuenta-atras.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: atras
+      message: imprime t-3, t-2 y t-1
+      cmd: bash cuenta-atras.sh
+      expectOutput: ^t-3\nt-2\nt-1$
+    - name: lanzar
+      message: imprime 'lanzar' al final
+      cmd: bash cuenta-atras.sh
+      expectOutput: lanzar$

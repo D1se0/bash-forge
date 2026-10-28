@@ -27,7 +27,7 @@ Crea `selectivo.sh` que recibe 4+ args e imprime cada uno, pero saltando todos l
 ## Errores típicos
 
 - `continue` fuera de un bucle: warning y las tortugas no avanzan.
-- [object Object]
+- Confundir `break` con `exit`: BREAK solo corta el bucle; exit cierra el script entero.
 
 ## Mini-quiz
 

@@ -68,6 +68,11 @@ export interface LessonMeta {
   tags: string[];
   /** Objetivo en una frase, mostrado en el panel y la web de docs. */
   objective: string;
+  /**
+   * Pista de práctica dirigida ("if", "for", …): las lecciones con track viven
+   * FUERA del camino L0→L9, en la sección «Práctica dirigida» del lateral.
+   */
+  track?: string;
   /** Ficheros que el setup propone crear (no obligatorio, orientativo). */
   files_to_create?: string[];
   validation: ValidationSpec;

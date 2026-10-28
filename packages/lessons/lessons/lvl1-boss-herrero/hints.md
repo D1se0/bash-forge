@@ -1,6 +1,6 @@
 Primera pista
 
-[object Object]
+Tres caminos: $1 si existe, ROTULO si existe, defecto.
 ---
 Segunda pista
 

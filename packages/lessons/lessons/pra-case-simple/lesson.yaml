@@ -1,0 +1,29 @@
+id: pra-case-simple
+title: "CASE: clasificar un valor"
+level: 9
+kind: lesson
+xp: 12
+track: CASE
+estimated_minutes: 5
+prerequisites: []
+tags:
+  - case
+objective: case con patrones exactos y comodín default.
+files_to_create:
+  - clasifica.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: rojo
+      message: con rojo imprime 'caliente'
+      cmd: bash clasifica.sh rojo
+      expectOutput: ^caliente$
+    - name: azul
+      message: con azul imprime 'frío'
+      cmd: bash clasifica.sh azul
+      expectOutput: ^frío$
+    - name: default
+      message: con verde imprime 'desconocido'
+      cmd: bash clasifica.sh verde
+      expectOutput: ^desconocido$

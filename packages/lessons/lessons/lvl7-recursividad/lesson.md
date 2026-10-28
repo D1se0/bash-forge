@@ -12,7 +12,7 @@ Crea `factorial.sh <n>` que imprima el factorial de n con recursión.
 
 ## Errores típicos
 
-- [object Object]
+- No parar el caso base: se cae con too many open files (se come el stack).
 
 ---
 

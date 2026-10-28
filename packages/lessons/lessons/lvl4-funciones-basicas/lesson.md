@@ -32,8 +32,8 @@ Crea `taller.sh` con una función `funde` que imprima `fundiendo A con B` para s
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Llamar la función antes de definirla: Bash la lee de arriba abajo.
+- Usar $1 global esperando que la función lo vea: dentro vale el ARGUMENTO de la llamada.
 
 ## Mini-quiz
 

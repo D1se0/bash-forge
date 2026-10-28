@@ -15,8 +15,8 @@ Crea `cadena.sh` que pida dos argumentos:
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Olvidar las comillas alrededor de las variables: si $a vale varios tokens, test explota.
+- Usar == dentro de [: funciona SOLO en bash, no en sh genérico ni POSIX puro.
 - Escribir [ "$a" = "$b" ] pegado: `[` necesita espacios a ambos lados.
 
 ---

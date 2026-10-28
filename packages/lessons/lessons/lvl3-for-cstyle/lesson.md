@@ -28,7 +28,7 @@ Crea `cuenta3.sh` con for C-style que imprima `time X` para X=0..4 (5 líneas, e
 ## Errores típicos
 
 - For C-style con $i dentro: dentro del (( )) se usan nombres SIN $.
-- [object Object]
+- Olvidar do/done: el for en (( )) también va con `do … done`.
 
 ## Mini-quiz
 

@@ -4,7 +4,7 @@ import type { CheckDetail, LessonContent, LessonMeta, ProgressSnapshot } from "@
 import { BADGES, LESSON_LEVELS } from "@bashforge/shared";
 import type { ForgeWs } from "./wsClient";
 import type { LessonLevel, LessonLevelInfo } from "@bashforge/shared";
-import type { LevelGroup } from "./catalog";
+import type { LevelGroup, TrackGroup } from "./catalog";
 import { isLevelLocked, unlockedLevel } from "./catalog";
 import { isUnlockAll, setUnlockAll } from "./store";
 import { ProgressPopup } from "./progress-popup";
@@ -15,6 +15,8 @@ import { ProgressPopup } from "./progress-popup";
 
 export interface SidebarProps {
   groups: LevelGroup[];
+  /** Pista de práctica dirigida (IF, FOR, WHILE, CASE): sin candados, fuera del camino. */
+  practice: TrackGroup[];
   progress: ProgressSnapshot;
   current: string | null;
   onSelect: (id: string) => void;
@@ -27,7 +29,7 @@ export function flatOrder(groups: LevelGroup[]): LessonMeta[] {
   return groups.flatMap((g) => g.lessons);
 }
 
-export function Sidebar({ groups, progress, current, onSelect, onImport }: SidebarProps) {
+export function Sidebar({ groups, practice, progress, current, onSelect, onImport }: SidebarProps) {
   const route = useMemo(() => flatOrder(groups), [groups]);
   const completed = progress.completed;
   const next = route.find((l) => !completed.includes(l.id)) ?? null;
@@ -71,6 +73,33 @@ export function Sidebar({ groups, progress, current, onSelect, onImport }: Sideb
       else s.delete(level);
       try {
         localStorage.setItem("bf.openLevels", JSON.stringify([...s]));
+      } catch {
+        /* modo privado */
+      }
+      return s;
+    });
+  };
+
+  // pista de práctica dirigida: secciones plegables (persistidas aparte de los niveles)
+  const [openTracks, setOpenTracks] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem("bf.openTracks");
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved) as string[];
+        if (Array.isArray(arr)) return new Set(arr);
+      } catch {
+        /* guarda corrupta: recalcula */
+      }
+    }
+    return new Set();
+  });
+  const toggleTrack = (track: string, open: boolean) => {
+    setOpenTracks((prev) => {
+      const s = new Set(prev);
+      if (open) s.add(track);
+      else s.delete(track);
+      try {
+        localStorage.setItem("bf.openTracks", JSON.stringify([...s]));
       } catch {
         /* modo privado */
       }
@@ -156,6 +185,7 @@ export function Sidebar({ groups, progress, current, onSelect, onImport }: Sideb
               </summary>
               <ul>
                 {g.lessons.map((l, i) => {
+
                   const done = completed.includes(l.id);
                   const isNext = next?.id === l.id;
                   return (
@@ -180,6 +210,55 @@ export function Sidebar({ groups, progress, current, onSelect, onImport }: Sideb
             </details>
           );
         })}      </nav>
+
+      {practice.length > 0 && (
+        <>
+          <div className="tree-title practice-title">Práctica dirigida</div>
+          <div className="practice-hint">entrena un tema concreto, sin candados ni camino</div>
+          <nav className="lesson-tree practice-tree">
+            {practice.map((t) => {
+              const done = t.lessons.filter((l) => completed.includes(l.id)).length;
+              const allDone = done === t.lessons.length;
+              const open = openTracks.has(t.track);
+              return (
+                <details
+                  key={t.track}
+                  className={`level-group track-group${open ? "" : " closed"}`}
+                  open={open}
+                  onToggle={(e) => toggleTrack(t.track, (e.target as HTMLDetailsElement).open)}
+                >
+                  <summary>
+                    <span className="lvl-badge track-badge">{t.track}</span>
+                    <span className="lvl-name">{t.title}</span>
+                    <span className="lvl-progress" data-full={allDone ? "yes" : "no"}>
+                      {done}/{t.lessons.length}
+                    </span>
+                  </summary>
+                  <ul>
+                    {t.lessons.map((l, i) => {
+                      const done = completed.includes(l.id);
+                      return (
+                        <li key={l.id}>
+                          <button
+                            className={`lesson-link${current === l.id ? " current" : ""}${done ? " done" : ""}`}
+                            onClick={() => onSelect(l.id)}
+                            title={l.objective}
+                          >
+                            <span className={`step-dot${done ? "" : " free"}`}>
+                              {done ? "✓" : String(i + 1)}
+                            </span>
+                            <span className="lesson-title">{l.title}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </details>
+              );
+            })}
+          </nav>
+        </>
+      )}
 
       <div className="progress-io">
         <button

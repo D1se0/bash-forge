@@ -12,7 +12,7 @@ Se creó `texto.txt`. Crea `unicas.sh` que imprima el NÚMERO de palabras única
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar -A en declare: sin asociar los índices son siempre los mismos.
 
 ---
 

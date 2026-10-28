@@ -16,7 +16,7 @@ Crea `sello.sh` que:
 ## Errores típicos
 
 - Olvidar el caso sin argumento y entregar vacío.
-- [object Object]
+- Usar $1 sin comprobar si existe: imprime una línea vacía tras el Sello.
 
 ---
 

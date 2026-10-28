@@ -14,7 +14,7 @@ Crea `rango.sh` que pida dos argumentos: min y max, y luego imprima si $1 (terce
 
 ## Errores típicos
 
-- [object Object]
+- Comparar como texto: 10 viene antes que 9. Si importa el ORDEN, usa -lt/-ge.
 
 ---
 

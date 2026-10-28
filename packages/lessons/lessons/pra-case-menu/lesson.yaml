@@ -1,0 +1,35 @@
+id: pra-case-menu
+title: "CASE: menú en bucle (case dentro de while)"
+level: 9
+kind: lesson
+xp: 14
+track: CASE
+estimated_minutes: 7
+prerequisites: []
+tags:
+  - case
+  - while
+  - practica
+objective: "Combinar while + case: el patrón del menú interactivo."
+files_to_create:
+  - menu.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: hola-y-salir
+      message: responde '¡hola!' a 'hola' y 'adiós' a 'salir'
+      cmd: printf 'hola\nsalir\n' | bash menu.sh
+      expectOutput: |-
+        ^¡hola!
+        adiós$
+    - name: solo-salir
+      message: con sólo 'salir' imprime 'adiós' y nada más
+      cmd: printf 'salir\n' | bash menu.sh
+      expectOutput: ^adiós$
+    - name: sigue-activo
+      message: "opciones desconocidas no cierran: 'algo hola salir' sólo saluda y sale"
+      cmd: printf 'algo\nhola\nsalir\n' | bash menu.sh
+      expectOutput: |-
+        ^¡hola!
+        adiós$

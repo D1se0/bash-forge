@@ -12,7 +12,7 @@ Crea `tabla.sh <n>` que imprima `n x j = resultado` para j=1..10.
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar Tab semánticamente dentro del for: no importa sintaxis, pero el ; sí.
 
 ---
 

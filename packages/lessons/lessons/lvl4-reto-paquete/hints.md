@@ -8,4 +8,4 @@ Segunda pista
 ---
 Tercera pista
 
-[object Object]
+Probado dos veces seguidas: ambas respuestas difieren pero la versinan no.

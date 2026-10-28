@@ -17,7 +17,7 @@ Crea `escalera.sh <edad>`:
 
 ## Errores típicos
 
-- [object Object]
+- Poner la condición más general arriba: el resto se convierte en código muerto.
 - Usar `and` en vez de `&&` o `-a`: Bash NO entiende `and`/`or`.
 
 ---

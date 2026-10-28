@@ -4,8 +4,8 @@ En any parte del case con `-h`: usage() y exit 0.
 ---
 Segunda pista
 
-[object Object]
+Sin args ($# -eq 0): usage y exit 1.
 ---
 Tercera pista
 
-[object Object]
+La línea de Uso debe empezar exact con "Uso: ayudacli.sh".

@@ -32,8 +32,8 @@ Añade al final la línea `vocadas: N` con el número total de argumentos.
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Iterar sin comillas `for a in $@`: el espaciado dentro de los args rompe la lista.
+- Contar con `$#` cuando ya hiciste `shift` antes: cuenta de la lista ACTUAL.
 
 ## Mini-quiz
 

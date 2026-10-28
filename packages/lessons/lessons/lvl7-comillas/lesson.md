@@ -12,7 +12,7 @@ Ejecuta `archivo.sh` que con $1 imprima lo que lo que le llegó QUOTEADO manualm
 
 ## Errores típicos
 
-- [object Object]
+- Usar backticks en vez de escalar cmd: buena opción pero igual expone problemas de anidación.
 
 ---
 

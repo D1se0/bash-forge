@@ -1,0 +1,752 @@
+# Práctica dirigida: pista paralela al camino L0→L9
+#
+# Cada lección de este fichero tiene `track: <tema>` (IF, FOR, WHILE, CASE…)
+# y NO se muestra en el árbol de niveles ni cuenta para el % del camino:
+# el lateral las agrupa en su propia sección «Práctica dirigida».
+# El nivel interno (level: 9) sólo define el workdir del terminal
+# (`forja/practica/<tema>`); nunca sella ni desbloquea nada.
+
+lessons:
+  # ── IF ─────────────────────────────────────────────────────────────────
+  - id: pra-if-fichero
+    title: "IF: ¿existe el fichero?"
+    level: 9
+    track: IF
+    kind: lesson
+    xp: 12
+    minutes: 5
+    files: [checa.sh]
+    tags: [if, tests]
+    objective: Escribir un `if` con `[ -f ]` y su rama `else`.
+    theory: |
+      El `if` pregunta con un comando; `[ ... ]` es ese comando:
+
+      ```bash
+      if [ -f "$1" ]; then
+        echo "existe"
+      else
+        echo "no existe"
+      fi
+      ```
+
+      Tests útiles: `-f` fichero regular, `-d` directorio, `-z` cadena vacía,
+      `-x` ejecutable. SIEMPRE entre comillas: `[ -f "$f" ]`.
+    example: |
+      ```bash
+      $ bash checa.sh /etc/hostname
+      existe
+      $ bash checa.sh /no/existe
+      no existe
+      ```
+    exercise: |
+      Crea `checa.sh` que reciba una ruta como $1 e imprima `existe` cuando
+      sea un fichero regular y `no existe` en cualquier otro caso.
+    errors:
+      - "Escribir `if [ -f $1 ]` sin comillas: rutas con espacios rompen el test."
+      - "Olvidar el `fi`: bash avisa «unexpected end of file»."
+    tasks:
+      - name: existe
+        message: "con /etc/hostname imprime 'existe'"
+        cmd: bash checa.sh /etc/hostname
+        expectOutput: "^existe$"
+      - name: no-existe
+        message: "con una ruta inexistente imprime 'no existe'"
+        cmd: bash checa.sh /no/existe
+        expectOutput: "^no existe$"
+      - name: directorio-no-es-fichero
+        message: "'/tmp' es directorio, no fichero regular → 'no existe'"
+        cmd: bash checa.sh /tmp
+        expectOutput: "^no existe$"
+    hints:
+      - "if [ -f \"$1\" ]; then echo existe; else echo 'no existe'; fi"
+      - "Recuerda cerrar con fi."
+    solution: |
+      cat > checa.sh <<'EOF'
+      #!/usr/bin/env bash
+      if [ -f "$1" ]; then
+        echo "existe"
+      else
+        echo "no existe"
+      fi
+      EOF
+      bash checa.sh /etc/hostname
+      bash checa.sh /tmp
+
+  - id: pra-if-elif
+    title: "IF: cadena if / elif / else"
+    level: 9
+    track: IF
+    kind: lesson
+    xp: 12
+    minutes: 6
+    files: [rango.sh]
+    tags: [if, aritmetica]
+    objective: Encadenar condiciones con elif y cubrir todos los rangos.
+    theory: |
+      Cuando hay varios caminos, el `elif` encadena y el `else` cierra:
+
+      ```bash
+      if   [ "$n" -lt 10 ]; then echo "bajo"
+      elif [ "$n" -lt 100 ]; then echo "medio"
+      else echo "alto"
+      fi
+      ```
+
+      El elif sólo se evalúa si los anteriores fallaron: el orden importa.
+    example: |
+      ```bash
+      $ bash rango.sh 5
+      bajo
+      $ bash rango.sh 50
+      medio
+      $ bash rango.sh 500
+      alto
+      ```
+    exercise: |
+      Crea `rango.sh` que reciba un número y clasifique: `bajo` si es menor
+      que 10, `medio` si es menor que 100 (y 10 o más) y `alto` si es
+      100 o más. Usa if / elif / else, no tres if sueltos.
+    errors:
+      - "`[ $n -lt 10 ]` con n vacío: error de test; valida con `${1:-0}`."
+      - "Usar dos `if` independientes en vez de elif: 150 imprimiría dos líneas."
+    tasks:
+      - name: bajo
+        message: "con 5 imprime 'bajo'"
+        cmd: bash rango.sh 5
+        expectOutput: "^bajo$"
+      - name: frontera-10
+        message: "con 10 imprime 'medio' (el límite inferior cae aquí)"
+        cmd: bash rango.sh 10
+        expectOutput: "^medio$"
+      - name: frontera-100
+        message: "con 100 imprime 'alto'"
+        cmd: bash rango.sh 100
+        expectOutput: "^alto$"
+      - name: alto
+        message: "con 999 imprime 'alto'"
+        cmd: bash rango.sh 999
+        expectOutput: "^alto$"
+    hints:
+      - "`n=${1:-0}; if [ \"$n\" -lt 10 ]; then … elif [ \"$n\" -lt 100 ]; then … else … fi`"
+      - "10 no puede entrar en el primer rango: usa -lt con 10 y 100."
+    solution: |
+      cat > rango.sh <<'EOF'
+      #!/usr/bin/env bash
+      n=${1:-0}
+      if [ "$n" -lt 10 ]; then
+        echo "bajo"
+      elif [ "$n" -lt 100 ]; then
+        echo "medio"
+      else
+        echo "alto"
+      fi
+      EOF
+      bash rango.sh 5; bash rango.sh 50; bash rango.sh 500
+
+  - id: pra-if-doble
+    title: "IF: dos condiciones a la vez (&& y -a)"
+    level: 9
+    track: IF
+    kind: lesson
+    xp: 12
+    minutes: 5
+    files: [acceso.sh]
+    tags: [if, tests]
+    objective: Combinar-tests en un único if con && y !.
+    theory: |
+      Un solo if puede pedir dos cosas:
+
+      ```bash
+      if [ -x "$1" ] && [ -r "$1" ]; then echo "ok"; fi
+      ```
+
+      También `[[ ... && ... ]]` (bash puro) o el histórico `-a`.
+      La negación es `!`: `if ! [ -f "$f" ]`.
+    example: |
+      ```bash
+      $ bash acceso.sh /bin/ls
+      ok
+      $ bash acceso.sh /etc/hostname   # legible pero no ejecutable
+      no ok
+      ```
+    exercise: |
+      Crea `acceso.sh` que imprima `ok` cuando el fichero $1 sea ejecutable
+      Y legible a la vez, y `no ok` si falla cualquiera de las dos cosas.
+    errors:
+      - "Escribir `if [ -x $1 ] && -r $1 ]`: cada test necesita SUS corchetes."
+      - "`if [ -x \"$f\" ] -a [ -r … ]`: el -a va DENTRO de una sola pareja de corchetes."
+    tasks:
+      - name: ok
+        message: "/bin/ls es ejecutable y legible → 'ok'"
+        cmd: bash acceso.sh /bin/ls
+        expectOutput: "^ok$"
+      - name: no-ok
+        message: "/etc/hostname es legible pero no ejecutable → 'no ok'"
+        cmd: bash acceso.sh /etc/hostname
+        expectOutput: "^no ok$"
+    hints:
+      - "`if [ -x \"$1\" ] && [ -r \"$1\" ]; then …`"
+      - "La rama else imprime 'no ok'."
+    solution: |
+      cat > acceso.sh <<'EOF'
+      #!/usr/bin/env bash
+      if [ -x "$1" ] && [ -r "$1" ]; then
+        echo "ok"
+      else
+        echo "no ok"
+      fi
+      EOF
+      bash acceso.sh /bin/ls
+
+  # ── FOR ────────────────────────────────────────────────────────────────
+  - id: pra-for-lista
+    title: "FOR: recorrer una lista"
+    level: 9
+    track: FOR
+    kind: lesson
+    xp: 12
+    minutes: 5
+    files: [saluda.sh]
+    tags: [for]
+    objective: Recorrer una lista literal con comillas intactas.
+    theory: |
+      El for de bash recorre PALABRAS de una lista:
+
+      ```bash
+      for nombre in ana bel chucho; do
+        echo "hola $nombre"
+      done
+      ```
+
+      Las palabras de la lista pueden llevar espacios si van entre comillas:
+      `for x in "una palabra" dos; do …`.
+    example: |
+      ```bash
+      $ bash saluda.sh
+      hola ana
+      hola bel
+      hola chucho
+      ```
+    exercise: |
+      Crea `saluda.sh` (sin argumentos) que imprima `hola X` para los nombres
+      ana, bel y chucho, en ese orden. Al final imprime `saludos: 3`.
+    errors:
+      - "Usar `while` innecesario: para una lista fija, `for x in …` es directo."
+      - "Contar mal: imprime el contador FUERA del bucle, no en cada vuelta."
+    tasks:
+      - name: saludos
+        message: "imprime 'hola ana', 'hola bel' y 'hola chucho'"
+        cmd: bash saluda.sh
+        expectOutput: "^hola ana\\nhola bel\\nhola chucho$"
+      - name: contador
+        message: "imprime 'saludos: 3' al final"
+        cmd: bash saluda.sh
+        expectOutput: "saludos: 3$"
+    hints:
+      - "`for n in ana bel chucho; do echo \"hola $n\"; done`"
+      - "El contador va a lo largo del bucle: `total=$((total+1))`."
+    solution: |
+      cat > saluda.sh <<'EOF'
+      #!/usr/bin/env bash
+      total=0
+      for n in ana bel chucho; do
+        echo "hola $n"
+        total=$((total + 1))
+      done
+      echo "saludos: $total"
+      EOF
+      bash saluda.sh
+
+  - id: pra-for-args
+    title: "FOR: recorrer los argumentos"
+    level: 9
+    track: FOR
+    kind: lesson
+    xp: 12
+    minutes: 6
+    files: [pasa-por-agua.sh]
+    tags: [for, args]
+    objective: Iterar "$@" respetando espacios y contarlas al final.
+    theory: |
+      Para los argumentos del script usa `"$@"` (entre comillas):
+
+      ```bash
+      for arg in "$@"; do
+        echo "$arg"
+      done
+      echo "total: $#"
+      ```
+
+      `"$@"` mantiene cada argumento entero (con sus espacios);
+      sin comillas, `"dos palabras"` se partiría en dos vueltas.
+    example: |
+      ```bash
+      $ bash pasa-por-agua.sh a "b c" d
+      arg: a
+      arg: b c
+      arg: d
+      total: 3
+      ```
+    exercise: |
+      Crea `pasa-por-agua.sh` que imprima cada argumento como `arg: <arg>`
+      (con espacios intactos) y al final `total: N`. Debe funcionar con
+      cualquier número de argumentos, incluso cero (sólo imprima `total: 0`).
+    errors:
+      - "`for arg in $@`: sin comillas, los espacios partidos separan argumentos."
+      - "Usar `$#` después de `shift`: cuenta lo que queda, no lo original."
+    tasks:
+      - name: espacios
+        message: "'b c' llega como un solo argumento (una línea 'arg: b c')"
+        cmd: bash pasa-por-agua.sh a "b c" d
+        expectOutput: "^arg: a\\narg: b c\\narg: d\\ntotal: 3$"
+      - name: vacio
+        message: "sin argumentos imprime sólo 'total: 0'"
+        cmd: bash pasa-por-agua.sh
+        expectOutput: "^total: 0$"
+    hints:
+      - "`for arg in \"$@\"; do echo \"arg: $arg\"; done`"
+      - "`total: 0` con cero argumentos sale gratis si imprimes $# tras el bucle."
+    solution: |
+      cat > pasa-por-agua.sh <<'EOF'
+      #!/usr/bin/env bash
+      for arg in "$@"; do
+        echo "arg: $arg"
+      done
+      echo "total: $#"
+      EOF
+      bash pasa-por-agua.sh hola "dos palabras"
+
+  - id: pra-for-aritmetico
+    title: "FOR estilo C: for ((i=0; i<N; i++))"
+    level: 9
+    track: FOR
+    kind: lesson
+    xp: 12
+    minutes: 6
+    files: [tabla.sh]
+    tags: [for, aritmetica]
+    objective: Contar iteraciones fijas con for (( )).
+    theory: |
+      Para repetir N veces, el for con doble paréntesis cuenta solo:
+
+      ```bash
+      for ((i=1; i<=3; i++)); do
+        echo "vuelta $i"
+      done
+      ```
+
+      También sirve para saltos: `for ((i=10; i>0; i-=2))`.
+    example: |
+      ```bash
+      $ bash tabla.sh
+      tabla-note 1
+      tabla-note 2
+      tabla-note 3
+      ```
+    exercise: |
+      Crea `tabla.sh` que imprima `tabla-note N` para N = 1, 2 y 3 (en ese
+      orden) usando `for ((...))`, sin lista literal.
+    errors:
+      - "`for ((i=1; i<=3; i++))` con un solo paréntesis: error de sintaxis."
+      - "Usar variables `$i` dentro de `(())`: los paréntesis aritméticos no llevan $."
+    tasks:
+      - name: vueltas
+        message: "imprime tabla-note 1, 2 y 3"
+        cmd: bash tabla.sh
+        expectOutput: "^tabla-note 1\\ntabla-note 2\\ntabla-note 3$"
+    hints:
+      - "`for ((i=1; i<=3; i++)); do echo \"tabla-note $i\"; done`"
+      - "`$i` sí lleva $ en el echo: la variable es la misma."
+    solution: |
+      cat > tabla.sh <<'EOF'
+      #!/usr/bin/env bash
+      for ((i = 1; i <= 3; i++)); do
+        echo "tabla-note $i"
+      done
+      EOF
+      bash tabla.sh
+
+  # ── WHILE ──────────────────────────────────────────────────────────────
+  - id: pra-while-read
+    title: "WHILE: leer un fichero línea a línea"
+    level: 9
+    track: WHILE
+    kind: lesson
+    xp: 12
+    minutes: 6
+    files: [cuenta-lineas.sh]
+    tags: [while, read]
+    objective: while IFS= read -r con contador de líneas.
+    theory: |
+      La forma correcta de leer un fichero en bash:
+
+      ```bash
+      n=0
+      while IFS= read -r linea; do
+        n=$((n + 1))
+      done < fichero.txt
+      echo "líneas: $n"
+      ```
+
+      `IFS=` conserva los espacios de la línea, `-r` evita que `\` escape.
+      La redirección `< fichero.txt` alimenta al read; si hicieras
+      `cat fichero | while …`, la variable n moriría en la subshell.
+    example: |
+      ```bash
+      $ bash cuenta-lineas.sh notas.txt
+      líneas: 3
+      ```
+    exercise: |
+      Crea `notas.txt` con 3 líneas cualesquiera y `cuenta-lineas.sh` que
+      reciba un fichero como $1 e imprima `líneas: N` contando con while
+      read -r (no con wc -l: quiero el bucle).
+    errors:
+      - "`cat fichero | while read`: el contador se pierde en la subshell."
+      - "Olvidar `< fichero` al final del done: el while se queda esperando entrada."
+    tasks:
+      - name: fichero
+        message: "notas.txt existe con 3 líneas"
+        cmd: bash cuenta-lineas.sh notas.txt
+        expectOutput: "^líneas: 3$"
+      - name: cuenta
+        message: "imprime 'líneas: 3'"
+        cmd: bash cuenta-lineas.sh notas.txt
+        expectOutput: "^líneas: 3$"
+    hints:
+      - "`while IFS= read -r linea; do n=$((n+1)); done < \"$1\"`"
+      - "init n=0 ANTES del bucle, imprime DESPUÉS."
+    solution: |
+      printf 'a\nb\nc\n' > notas.txt
+      cat > cuenta-lineas.sh <<'EOF'
+      #!/usr/bin/env bash
+      n=0
+      while IFS= read -r linea; do
+        n=$((n + 1))
+      done < "$1"
+      echo "líneas: $n"
+      EOF
+      bash cuenta-lineas.sh notas.txt
+
+  - id: pra-while-contador
+    title: "WHILE: bucle con condición"
+    level: 9
+    track: WHILE
+    kind: lesson
+    xp: 12
+    minutes: 5
+    files: [cuenta-atras.sh]
+    tags: [while, aritmetica]
+    objective: while con condición aritmética y actualización manual.
+    theory: |
+      El while repite mientras su condición sea cierta; alguien debe
+      actualizar el dato para que acabe:
+
+      ```bash
+      n=3
+      while [ "$n" -gt 0 ]; do
+        echo "t-$n"
+        n=$((n - 1))
+      done
+      ```
+
+      Si olvidas decrementar, el bucle es infinito (Ctrl-C para pararlo).
+    example: |
+      ```bash
+      $ bash cuenta-atras.sh
+      t-3
+      t-2
+      t-1
+      ```
+    exercise: |
+      Crea `cuenta-atras.sh` que imprima `t-3`, `t-2`, `t-1` y al final
+      `lanzar`, con while (no con for).
+    errors:
+      - "Bucle infinito: sin `n=$((n-1))` el while nunca termina."
+      - "Falta el `lanzar` final: imprime al terminar el while, no dentro."
+    tasks:
+      - name: atras
+        message: "imprime t-3, t-2 y t-1"
+        cmd: bash cuenta-atras.sh
+        expectOutput: "^t-3\\nt-2\\nt-1$"
+      - name: lanzar
+        message: "imprime 'lanzar' al final"
+        cmd: bash cuenta-atras.sh
+        expectOutput: "lanzar$"
+    hints:
+      - "`n=3; while [ \"$n\" -gt 0 ]; do echo \"t-$n\"; n=$((n-1)); done`"
+      - "El `echo lanzar` después del done."
+    solution: |
+      cat > cuenta-atras.sh <<'EOF'
+      #!/usr/bin/env bash
+      n=3
+      while [ "$n" -gt 0 ]; do
+        echo "t-$n"
+        n=$((n - 1))
+      done
+      echo "lanzar"
+      EOF
+      bash cuenta-atras.sh
+
+  - id: pra-until
+    title: "UNTIL: repetir hasta que pase algo"
+    level: 9
+    track: WHILE
+    kind: lesson
+    xp: 12
+    minutes: 6
+    files: [adivina.sh]
+    tags: [until, aritmetica]
+    objective: until como contrario de while (repite hasta acertar).
+    theory: |
+      `until` es un while al revés: repite HASTA que su condición sea
+      verdadera.
+
+      ```bash
+      intento=0
+      until [ "$intento" -eq 3 ]; do
+        intento=$((intento + 1))
+      done
+      echo "acertado en $intento"
+      ```
+
+      Da igual que empecemos con la condición falsa: entra al menos una vez.
+    example: |
+      ```bash
+      $ bash adivina.sh
+      intento 1
+      intento 2
+      acertado en 3
+      ```
+    exercise: |
+      Crea `adivina.sh` que intente adivinar el número 3: imprima `intento N`
+      por cada ronda hasta que N sea 3, y al final `acertado en 3`.
+      Usa `until` (no while negando la condición).
+    errors:
+      - "Usar `while [ $n -ne 3 ]` en vez de until: lógicamente funciona, pero la gracia de until es leer «hasta que n esté en 3»."
+      - "Olvidar `n=$((n+1))`: bucle infinito."
+    tasks:
+      - name: intentos
+        message: "imprime 'intento 1' y 'intento 2'"
+        cmd: bash adivina.sh
+        expectOutput: "^intento 1\\nintento 2$"
+      - name: acierto
+        message: "imprime 'acertado en 3' al final"
+        cmd: bash adivina.sh
+        expectOutput: "acertado en 3$"
+    hints:
+      - "`n=1; until [ \"$n\" -eq 3 ]; do echo \"intento $n\"; n=$((n+1)); done; echo \"acertado en $n\"`"
+      - "El acierto también es una vuelta: imprime el acierto tras el done."
+    solution: |
+      cat > adivina.sh <<'EOF'
+      #!/usr/bin/env bash
+      n=1
+      until [ "$n" -eq 3 ]; do
+        echo "intento $n"
+        n=$((n + 1))
+      done
+      echo "acertado en $n"
+      EOF
+      bash adivina.sh
+
+  # ── CASE ───────────────────────────────────────────────────────────────
+  - id: pra-case-simple
+    title: "CASE: clasificar un valor"
+    level: 9
+    track: CASE
+    kind: lesson
+    xp: 12
+    minutes: 5
+    files: [clasifica.sh]
+    tags: [case]
+    objective: case con patrones exactos y comodín default.
+    theory: |
+      El case elige la primera rama que encaja con el patrón:
+
+      ```bash
+      case "$1" in
+        rojo)  echo "caliente" ;;
+        azul)  echo "frío" ;;
+        *)     echo "desconocido" ;;
+      esac
+      ```
+
+      `*` es «cualquier cosa»: el default, SIEMPRE al final.
+    example: |
+      ```bash
+      $ bash clasifica.sh rojo
+      caliente
+      $ bash clasifica.sh verde
+      desconocido
+      ```
+    exercise: |
+      Crea `clasifica.sh` que clasifique colores: `rojo` → `caliente`,
+      `azul` → `frío` y cualquier otra cosa → `desconocido`.
+    errors:
+      - "`*)` en medio: entonces casi todo cae ahí y las ramas de debajo son tinta muerta."
+      - "Olvidar el `;;` de cierre de rama: error de sintaxis."
+    tasks:
+      - name: rojo
+        message: "con rojo imprime 'caliente'"
+        cmd: bash clasifica.sh rojo
+        expectOutput: "^caliente$"
+      - name: azul
+        message: "con azul imprime 'frío'"
+        cmd: bash clasifica.sh azul
+        expectOutput: "^frío$"
+      - name: default
+        message: "con verde imprime 'desconocido'"
+        cmd: bash clasifica.sh verde
+        expectOutput: "^desconocido$"
+    hints:
+      - "`case \"$1\" in rojo) echo caliente ;; azul) echo frío ;; *) echo desconocido ;; esac`"
+      - "El patrón `*)` SIEMPRE el último."
+    solution: |
+      cat > clasifica.sh <<'EOF'
+      #!/usr/bin/env bash
+      case "$1" in
+        rojo) echo "caliente" ;;
+        azul) echo "frío" ;;
+        *) echo "desconocido" ;;
+      esac
+      EOF
+      bash clasifica.sh rojo; bash clasifica.sh azul
+
+  - id: pra-case-glob
+    title: "CASE: patrones con comodines"
+    level: 9
+    track: CASE
+    kind: lesson
+    xp: 12
+    minutes: 6
+    files: [extension.sh]
+    tags: [case, glob]
+    objective: case con *.ext, rangos y alternancias de patrones.
+    theory: |
+      Los patrones de case son globs (no regex):
+
+      ```bash
+      case "$f" in
+        *.sh)  echo "guion" ;;
+        *.txt) echo "texto" ;;
+        readme?) echo "doc corto" ;;
+        *)  echo "otro" ;;
+      esac
+      ```
+
+      `*` casa cualquier cadena (incluida vacía), `?` un carácter.
+      Para alternar: `a|b|c)`.
+    example: |
+      ```bash
+      $ bash extension.sh script.sh
+      guion
+      $ bash extension.sh notas.txt
+      texto
+      $ bash extension.sh foto.png
+      otro
+      ```
+    exercise: |
+      Crea `extension.sh` que clasifique por extensión: `.sh` → `guion`,
+      `.txt` → `texto`, `.png` → `imagen` y lo demás → `otro`.
+    errors:
+      - "`case $f in` sin comillas: ficheros con espacios rompen: `\"$f\"` siempre."
+      - "Usar regex `\\\\.sh$` en case: sólo globs; el punto ya es un punto literal en `*.sh`."
+    tasks:
+      - name: sh
+        message: "script.sh → 'guion'"
+        cmd: bash extension.sh script.sh
+        expectOutput: "^guion$"
+      - name: txt
+        message: "notas.txt → 'texto'"
+        cmd: bash extension.sh notas.txt
+        expectOutput: "^texto$"
+      - name: png
+        message: "foto.png → 'imagen'"
+        cmd: bash extension.sh foto.png
+        expectOutput: "^imagen$"
+      - name: otro
+        message: "datos.csv → 'otro'"
+        cmd: bash extension.sh datos.csv
+        expectOutput: "^otro$"
+    hints:
+      - "`case \"$1\" in *.sh) … ;; *.txt) … ;; *.png) … ;; *) … ;; esac`"
+      - "El `*` del patrón engloba lo de delante: `*.sh` casa cualquier nombre acabado en .sh."
+    solution: |
+      cat > extension.sh <<'EOF'
+      #!/usr/bin/env bash
+      case "$1" in
+        *.sh)  echo "guion" ;;
+        *.txt) echo "texto" ;;
+        *.png) echo "imagen" ;;
+        *)     echo "otro" ;;
+      esac
+      EOF
+      bash extension.sh script.sh; bash extension.sh datos.csv
+
+  - id: pra-case-menu
+    title: "CASE: menú en bucle (case dentro de while)"
+    level: 9
+    track: CASE
+    kind: lesson
+    xp: 14
+    minutes: 7
+    files: [menu.sh]
+    tags: [case, while, practica]
+    objective: "Combinar while + case: el patrón del menú interactivo."
+    theory: |
+      El patrón «menú de consola» combina las dos piezas de esta pista:
+
+      ```bash
+      while read -r op; do
+        case "$op" in
+          hola) echo "¡hola!" ;;
+          salir) echo "adiós"; break ;;
+        esac
+      done
+      ```
+
+      `while read -r` acaba solo cuando la entrada se agota (sin bucles
+      infinitos al EOF); `break` cierra antes. `exit 0` no termina el menú:
+      termina el SCRIPT entero. Este binomio while+case es el corazón
+      de casi todo script interactivo.
+    example: |
+      ```bash
+      $ printf 'hola\nsalir\n' | bash menu.sh
+      ¡hola!
+      adiós
+      ```
+    exercise: |
+      Crea `menu.sh` que lea una línea por ronda: si es `hola`, imprime
+      `¡hola!`; si es `salir`, imprime `adiós` y termina (break). Usa el
+      patrón robusto: el propio `while read -r op` marca el círculo (no
+      `while true`, que no sabe cuándo se acaba la entrada).
+    errors:
+      - "`while true; do read` sin escapar al EOF: en una pipe, al acabarse la entrada el menú gira para siempre."
+      - "case dentro de while en una pipe: break rompería la SUBshell del while; con `while read` directo no hay subshell."
+      - Olvidar el `;;` del caso de salir antes del esac.
+    tasks:
+      - name: hola-y-salir
+        message: "responde '¡hola!' a 'hola' y 'adiós' a 'salir'"
+        cmd: printf 'hola\nsalir\n' | bash menu.sh
+        expectOutput: "^¡hola!\nadiós$"
+      - name: solo-salir
+        message: "con sólo 'salir' imprime 'adiós' y nada más"
+        cmd: printf 'salir\n' | bash menu.sh
+        expectOutput: "^adiós$"
+      - name: sigue-activo
+        message: "opciones desconocidas no cierran: 'algo hola salir' sólo saluda y sale"
+        cmd: printf 'algo\nhola\nsalir\n' | bash menu.sh
+        expectOutput: "^¡hola!\nadiós$"
+    hints:
+      - "`while read -r op; do case \"$op\" in hola) …;; salir) echo adiós; break;; esac; done`"
+      - "Ignorar lo desconocido: sin rama de cierre, el while sigue esperando la próxima línea."
+    solution: |
+      cat > menu.sh <<'EOF'
+      #!/usr/bin/env bash
+      while read -r op; do
+        case "$op" in
+          hola)  echo "¡hola!" ;;
+          salir) echo "adiós"; break ;;
+        esac
+      done
+      EOF
+      printf 'hola\nsalir\n' | bash menu.sh

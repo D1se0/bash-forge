@@ -15,7 +15,7 @@ Crea `temporal.sh` que:
 
 ## Errores típicos
 
-- [object Object]
+- El trap rinde con la variable en el momento desde que se definió: define el trap DESPUÉS del mktemplate.
 
 ---
 

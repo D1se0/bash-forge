@@ -29,8 +29,8 @@ Crea `coladas.sh` que genere los ficheros `dias.{lunes,viernes}` vacíos con la 
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Olvidar que `{1..10..2}` expande O bien la palabra estática: NO es un bucle.
+- Usar `{1,10}` como rango: eso es lista, no rango; el rango son los dos puntos.
 
 ## Mini-quiz
 

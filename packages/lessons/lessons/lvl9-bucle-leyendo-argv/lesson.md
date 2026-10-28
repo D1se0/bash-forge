@@ -33,8 +33,8 @@ desconocidos: `misterio <arg>` (y sí, sigue). Sin args: `persona: nadie`.
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Olvidar shift: sin shift consume los mismos args para siempre (bucle colgado).
+- En `-n` el shift es DOBLE: con shift 1 volverías a caer en `$2` gastado.
 
 ## Mini-quiz
 

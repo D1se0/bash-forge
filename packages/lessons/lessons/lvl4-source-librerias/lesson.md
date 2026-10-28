@@ -27,7 +27,7 @@ Crea `lib.sh` con una función `medir` que imprima `medir: <arg>`, y `usalib.sh`
 ## Errores típicos
 
 - Ruta relativa rota: si ejecutas desde otro cwd, `source lib.sh` falla. Usa rutas absolutas o cd antes.
-- [object Object]
+- Usar exec en vez de source: ejecutaría el fichero como proceso nuevo.
 
 ## Mini-quiz
 

@@ -4,7 +4,7 @@ Primera pista
 ---
 Segunda pista
 
-[object Object]
+Orden: inexistente primero, luego -d, luego -s, luego vacío.
 ---
 Tercera pista
 

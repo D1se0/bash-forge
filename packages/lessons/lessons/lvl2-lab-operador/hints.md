@@ -8,4 +8,4 @@ Dentro de cada rama, resuelve la comparación con test y devuelve ok o no tal co
 ---
 Tercera pista
 
-[object Object]
+Para el desconocido el exit NO importa: solo el texto.

@@ -8,4 +8,4 @@ Después del bucle, imprime la línea de despegue.
 ---
 Tercera pista
 
-[object Object]
+Prueba en la terminal: úsalo ANTES del Comprobar para que no inf atenaje.

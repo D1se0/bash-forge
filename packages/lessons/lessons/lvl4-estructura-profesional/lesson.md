@@ -36,8 +36,8 @@ Reescribe `beatriz.sh` con la estructura completa: defina `saluda()` e imprime `
 
 ## Errores típicos
 
-- [object Object]
-- [object Object]
+- Llamar main ANTES de definir funciones: las funciones no existen aún.
+- No pasar "$@" a main: pierdes los argumentos dentro de la función.
 
 ## Mini-quiz
 

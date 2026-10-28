@@ -12,7 +12,7 @@ Se creó `nombres.txt`. Crea `toca.sh` que imprima su contenido con la palabra "
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar /g: solo cambia la primera aparición de cada línea.
 - Olvidar comillas alrededor del patrón del sed.
 
 ---

@@ -12,7 +12,7 @@ Crea `rutear.sh` que reciba una ruta e imprime: el basename en la primera línea
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar las comillas en "$(dirname "$1")": las rutas con espacios explotan.
 
 ---
 

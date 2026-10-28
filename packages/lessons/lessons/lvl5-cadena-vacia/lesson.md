@@ -14,7 +14,7 @@ Crea `vacio.sh` que reciba $1 y:
 
 ## Errores típicos
 
-- [object Object]
+- Comprobar [ $v ] pensado que vale 0 como vacío: NO, que es length>0. Usa -z/-n.
 
 ---
 

@@ -13,7 +13,7 @@ Crea `pares.sh <n>` que imprima:
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar el exclusivo: para el rango 1..n-1 NO incluís n.
 
 ---
 

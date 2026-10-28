@@ -17,7 +17,7 @@ Crea `regulador.sh` que reciba N (número) y un flag `--voz`:
 ## Errores típicos
 
 - Omitir la acentuación/diferencia entre "--voz" y "-- voz": los args se comparan EXACTOS.
-- [object Object]
+- Imprimir el mensaje final DENTRO del bucle: una sola vez.
 
 ## Mini-quiz
 

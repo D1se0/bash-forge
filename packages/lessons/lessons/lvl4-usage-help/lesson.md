@@ -32,7 +32,7 @@ Crea `ayudacli.sh` que:
 ## Errores típicos
 
 - La heredoc dentro de la función rompe si pierdes EOF.
-- [object Object]
+- Salir con exit 0 SIEMPRE (aunque pidan ayuda): ayuda OK con 0, mal uso con 1.
 
 ## Mini-quiz
 

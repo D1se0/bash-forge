@@ -12,7 +12,7 @@ Crea `ficha.sh` que imprima el hash SHA-256 de $1 (solo el hash, sin el nombre d
 
 ## Errores típicos
 
-- [object Object]
+- Olvidar la primera columna cut -d' ' -f1: se mezcla el hash con el nombre.
 
 ---
 

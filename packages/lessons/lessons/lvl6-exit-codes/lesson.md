@@ -14,7 +14,7 @@ Crea `cadena.sh` que reciba $1:
 
 ## Errores típicos
 
-- [object Object]
+- Confundir && con || al operar con &&: es "si sí", || es "si no".
 
 ---
 

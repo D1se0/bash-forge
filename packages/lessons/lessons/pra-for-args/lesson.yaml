@@ -1,0 +1,26 @@
+id: pra-for-args
+title: "FOR: recorrer los argumentos"
+level: 9
+kind: lesson
+xp: 12
+track: FOR
+estimated_minutes: 6
+prerequisites: []
+tags:
+  - for
+  - args
+objective: Iterar "$@" respetando espacios y contarlas al final.
+files_to_create:
+  - pasa-por-agua.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: espacios
+      message: "'b c' llega como un solo argumento (una línea 'arg: b c')"
+      cmd: bash pasa-por-agua.sh a "b c" d
+      expectOutput: "^arg: a\\narg: b c\\narg: d\\ntotal: 3$"
+    - name: vacio
+      message: "sin argumentos imprime sólo 'total: 0'"
+      cmd: bash pasa-por-agua.sh
+      expectOutput: "^total: 0$"
