@@ -1,0 +1,30 @@
+id: lvl9-bucle-leyendo-argv
+title: "while shift: el router de opciones"
+level: 9
+kind: lesson
+xp: 30
+estimated_minutes: 9
+prerequisites:
+  - lvl9-anidados-break-2
+tags:
+  - bucles
+  - argumentos
+objective: Consumir argumentos con while shift hasta vaciarlos.
+files_to_create:
+  - dilema.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: modo-apagado
+      message: "con -v imprime 'modo: apagado'"
+      cmd: bash dilema.sh -v
+      expectOutput: "^modo: apagado$"
+    - name: persona
+      message: "con -n Ana imprime 'persona: Ana'"
+      cmd: bash dilema.sh -n Ana
+      expectOutput: "^persona: Ana$"
+    - name: no-nombre
+      message: "sin args imprime 'persona: nadie'"
+      cmd: bash dilema.sh
+      expectOutput: "^persona: nadie$"

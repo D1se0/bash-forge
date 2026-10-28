@@ -1,0 +1,30 @@
+id: lvl9-anidados-break-2
+title: "Bucles anidados: break 2 y continue 2"
+level: 9
+kind: lesson
+xp: 30
+estimated_minutes: 9
+prerequisites:
+  - lvl9-case-en-bucle
+tags:
+  - bucles
+objective: Tablas N x N y el salto a varios niveles a la vez.
+files_to_create:
+  - duelo.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: cuadrado-fila-1
+      message: "con 2 la fila d1 sale junta: 'd1 x h1' y 'd1 x h2' seguidas"
+      cmd: bash duelo.sh 2
+      expectOutput: ^d1 x h1$\n^d1 x h2$
+    - name: cuadrado-fila-2
+      message: "con 2 la fila d2 también: 'd2 x h1' y 'd2 x h2' seguidas"
+      cmd: bash duelo.sh 2
+      expectOutput: ^d2 x h1$\n^d2 x h2$
+    - name: corte-6
+      message: con 6 imprime la fila d3 x h3 (y la fila d4 NO aparece)
+      cmd: bash duelo.sh 6
+      expectOutput: ^d3 x h3$
+      expectOutputAbsent: "^d4 "

@@ -4,7 +4,7 @@
  */
 
 export type LessonKind = "lesson" | "challenge" | "boss" | "playground";
-export type LessonLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export type LessonLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 export interface LessonLevelInfo {
   level: LessonLevel;
@@ -93,6 +93,7 @@ export const LESSON_LEVELS: LessonLevelInfo[] = [
   { level: 6, title: "Arrays y texto", rank: "Herrero de élite" },
   { level: 7, title: "Robustez y buenas prácticas", rank: "Herrero de élite" },
   { level: 8, title: "Proyectos finales", rank: "Maestro Forjador" },
+  { level: 9, title: "Bucles: la maestría", rank: "Maestro Forjador" },
 ];
 
 /** Insignias y logros (gamificación). */

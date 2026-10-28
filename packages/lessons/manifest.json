@@ -1,10 +1,10 @@
 {
   "version": 1,
   "counts": {
-    "total": 82,
-    "lesson": 70,
-    "challenge": 7,
-    "boss": 5
+    "total": 90,
+    "lesson": 76,
+    "challenge": 8,
+    "boss": 6
   },
   "lessons": [
     {
@@ -580,6 +580,62 @@
       "kind": "lesson",
       "xp": 80,
       "title": "Boss Fight · El Constructor de Herramientas"
+    },
+    {
+      "id": "lvl9-for-reforzado",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "for reforzado: \"$@\", globs y listas mixtas"
+    },
+    {
+      "id": "lvl9-while-acumulador",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "while con acumulador: sumar y contar en el bucle"
+    },
+    {
+      "id": "lvl9-until-guardian",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "until: el guardián que espera una condición"
+    },
+    {
+      "id": "lvl9-case-en-bucle",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 25,
+      "title": "case dentro del bucle: el router de comandos"
+    },
+    {
+      "id": "lvl9-anidados-break-2",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 30,
+      "title": "Bucles anidados: break 2 y continue 2"
+    },
+    {
+      "id": "lvl9-bucle-leyendo-argv",
+      "level": 9,
+      "kind": "lesson",
+      "xp": 30,
+      "title": "while shift: el router de opciones"
+    },
+    {
+      "id": "lvl9-reto-fila-indentario",
+      "level": 9,
+      "kind": "challenge",
+      "xp": 40,
+      "title": "Reto · La fila de la forja"
+    },
+    {
+      "id": "lvl9-boss-while",
+      "level": 9,
+      "kind": "boss",
+      "xp": 90,
+      "title": "Boss Fight · El Guardian de Bucles"
     }
   ]
 }

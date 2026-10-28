@@ -1,0 +1,31 @@
+id: lvl9-case-en-bucle
+title: "case dentro del bucle: el router de comandos"
+level: 9
+kind: lesson
+xp: 25
+estimated_minutes: 8
+prerequisites:
+  - lvl9-until-guardian
+tags:
+  - bucles
+  - condicionales
+objective: Procesar una cola de órdenes con case por cada vuelta.
+files_to_create:
+  - enrutador.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: dos-subes
+      message: "con subir subir imprime 'ronda 1: SUBE' y 'ronda 2: SUBE'"
+      cmd: bash enrutador.sh subir subir
+      expectOutput: "^ronda 1: SUBE$\\n^ronda 2: SUBE$"
+    - name: parar-corta
+      message: con subir parar subir no hay 'ronda 3' ni más rondas tras PARAR
+      cmd: bash enrutador.sh subir parar subir
+      expectOutput: "^ronda 1: SUBE$\\n^ronda 2: PARAR$"
+      expectOutputAbsent: ^ronda 3
+    - name: desconocida
+      message: "con hola imprime 'ronda 1: ???'"
+      cmd: bash enrutador.sh hola
+      expectOutput: "^ronda 1: \\?\\?\\?$"

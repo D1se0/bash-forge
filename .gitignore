@@ -41,3 +41,6 @@ coverage/
 # Temp
 tmp/
 .cache/
+
+# Backups locales de 'bashforge purga' (JSON de progreso exportable)
+backups/

@@ -23,7 +23,7 @@ for (const id of fs.readdirSync(dir)) {
   const label = `${id}`;
   try {
     if (!meta.id || !meta.title || typeof meta.level !== "number") throw new Error("faltan id/title/level");
-    if (meta.level < 0 || meta.level > 8) throw new Error("level fuera de rango");
+    if (meta.level < 0 || meta.level > 9) throw new Error("level fuera de rango");
     if (ids.has(meta.id)) throw new Error("id duplicado");
     ids.add(meta.id);
     if ((meta.xp ?? 0) <= 0) throw new Error("xp inválido");

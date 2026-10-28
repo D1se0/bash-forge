@@ -1,0 +1,25 @@
+id: lvl9-while-acumulador
+title: "while con acumulador: sumar y contar en el bucle"
+level: 9
+kind: lesson
+xp: 25
+estimated_minutes: 8
+prerequisites:
+  - lvl9-for-reforzado
+tags:
+  - bucles
+  - aritmetica
+objective: Acumular resultados dentro de while sin perderlos al salir.
+files_to_create:
+  - sumador.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: fichero-creado
+      message: numeros.txt existe con 10, 20 y 30
+      cmd: grep -qx 10 numeros.txt && grep -qx 20 numeros.txt && grep -qx 30 numeros.txt
+    - name: suma-correcta
+      message: "sumador.sh imprime 'total: 60'"
+      cmd: bash sumador.sh
+      expectOutput: "^total: 60$"

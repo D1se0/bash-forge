@@ -143,15 +143,19 @@ const siguePlegada = await a.locator(".app.plegado").count();
 console.log(`sidebar-re-desplegada=${siguePlegada === 0}`);
 if (siguePlegada) process.exitCode = 1;
 
-// 7. export/import de progreso: botones presentes y descarga real al exportar
+// 7. export/import de progreso: popup glass → «Exportar JSON» con descarga real
 const ioButtons = await a.locator(".progress-io button").count();
 console.log(`progress-io=${ioButtons}`);
-if (ioButtons < 2) process.exitCode = 1;
-const dlPromise = a.waitForEvent("download", { timeout: 6000 }).catch(() => null);
+if (ioButtons < 1) process.exitCode = 1;
 await a.locator(".progress-io button").first().click();
+const popupVisible = await a.locator(".pop-actions button").count();
+console.log(`popup-botones=${popupVisible}`);
+const dlPromise = a.waitForEvent("download", { timeout: 6000 }).catch(() => null);
+await a.locator(".pop-actions button").first().click(); // «⇪ Exportar JSON»
 const dl = await dlPromise;
 console.log(`progreso-export=${dl ? dl.suggestedFilename() : "sin-descarga"}`);
 if (!dl) process.exitCode = 1;
+await a.keyboard.press("Escape"); // cierra el popup
 
 await b.close();
 console.log("OK");

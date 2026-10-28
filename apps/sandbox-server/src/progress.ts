@@ -27,6 +27,19 @@ export class ProgressStore {
     }
   }
 
+  /** Lista los ids de forja con fichero de progreso (ordenados). */
+  listAll(): string[] {
+    try {
+      return fs
+        .readdirSync(this.dir)
+        .filter((f) => f.endsWith(".json"))
+        .map((f) => f.replace(/\.json$/, ""))
+        .sort();
+    } catch {
+      return [];
+    }
+  }
+
   load(forgeId: string): string | null {
     try {
       const f = this.fileOf(forgeId);

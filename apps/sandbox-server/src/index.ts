@@ -25,7 +25,7 @@ function main(): void {
   const progress = new ProgressStore(env.progressDir);
   const pty = new PtyManager(null); // fábrica real con node-pty
 
-  const { app } = createHttpServer(store);
+  const { app } = createHttpServer(store, progress);
   const server: Server = app.listen(env.httpPort, () => {
     log("info", `HTTP listo en :${env.httpPort} (health=/api/health, lessons=/api/lessons)`);
   });

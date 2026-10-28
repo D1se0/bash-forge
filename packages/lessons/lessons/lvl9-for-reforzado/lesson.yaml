@@ -1,0 +1,29 @@
+id: lvl9-for-reforzado
+title: 'for reforzado: "$@", globs y listas mixtas'
+level: 9
+kind: lesson
+xp: 25
+estimated_minutes: 8
+prerequisites: []
+tags:
+  - bucles
+  - practica
+objective: Dominar las tres formas de alimentar un for sin romper espacios.
+files_to_create:
+  - alimentador.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: espacios-intactos
+      message: "con 'dos palabras' imprime 'voc: dos palabras' (una sola línea)"
+      cmd: bash alimentador.sh "dos palabras"
+      expectOutput: "^voc: dos palabras$"
+    - name: total
+      message: "con a b c imprime 'vocadas: 3' al final"
+      cmd: bash alimentador.sh a b c
+      expectOutput: "^vocadas: 3$"
+    - name: orden
+      message: "con c a imprime 'voc: c', luego 'voc: a' (respeta el orden)"
+      cmd: bash alimentador.sh c a
+      expectOutput: "^voc: c\\nvoc: a$"

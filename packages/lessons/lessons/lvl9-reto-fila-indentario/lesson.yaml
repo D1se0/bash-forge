@@ -1,0 +1,32 @@
+id: lvl9-reto-fila-indentario
+title: Reto · La fila de la forja
+level: 9
+kind: challenge
+xp: 40
+estimated_minutes: 12
+prerequisites:
+  - lvl9-bucle-leyendo-argv
+tags:
+  - reto
+  - bucles
+objective: While + case + contador al servicio de una fila con prioridades.
+files_to_create:
+  - fila.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: basica
+      message: con 3 1 2 imprime atiende 3, atiende 1, atiende 2 (en orden)
+      cmd: bash fila.sh 3 1 2
+      expectOutput: ^atiende 3$\n^atiende 1$\n^atiende 2$
+    - name: salta-cerrado
+      message: con 4 - 9 imprime atiende 4 y NO imprime atiende 9
+      cmd: bash fila.sh 4 - 9
+      expectOutput: ^atiende 4$
+      expectOutputAbsent: ^atiende 9$
+    - name: no-repes
+      message: con --repe 5 5 imprime atiende 5 UNA sola vez
+      cmd: bash fila.sh --repe 5 5
+      expectOutput: ^atiende 5$
+      expectOutputAbsent: atiende 5\natiende 5

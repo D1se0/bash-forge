@@ -1,0 +1,545 @@
+lessons:
+  - id: lvl9-for-reforzado
+    title: "for reforzado: \"$@\", globs y listas mixtas"
+    level: 9
+    xp: 25
+    minutes: 8
+    tags: [bucles, practica]
+    objective: Dominar las tres formas de alimentar un for sin romper espacios.
+    files: [alimentador.sh]
+    theory: |
+      Tres maneras de dar lista a un `for`, cada una con su truco:
+
+      ```bash
+      for a in "$@"; do ... done        # argumentos, espacios intactos
+      for f in *.csv; do ... done       # glob del directorio actual
+      for x in 1 2 3 "dos palabras"; do ... done  # lista literal (¡comillas!)
+      ```
+
+      Sin comillas, `"dos palabras"` se parte en DOS vueltas del bucle: es el
+      bug clásico. Este nivel lo repite hasta que salga solo.
+    example: |
+      ```bash
+      $ bash alimentador.sh hola "dos palabras" fin
+      voc: hola
+      voc: dos palabras
+      voc: fin
+      ```
+    exercise: |
+      Crea `alimentador.sh` que imprima cada argumento como `voc: <arg>` con
+      espacios intactos (`bash alimentador.sh "dos palabras"` da UNA línea).
+      Añade al final la línea `vocadas: N` con el número total de argumentos.
+    errors:
+      - Iterar sin comillas `for a in $@`: el espaciado dentro de los args rompe la lista.
+      - Contar con `$#` cuando ya hiciste `shift` antes: cuenta de la lista ACTUAL.
+    quiz:
+      question: ¿Cómo recorrerías los argumentos y además sabrías su índice 1..N?
+      answer: "Con `i=1` fuera del bucle, `for a in \"$@\"; do … ; i=$((i+1)); done`."
+    tasks:
+      - name: espacios-intactos
+        message: "con 'dos palabras' imprime 'voc: dos palabras' (una sola línea)"
+        cmd: bash alimentador.sh "dos palabras"
+        expectOutput: "^voc: dos palabras$"
+      - name: total
+        message: "con a b c imprime 'vocadas: 3' al final"
+        cmd: bash alimentador.sh a b c
+        expectOutput: "^vocadas: 3$"
+      - name: orden
+        message: "con c a imprime 'voc: c', luego 'voc: a' (respeta el orden)"
+        cmd: bash alimentador.sh c a
+        expectOutput: "^voc: c\\nvoc: a$"
+    hints:
+      - "for a in \"$@\"; do echo \"voc: $a\"; done"
+      - "El total es $#; imprímelo después del bucle (no depende del for)."
+      - "La regex del check admite salto de línea: salen en el orden del bucle."
+    solution: |
+      cat > alimentador.sh <<'EOF'
+      #!/usr/bin/env bash
+      for a in "$@"; do
+        echo "voc: $a"
+      done
+      echo "vocadas: $#"
+      EOF
+      bash alimentador.sh hola "dos palabras" fin
+
+  - id: lvl9-while-acumulador
+    title: "while con acumulador: sumar y contar en el bucle"
+    level: 9
+    xp: 25
+    minutes: 8
+    tags: [bucles, aritmetica]
+    objective: Acumular resultados dentro de while sin perderlos al salir.
+    files: [sumador.sh]
+    theory: |
+      El bucle acumula: variables vivas ANTES del while sobreviven al salir…
+      SALVO que metas el bucle en una pipe (`cat | while`): esas vueltas corren
+      en subshell y el total se pierde. Leo fichero con redir < fichero.
+
+      ```bash
+      total=0
+      while IFS= read -r n; do
+        total=$((total + n))
+      done < numeros.txt
+      echo "$total"
+      ```
+    example: |
+      ```bash
+      # numeros.txt contiene 10, 20 y 30 (uno por línea)
+      $ bash sumador.sh
+      total: 60
+      ```
+    exercise: |
+      Crea `numeros.txt` con los números 10, 20 y 30 (un número por línea) y
+      `sumador.sh` que los sume e imprima `total: 60`. El script debe funcionar
+      con cualquier `numeros.txt` similar.
+    errors:
+      - "`cat numeros.txt | while …` total=0 después: la pipe crea subshell y borra el total."
+      - Sumar con `$n` sin validar: si el fichero trae líneas vacías, $(( )) rompe o traga basura.
+    quiz:
+      question: ¿Por qué el total muere si el while va tras una pipe?
+      answer: "Cada parte de una pipe corre en subshell: las variables sólo existen dentro."
+    tasks:
+      - name: fichero-creado
+        message: "numeros.txt existe con 10, 20 y 30"
+        cmd: grep -qx 10 numeros.txt && grep -qx 20 numeros.txt && grep -qx 30 numeros.txt
+      - name: suma-correcta
+        message: "sumador.sh imprime 'total: 60'"
+        cmd: bash sumador.sh
+        expectOutput: "^total: 60$"
+    hints:
+      - "total=0 antes del bucle; suma con $(()) dentro; imprime al final."
+      - "Lee con `while IFS= read -r n; do …; done < numeros.txt`."
+      - "Ignora líneas vacías: `[[ -z $n ]] && continue`."
+    solution: |
+      printf '10\n20\n30\n' > numeros.txt
+      cat > sumador.sh <<'EOF'
+      #!/usr/bin/env bash
+      total=0
+      while IFS= read -r n; do
+        [[ -z "$n" ]] && continue
+        total=$((total + n))
+      done < numeros.txt
+      echo "total: $total"
+      EOF
+
+  - id: lvl9-until-guardian
+    title: "until: el guardián que espera una condición"
+    level: 9
+    xp: 25
+    minutes: 7
+    tags: [bucles]
+    objective: Escribir bucles con until sin mutar mientras.
+    files: [abrecajas.sh]
+    theory: |
+      `until cond; do …; done` repite mientras `cond` FALLA (exit ≠ 0) y para
+      cuando por fin sale bien. Es while al revés: útil para "esperar hasta que".
+
+      ```bash
+      n=1
+      until (( n > 5 )); do echo caja $n; ((n++)); done
+      ```
+    example: |
+      ```bash
+      $ bash abrecajas.sh
+      caja 1
+      caja 2
+      …
+      caja 5
+      ```
+    exercise: |
+      Con `abrecajas.sh`: `bash abrecajas.sh 3` imprime `caja 1`, `caja 2`,
+      `caja 3` y para. Usa `until` (no while) para desarrollarlo; con 0 no
+      imprime ninguna caja y sale 0.
+    errors:
+      - Confundir la condición: en until el bucle corre mientras la condición es FALSA.
+      - "`((n++))` con set -e: cuando n era 0 antes de incrementar, exit 1 mata el script."
+    quiz:
+      question: ¿Qué imprime `n=0; until (( n > 2 )); do echo hi; ((n++)); done`?
+      answer: "hi tres veces (n=0,1,2); con n=3 la condición ya es cierta."
+    tasks:
+      - name: tres-cajas
+        message: "con 3 imprime caja 1..caja 3"
+        cmd: bash abrecajas.sh 3
+        expectOutput: "^caja 1$\\n^caja 2$\\n^caja 3$"
+      - name: cero-cajas
+        message: "con 0 no imprime cajas y sale 0"
+        cmd: bash abrecajas.sh 0
+        expectOutputAbsent: "^caja "
+    hints:
+      - "`n=1; until (( n > $1 )); do echo \"caja $n\"; ((n++)); done`"
+      - "Si nadie pasa $1, default `until (( n > ${1:-0} ))` no imprime nada."
+    solution: |
+      cat > abrecajas.sh <<'EOF'
+      #!/usr/bin/env bash
+      n=1
+      until (( n > ${1:-0} )); do
+        echo "caja $n"
+        ((n++))
+      done
+      EOF
+
+  - id: lvl9-case-en-bucle
+    title: "case dentro del bucle: el router de comandos"
+    level: 9
+    xp: 25
+    minutes: 8
+    tags: [bucles, condicionales]
+    objective: Procesar una cola de órdenes con case por cada vuelta.
+    files: [enrutador.sh]
+    theory: |
+      La pareja del nivel: `while` trae cada orden y `case` decide qué hacer
+      con ella. Patrón de router de comandos:
+
+      ```bash
+      for orden in "$@"; do
+        case "$orden" in
+          subir)  echo "ronda 1: SUBE" ;;
+          parar)  echo "ronda 2: PARAR"; break ;;
+          *)      echo "ronda 3: ???" ;;
+        esac
+      done
+      ```
+    example: |
+      ```bash
+      $ bash enrutador.sh subir subir parar subir
+      ronda 1: SUBE
+      ronda 2: SUBE
+      ronda 3: PARAR
+      ```
+    exercise: |
+      Crea `enrutador.sh` que recorra los args con un for y un case:
+      `subir` → imprime `ronda N: SUBE`, `bajar` → `ronda N: BAJA`, `parar`
+      → `ronda N: PARAR` y DEJA de procesar (nada más después). N es el número
+      de ronda (1, 2, 3…). Órdenes desconocidas: `ronda N: ???`.
+    errors:
+      - Seguir procesando tras «parar»: falta break (o es exit, que mata todo).
+      - Contar la ronda solo en las conocidas: si N es CORRECTO también con desconocidas, no está subiendo.
+    quiz:
+      question: ¿break o exit para «parar»?
+      answer: "break: corta el bucle y sigue el script (aquí nada después, igual)."
+    tasks:
+      - name: dos-subes
+        message: "con subir subir imprime 'ronda 1: SUBE' y 'ronda 2: SUBE'"
+        cmd: bash enrutador.sh subir subir
+        expectOutput: "^ronda 1: SUBE$\\n^ronda 2: SUBE$"
+      - name: parar-corta
+        message: "con subir parar subir no hay 'ronda 3' ni más rondas tras PARAR"
+        cmd: bash enrutador.sh subir parar subir
+        expectOutput: "^ronda 1: SUBE$\\n^ronda 2: PARAR$"
+        expectOutputAbsent: "^ronda 3"
+      - name: desconocida
+        message: "con hola imprime 'ronda 1: ???'"
+        cmd: bash enrutador.sh hola
+        expectOutput: "^ronda 1: \\?\\?\\?$"
+    hints:
+      - "`n=1; for orden in \"$@\"; do case $orden in …; esac; n=$((n+1)); done`"
+      - "En la rama `parar`: imprime y `break`."
+      - "`*)` atrapa lo desconocido; imprime tres signos de interrogación."
+    solution: |
+      cat > enrutador.sh <<'EOF'
+      #!/usr/bin/env bash
+      n=1
+      for orden in "$@"; do
+        case "$orden" in
+          subir) echo "ronda $n: SUBE" ;;
+          bajar) echo "ronda $n: BAJA" ;;
+          parar) echo "ronda $n: PARAR"; break ;;
+          *)     echo "ronda $n: ???" ;;
+        esac
+        n=$((n + 1))
+      done
+      EOF
+
+  - id: lvl9-anidados-break-2
+    title: "Bucles anidados: break 2 y continue 2"
+    level: 9
+    xp: 30
+    minutes: 9
+    tags: [bucles]
+    objective: Tablas N x N y el salto a varios niveles a la vez.
+    files: [duelo.sh]
+    theory: |
+      Bucles dentro de bucles: el ínterior entero por cada vuelta del exterior.
+      `break N` y `continue N` cortan N niveles hacia fuera (por defecto 1).
+
+      ```bash
+      for i in 1 2 3; do
+        for j in 1 2 3; do
+          [[ $j -eq 2 ]] && continue 2   # corta el bucle EXTERIOR: salta a la siguiente $i
+          echo "$i x $j"
+        done
+      done
+      ```
+    example: |
+      ```bash
+      $ bash duelo.sh 2
+      d1 x h1
+      d1 x h2
+      d2 x h1
+      d2 x h2
+      ```
+    exercise: |
+      Crea `duelo.sh`: recibe N y con bucles anidados imprime `d1 x h1` hasta
+      `dN x hN` (todo el cuadrado N x N, fila por fila). Después de la primera
+      fila completa esquivar `continue 2` no hace falta; lo que QUIERO es que
+      uses `break 2`: si N >= 4 imprime SOLO las filas hasta d3 (sin d4 en
+      adelante) y termina. Comprueba con N=6.
+    errors:
+      - break solo corta el bucle INTERIOR: el exterior seguiría con d4, d5…
+      - Imprimir con espacios raros entre dN y x: el check pega `dN x hM` literal.
+    quiz:
+      question: ¿Cuántas líneas imprime `duelo.sh 6` con la regla de corte?
+      answer: "Solo las 3 filas de «d» (tales que d1..d3 x h1..h3): 9 líneas."
+    tasks:
+      - name: cuadrado-fila-1
+        message: "con 2 la fila d1 sale junta: 'd1 x h1' y 'd1 x h2' seguidas"
+        cmd: bash duelo.sh 2
+        expectOutput: "^d1 x h1$\\n^d1 x h2$"
+      - name: cuadrado-fila-2
+        message: "con 2 la fila d2 también: 'd2 x h1' y 'd2 x h2' seguidas"
+        cmd: bash duelo.sh 2
+        expectOutput: "^d2 x h1$\\n^d2 x h2$"
+      - name: corte-6
+        message: "con 6 imprime la fila d3 x h3 (y la fila d4 NO aparece)"
+        cmd: bash duelo.sh 6
+        expectOutput: "^d3 x h3$"
+        expectOutputAbsent: "^d4 "
+    hints:
+      - "`for i in $(seq 1 $N); do for j …; done; done` y la regla de corte AFUERA del for interior."
+      - "Tras terminar una fila con $i == 3, `break 2` corta los DOS bucles: nada de d4."
+      - "Si N <= 3 el corte no dispara y el cuadrado queda entero."
+    solution: |
+      cat > duelo.sh <<'EOF'
+      #!/usr/bin/env bash
+      n="$1"
+      for i in $(seq 1 "$n"); do
+        for j in $(seq 1 "$n"); do
+          echo "d$i x h$j"
+        done
+        if (( i >= 3 )); then
+          break 2
+        fi
+      done
+      EOF
+
+  - id: lvl9-bucle-leyendo-argv
+    title: "while shift: el router de opciones"
+    level: 9
+    xp: 30
+    minutes: 9
+    tags: [bucles, argumentos]
+    objective: Consumir argumentos con while shift hasta vaciarlos.
+    files: [dilema.sh]
+    theory: |
+      Patrón clásico de parseo sin getopts:
+
+      ```bash
+      while (($#)); do
+        case "$1" in
+          -v) echo "modo: apagado"; shift ;;
+          -n) name="$2"; shift 2 ;;
+          *)  echo "misterio $1"; shift ;;
+        esac
+      done
+      ```
+    example: |
+      ```bash
+      $ bash dilema.sh -v -n Ana -v
+      modo: apagado
+      persona: Ana
+      modo: apagado
+      ```
+    exercise: |
+      Crea `dilema.sh`: `-v` imprime `modo: apagado`, `-n <nombre>` guarda el
+      nombre y al FINAL imprime `persona: <nombre>` (una sóla línea) y
+      desconocidos: `misterio <arg>` (y sí, sigue). Sin args: `persona: nadie`.
+    errors:
+      - Olvidar shift: sin shift consume los mismos args para siempre (bucle colgado).
+      - En `-n` el shift es DOBLE: con shift 1 volverías a caer en `$2` gastado.
+    quiz:
+      question: ¿Por qué `while (($#))`?
+      answer: "Mientras QUEDEN argumentos: cuando shift se queda sin lista, $# es 0 y (( )) es falso."
+    tasks:
+      - name: modo-apagado
+        message: "con -v imprime 'modo: apagado'"
+        cmd: bash dilema.sh -v
+        expectOutput: "^modo: apagado$"
+      - name: persona
+        message: "con -n Ana imprime 'persona: Ana'"
+        cmd: bash dilema.sh -n Ana
+        expectOutput: "^persona: Ana$"
+      - name: no-nombre
+        message: "sin args imprime 'persona: nadie'"
+        cmd: bash dilema.sh
+        expectOutput: "^persona: nadie$"
+    hints:
+      - "`nombre='nadie'; while (($#)); do case $1 in … esac; shift; done`"
+      - "-n: `nombre=$2; shift 2` (¡dos!). Resto: `shift`."
+      - "Al final: `echo \"persona: $nombre\"`."
+    solution: |
+      cat > dilema.sh <<'EOF'
+      #!/usr/bin/env bash
+      nombre="nadie"
+      while (($#)); do
+        case "$1" in
+          -v)    echo "modo: apagado"; shift ;;
+          -n)    nombre="$2"; shift 2 ;;
+          *)     echo "misterio $1"; shift ;;
+        esac
+      done
+      echo "persona: $nombre"
+      EOF
+
+  - id: lvl9-reto-fila-indentario
+    title: "Reto · La fila de la forja"
+    level: 9
+    kind: challenge
+    xp: 40
+    minutes: 12
+    tags: [reto, bucles]
+    objective: "While + case + contador al servicio de una fila con prioridades."
+    files: [fila.sh]
+    theory: |
+      Teoría de cola: atiendes quién entra, en orden, y decides quién ya salió.
+      Este reto se resuelve sin sort ni awk: solo bucles, case y variables.
+
+      ```bash
+      # tus herramientas: variables, bucles, case, break/continue y $(( )) aritmética
+      ```
+    example: |
+      ```bash
+      $ bash fila.sh 3 1 2
+      atendido 1
+      atendido 2
+      atendido 3
+      ```
+    exercise: |
+      Crea `fila.sh`: procesa los argumentos en orden (las opciones suelen
+      venir primero) y por cada número imprime `atiende N`. Dos opciones:
+      "-"         → cierra la fila: todo lo que venga después NO se atiende.
+      "--repe"    → activa el antirepes: un número que ya salió no sale otra vez.
+    errors:
+      - "No ignorar lo que venga tras `-`: cierra la fila para SIEMPRE, lo posterior se descarta."
+      - "Contar erroneamente las opciones: `--repe` y `-` NO son números que se atienden."
+    quiz:
+      question: ¿Dónde guardo el «ya atendí N»?
+      answer: "Una variable cadena acumulando (o un array): memoriza lo que ya salió."
+    tasks:
+      - name: basica
+        message: "con 3 1 2 imprime atiende 3, atiende 1, atiende 2 (en orden)"
+        cmd: bash fila.sh 3 1 2
+        expectOutput: "^atiende 3$\\n^atiende 1$\\n^atiende 2$"
+      - name: salta-cerrado
+        message: "con 4 - 9 imprime atiende 4 y NO imprime atiende 9"
+        cmd: bash fila.sh 4 - 9
+        expectOutput: "^atiende 4$"
+        expectOutputAbsent: "^atiende 9$"
+      - name: no-repes
+        message: "con --repe 5 5 imprime atiende 5 UNA sola vez"
+        cmd: bash fila.sh --repe 5 5
+        expectOutput: "^atiende 5$"
+        expectOutputAbsent: "atiende 5\\natiende 5"
+    hints:
+      - "Guarda el estado: bandera `cerrada=0` y `vistos=' '`: acumula ` \"$a\" ` tras atender."
+      - "case de la vuelta: `--repe` activa antirepes; `-` cierra la fila; Números: filtra y atiende."
+      - "Comprobar «ya salió» con cadena: `case \"$vistos\" in *\" $a \"*) continue;; esac`."
+    solution: |
+      cat > fila.sh <<'EOF'
+      #!/usr/bin/env bash
+      cerrada=0
+      antirepes=0
+      vistos=" "
+      for a in "$@"; do
+        case "$a" in
+          --repe)  antirepes=1; continue ;;
+          -)       cerrada=1; continue ;;
+        esac
+        (( cerrada )) && continue
+        if (( antirepes )); then
+          case "$vistos" in
+            *" $a "*) continue ;;
+          esac
+        fi
+        echo "atiende $a"
+        vistos="$vistos $a "
+      done
+      EOF
+
+  - id: lvl9-boss-while
+    title: "Boss Fight · El Guardian de Bucles"
+    level: 9
+    kind: boss
+    xp: 90
+    minutes: 15
+    tags: [boss]
+    objective: "Examen final de bucles: for, while, case, break/continue juntos."
+    files: [guardian.sh]
+    theory: |
+      El jefe une TODO lo de este nivel y el 3: lee fichero con while IFS=
+      read -r (sin subshell), enruta cada línea con case, acumula en
+      variable y corta con break. Nada de awk/sed/cut: SOLO bucles.
+
+      ```bash
+      rumbo=0
+      while IFS= read -r l; do
+        case "$l" in
+          "subir "*) rumbo=$((rumbo + ${l#subir })) ;;
+          stop) break ;;
+        esac
+      done < manifiesto.txt
+      ```
+    example: |
+      ```bash
+      $ cat manifiesto.txt
+      subir 10
+      # otro día
+      subir 20
+      stop
+      $ bash guardian.sh
+      rumbo: 30
+      ```
+    exercise: |
+      Crea `manifiesto.txt` con (EXACTAS): línea 1 `subir 10`, línea 2
+      `# comentario`, línea 3 `subir 20`, línea 4 `stop` y línea 5 `subir 99`.
+      Crea `guardian.sh` que lea el fichero línea a línea: `subir N` suma a
+      `rumbo`; líneas `#…` se saltan; `stop` corta de inmediato (la línea 5 NO
+      se llega a leer); al final imprime `rumbo: N`.
+    errors:
+      - "Sumar 99: el stop cortó el fichero y esa línea ni existió para ti."
+      - "Leer con `cat | while`: pierdes el total (subshell)."
+      - "No saltar comentarios: algún `# …` sumaría cero pero ensuciaría (hazlas saltar de verdad)."
+    quiz:
+      question: ¿Por qué la línea 5 no va?
+      answer: "El break al leer `stop` sale del while de inmediato sin volver al fichero."
+    tasks:
+      - name: manifiesto-ok
+        message: "manifiesto.txt con las 4-5 líneas pactadas"
+        cmd: grep -qx "subir 10" manifiesto.txt && grep -qx "subir 20" manifiesto.txt && grep -qx "stop" manifiesto.txt && grep -qx "subir 99" manifiesto.txt
+      - name: rumbo
+        message: "guardian.sh imprime 'rumbo: 30' (10+20; stop corta antes de la 99)"
+        cmd: bash guardian.sh
+        expectOutput: "^rumbo: 30$"
+      - name: sin-99
+        message: "990 no se suma: 'rumbo: 129' NO aparece"
+        cmd: bash guardian.sh
+        expectOutputAbsent: "^rumbo: 129$"
+    hints:
+      - "while IFS= read -r l; do case … esac; done < manifiesto.txt"
+      - "Los comentarios: `case \"$l\" in \\#*) continue;; esac` antes de sumar."
+      - "`stop` → break; `subir N` → rumbo=$((rumbo + ${l#subir })) (quitó el prefijo)."
+    solution: |
+      printf 'subir 10\n# comentario\nsubir 20\nstop\nsubir 99\n' > manifiesto.txt
+      cat > guardian.sh <<'EOF'
+      #!/usr/bin/env bash
+      rumbo=0
+      while IFS= read -r l; do
+        case "$l" in
+          \#*)       continue ;;
+          stop)      break ;;
+          subir*)    rumbo=$((rumbo + ${l#subir })) ;;
+        esac
+      done < manifiesto.txt
+      echo "rumbo: $rumbo"
+      EOF
+
+  # MORE_L9

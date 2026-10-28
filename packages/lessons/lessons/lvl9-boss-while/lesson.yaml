@@ -1,0 +1,29 @@
+id: lvl9-boss-while
+title: Boss Fight · El Guardian de Bucles
+level: 9
+kind: boss
+xp: 90
+estimated_minutes: 15
+prerequisites:
+  - lvl9-reto-fila-indentario
+tags:
+  - boss
+objective: "Examen final de bucles: for, while, case, break/continue juntos."
+files_to_create:
+  - guardian.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: manifiesto-ok
+      message: manifiesto.txt con las 4-5 líneas pactadas
+      cmd: grep -qx "subir 10" manifiesto.txt && grep -qx "subir 20" manifiesto.txt && grep -qx "stop" manifiesto.txt && grep
+        -qx "subir 99" manifiesto.txt
+    - name: rumbo
+      message: "guardian.sh imprime 'rumbo: 30' (10+20; stop corta antes de la 99)"
+      cmd: bash guardian.sh
+      expectOutput: "^rumbo: 30$"
+    - name: sin-99
+      message: "990 no se suma: 'rumbo: 129' NO aparece"
+      cmd: bash guardian.sh
+      expectOutputAbsent: "^rumbo: 129$"

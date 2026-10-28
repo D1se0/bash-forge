@@ -5,15 +5,17 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WEB_PORT="${WEB_PORT:-8080}"
 SANDBOX_PORT="${SANDBOX_PORT:-8010}"
+COMPOSE=(docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env")
 
 usage() {
   cat <<'EOF'
 Uso: bashforge <comando>
 
-  dev            Arranca el stack completo con docker compose up (web :8080).
+  dev            Arranca el stack completo con docker compose up (web :8080) y espera la salud del sandbox.
   down           Para y limpia el stack de docker.
   status         Estado del stack: contenedores, puertos y salud del sandbox.
-  purge          Purga total: para el stack, borra volúmenes e imágenes del proyecto.
+  purge [s|n]    Purga total: respalda el progreso de los alumnos, pide confirmación (s|n, o --yes / --no)
+                 y borra contenedores + volúmenes + imágenes del proyecto.
   lessons        (Re)genera el currículum en packages/lessons/lessons/.
   check          Ejecuta typecheck + build de todos los workspaces.
   list           Lista lecciones disponibles (requiere sandbox arriba).
@@ -29,22 +31,29 @@ ensure_secrets() {
   fi
 }
 
+have_node() { command -v node >/dev/null 2>&1; }
+
+lessons_count() {
+  # cuenta ids de lección en el catálogo (única fuente: /api/lessons)
+  if have_node; then
+    node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{console.log(JSON.parse(d).length)}catch{console.log(0)}})' <<< "$(curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" 2>/dev/null)"
+  else
+    curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" 2>/dev/null | grep -o '"id":"lvl[^"]*"' | wc -l
+  fi
+}
+
 cmd_status() {
   ensure_secrets
   echo "· contenedores del stack"
   local out
-  out=$(docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env" ps --format '{{.Name}}\t{{.Status}}\t{{.Ports}}' 2>&1)
+  out=$("${COMPOSE[@]}" ps --format '{{.Name}}\t{{.Status}}\t{{.Ports}}' 2>&1) || out=""
   if [[ -n "$out" ]]; then
-    while IFS= read -r line; do
-      echo "  $line"
-    done <<< "$out"
+    while IFS= read -r line; do echo "  $line"; done <<< "$out"
   else
     echo "  (sin contenedores del stack: usa bashforge dev)"
   fi
-  if curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" >/dev/null 2>&1; then
-    local n
-    n=$(curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" | grep -o '"lvl[^"]*"' | sort -u | wc -l)
-    echo "· sandbox OK en :$SANDBOX_PORT (${n} lecciones en el catálogo)"
+  if curl -fsS "http://localhost:$SANDBOX_PORT/api/health" >/dev/null 2>&1; then
+    echo "· sandbox OK en :$SANDBOX_PORT ($(lessons_count) lecciones en el catálogo)"
   else
     echo "· sandbox NO responde en :$SANDBOX_PORT"
   fi
@@ -55,22 +64,97 @@ cmd_status() {
   fi
 }
 
+marca_progreso() {
+  # Respaldamos el progreso de TODOS los alumnos del volumen en un directorio
+  # con ficheros importables desde la web (Importar JSON acepta el snapshot tal cual).
+  local dest="$1"
+  local alumnos
+  alumnos=$(curl -fsS "http://localhost:$SANDBOX_PORT/api/progress" 2>/dev/null | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{console.log(JSON.parse(d).students.join("\n"))}catch{console.log("")}})')
+  [[ -z "$alumnos" ]] && return 1
+  local n=0
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    if curl -fsS "http://localhost:$SANDBOX_PORT/api/progress/$f" -o "$dest/bashforge-progreso-$f.json"; then
+      n=$((n + 1))
+    fi
+  done <<< "$alumnos"
+  echo "· respaldados $n snapshot(s) de progreso en $dest (importables con «Importar JSON»)"
+  return 0
+}
+
 cmd_purge() {
   ensure_secrets
+  local respuesta="${1:-}"
+  local backup_ok=0
+  local fecha
+  fecha=$(date +%Y%m%d-%H%M%S)
+  local backup_dir="$DIR/backups/progreso-$fecha"
+
   echo "· purga total del stack (contenedores + volúmenes + imágenes locales)"
-  docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env" down --volumes --rmi local || true
+
+  # ── seguridad: respaldar el progreso del servidor ANTES de borrar volúmenes ──
+  if curl -fsS "http://localhost:$SANDBOX_PORT/api/progress" >/dev/null 2>&1; then
+    mkdir -p "$backup_dir"
+    if marca_progreso "$backup_dir"; then
+      backup_ok=1
+    else
+      echo "· sin progreso guardado en el servidor: nada que respaldar"
+      rmdir "$backup_dir" 2>/dev/null || true
+    fi
+  else
+    echo "· sandbox parado o sin /api/progress: no hay progreso del servidor que respaldar"
+  fi
+
+  echo "  ⚠ El progreso que vive SOLO en el navegador (localStorage) no lo toca la purga."
+  echo "  ⚠ Si tienes progreso SOLO en el navegador y no en la forja, expórtalo desde"
+  echo "     la web (⇪ Exportar JSON) antes de continuar."
+  if [[ "$backup_ok" == 1 ]]; then
+    echo "     Los JSON de $backup_dir se pueden importar más tarde desde «⇩ Importar JSON»."
+  fi
+
+  # ── confirmación ──
+  case "$respuesta" in
+    --yes|s|si|sí|y|yes|"") respuesta="s" ;;
+    --no|n|no) respuesta="n" ;;
+    *)
+      if [[ -t 0 ]]; then
+        read -r -p "¿Continuar con la purga? [s/N] " respuesta
+        case "$respuesta" in s|si|sí|S|SI|Sí|y|Y) respuesta="s" ;; *) respuesta="n" ;; esac
+      else
+        respuesta="s"  # no interactiva (CI): seguimos; el respaldo ya se intentó
+      fi
+      ;;
+  esac
+  if [[ "$respuesta" != "s" ]]; then
+    echo "· purga cancelada: no se ha borrado nada"
+    return 0
+  fi
+
+  "${COMPOSE[@]}" down --volumes --rmi local || true
   echo "· purga completada"
 }
 
 cmd_dev() {
   ensure_secrets
   echo "· levantando sandbox + web 🐳"
-  docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env" up --build -d
-  echo "· listo: http://localhost:$WEB_PORT (terminal + lecciones)"
+  "${COMPOSE[@]}" up --build -d
+  echo -n "· esperando la salud del sandbox"
+  for _ in $(seq 1 30); do
+    if curl -fsS "http://localhost:$SANDBOX_PORT/api/health" >/dev/null 2>&1; then
+      echo " OK"
+      echo "· listo: http://localhost:$WEB_PORT (terminal + lecciones)"
+      return 0
+    fi
+    echo -n "."
+    sleep 1
+  done
+  echo ""
+  echo "  ⚠ el sandbox sigue sin responder tras 30s; mira los logs: docker compose -f docker/docker-compose.yml logs sandbox"
+  return 1
 }
 
 cmd_down() {
-  docker compose -f "$DIR/docker/docker-compose.yml" --env-file "$DIR/docker/.env" down --volumes
+  "${COMPOSE[@]}" down --volumes
   echo "· stack parado y volúmenes limpiados"
 }
 
@@ -91,20 +175,39 @@ cmd_check() {
 }
 
 cmd_list() {
-  curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" | tr -d '[],"' | tr ',' '\n' | sed '/^$/d'
+  local json
+  json=$(curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons") || { echo "✕ sandbox sin respuesta en :$SANDBOX_PORT"; exit 1; }
+  if have_node; then
+    # shellcheck disable=SC2016  # las ${} van dentro del nodo, sin expandir en bash
+    node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{const ls=JSON.parse(d);for(const l of ls)console.log(`l${l.level}  ${l.id.padEnd(28)} ${l.title}`);console.log(`\n${ls.length} lecciones`)})' <<< "$json"
+  else
+    echo "$json" | grep -o '"id":"lvl[^"]*"' | sed 's/"id":"//;s/"//'
+  fi
 }
 
 cmd_verify() {
   local id="${1:-}"
-  [[ -z "$id" ]] && { echo "falta id de lección"; exit 1; }
+  [[ -z "$id" ]] && {
+    echo "falta id de lección. Ejemplos:"
+    curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons" | grep -o '"id":"lvl[^"]*"' | sed 's/"id":"//;s/"//' | head -20 || true
+    echo
+    exit 1
+  }
+  local http
+  http=$(curl -sS -o /dev/null -w '%{http_code}' "http://localhost:$SANDBOX_PORT/api/lessons/$id") || { echo "✕ sandbox sin respuesta en :$SANDBOX_PORT"; exit 1; }
+  if [[ "$http" != "200" ]]; then
+    echo "✕ la lección «$id» no existe (HTTP $http)"
+    echo "  usa «bashforge list» para ver los ids"
+    exit 1
+  fi
   curl -fsS "http://localhost:$SANDBOX_PORT/api/lessons/$id" | head -c 2000; echo
 }
 
 case "${1:-help}" in
-  dev) cmd_dev ;;
+  dev) shift; cmd_dev "$@" ;;
   down) cmd_down ;;
   status) cmd_status ;;
-  purge|purga) cmd_purge ;;
+  purge|purga) shift; cmd_purge "$@" ;;
   lessons) cmd_lessons ;;
   check) cmd_check ;;
   list) cmd_list ;;

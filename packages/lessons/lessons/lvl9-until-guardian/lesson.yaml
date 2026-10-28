@@ -1,0 +1,25 @@
+id: lvl9-until-guardian
+title: "until: el guardián que espera una condición"
+level: 9
+kind: lesson
+xp: 25
+estimated_minutes: 7
+prerequisites:
+  - lvl9-while-acumulador
+tags:
+  - bucles
+objective: Escribir bucles con until sin mutar mientras.
+files_to_create:
+  - abrecajas.sh
+validation:
+  mode: declarative
+  timeout_seconds: 30
+  tasks:
+    - name: tres-cajas
+      message: con 3 imprime caja 1..caja 3
+      cmd: bash abrecajas.sh 3
+      expectOutput: ^caja 1$\n^caja 2$\n^caja 3$
+    - name: cero-cajas
+      message: con 0 no imprime cajas y sale 0
+      cmd: bash abrecajas.sh 0
+      expectOutputAbsent: "^caja "

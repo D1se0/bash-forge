@@ -42,7 +42,7 @@ export function unlockedLevel(completed: string[], groups: LevelGroup[]): Lesson
   for (const g of groups) {
     const done = g.lessons.every((l) => completed.includes(l.id));
     if (!done) break;
-    unlocked = (Math.min(g.info.level + 1, 8) as LessonLevel);
+    unlocked = Math.min(g.info.level + 1, 9) as LessonLevel;
   }
   return unlocked;
 }

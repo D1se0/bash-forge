@@ -37,8 +37,8 @@ describe("isServerMessage", () => {
 
 describe("LESSON_LEVELS", () => {
   it("son 9 niveles consecutivos", () => {
-    expect(LESSON_LEVELS).toHaveLength(9);
-    expect(LESSON_LEVELS.map((l) => l.level)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(LESSON_LEVELS).toHaveLength(10);
+    expect(LESSON_LEVELS.map((l) => l.level)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 });
 
